@@ -7,7 +7,7 @@ import bellarusGlobe from "@/assets/bellarus-globe.png";
 const plans = [
   {
     title: "Dealer",
-    price: "R$ 50",
+    price: "R$ 120",
     icon: Star,
     benefit: "35% de desconto em todos os documentos",
     color: "from-cyan-500 to-blue-600",
@@ -15,7 +15,7 @@ const plans = [
   },
   {
     title: "Master",
-    price: "R$ 150",
+    price: "R$ 300",
     icon: Shield,
     benefit: "50% de desconto em todos os documentos",
     color: "from-violet-500 to-purple-600",
@@ -24,7 +24,7 @@ const plans = [
   },
   {
     title: "Diamont",
-    price: "R$ 400",
+    price: "R$ 500",
     icon: Crown,
     benefit: "Documentos gratuitos — custo zero!",
     color: "from-amber-400 to-yellow-500",
