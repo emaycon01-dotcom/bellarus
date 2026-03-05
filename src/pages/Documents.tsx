@@ -1,82 +1,118 @@
-import { FileText, Plus, Upload } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FileText, CreditCard, Anchor, Globe, GraduationCap, Car, Home, ScrollText, Smartphone, Award, BookOpen, Stethoscope, Activity, Heart, Image, Eye, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const modules = [
-  { name: "CNH Digital", desc: "Carteira Nacional de Habilitação", available: true },
-  { name: "RG Digital", desc: "Registro Geral", available: true },
-  { name: "Atestado Médico", desc: "Atestados com QR Code", available: true },
-  { name: "Receita Médica", desc: "Receitas médicas digitais", available: true },
-  { name: "Certidão de Nascimento", desc: "Certidões de nascimento", available: true },
-  { name: "Certidão de Casamento", desc: "Certidões de casamento", available: true },
-  { name: "Comprovante de Residência", desc: "Comprovantes de endereço", available: false },
-  { name: "Declaração", desc: "Declarações diversas", available: false },
+interface DocModule {
+  name: string;
+  desc: string;
+  credits: number;
+  available: boolean;
+  example?: boolean;
+  icon: React.ReactNode;
+  category: string;
+}
+
+const modules: DocModule[] = [
+  // DOCUMENTOS DIGITAIS
+  { name: "CNH Digital", desc: "Carteira Nacional de Habilitação", credits: 1, available: true, example: true, icon: <FileText className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
+  { name: "CIN (RG Digital)", desc: "Carteira de Identidade Nacional", credits: 1, available: true, example: true, icon: <CreditCard className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
+  { name: "Arrais Náutica", desc: "Habilitação Náutica", credits: 1, available: true, example: true, icon: <Anchor className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
+  { name: "Passaporte Digital", desc: "Passaporte Brasileiro", credits: 1, available: false, icon: <Globe className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
+
+  // CARTEIRA ESTUDANTIL
+  { name: "ABAFE", desc: "Carteira de Estudante", credits: 1, available: true, example: true, icon: <GraduationCap className="w-5 h-5" />, category: "CARTEIRA ESTUDANTIL" },
+
+  // PDF
+  { name: "CRLV-e Digital", desc: "Certificado de Registro e Licenciamento de Veículo", credits: 1, available: false, icon: <Car className="w-5 h-5" />, category: "PDF" },
+  { name: "Comprovante de Residência", desc: "Comprovante de endereço", credits: 1, available: false, icon: <Home className="w-5 h-5" />, category: "PDF" },
+
+  // ATESTADOS
+  { name: "Atestado Médico", desc: "Atestados com QR Code", credits: 1, available: true, icon: <Stethoscope className="w-5 h-5" />, category: "ATESTADOS" },
+  { name: "Receita Médica", desc: "Receitas médicas digitais", credits: 1, available: true, icon: <Activity className="w-5 h-5" />, category: "ATESTADOS" },
+
+  // CERTIDÕES
+  { name: "Certidão de Nascimento", desc: "Certidões de nascimento", credits: 1, available: true, icon: <Heart className="w-5 h-5" />, category: "CERTIDÕES" },
+  { name: "Certidão de Casamento", desc: "Certidões de casamento", credits: 1, available: true, icon: <ScrollText className="w-5 h-5" />, category: "CERTIDÕES" },
+
+  // NOVOS MÓDULOS
+  { name: "E-SIM Chip Virtual", desc: "Chip virtual eSIM", credits: 1, available: false, icon: <Smartphone className="w-5 h-5" />, category: "OUTROS" },
+  { name: "Diploma", desc: "Diploma de graduação", credits: 1, available: false, icon: <Award className="w-5 h-5" />, category: "OUTROS" },
+  { name: "Certificado Escolar", desc: "Certificado de conclusão escolar", credits: 1, available: false, icon: <BookOpen className="w-5 h-5" />, category: "OUTROS" },
+  { name: "Declaração Escolar", desc: "Declaração de matrícula escolar", credits: 1, available: false, icon: <ScrollText className="w-5 h-5" />, category: "OUTROS" },
+
+  // IMAGENS MANIPULADAS
+  { name: "CNH em cima da mesa", desc: "Mockup realista de CNH", credits: 1, available: false, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
+  { name: "RG em cima da mesa", desc: "Mockup realista de RG", credits: 1, available: false, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
+  { name: "Passaporte em cima da mesa", desc: "Mockup realista de Passaporte", credits: 1, available: false, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
 ];
+
+const categoryOrder = ["DOCUMENTOS DIGITAIS", "CARTEIRA ESTUDANTIL", "PDF", "ATESTADOS", "CERTIDÕES", "OUTROS", "IMAGENS MANIPULADAS"];
 
 const Documents = () => {
   const navigate = useNavigate();
 
-  const handleModuleClick = (modName: string) => {
-    if (modName === "CNH Digital") {
+  const handleModuleClick = (mod: DocModule) => {
+    if (!mod.available) return;
+    if (mod.name === "CNH Digital") {
       navigate("/dashboard/documents/cnh");
     }
   };
 
+  const grouped = categoryOrder
+    .map((cat) => ({ category: cat, items: modules.filter((m) => m.category === cat) }))
+    .filter((g) => g.items.length > 0);
+
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Módulos de Documentos</h1>
-          <p className="text-sm text-muted-foreground mt-1">Selecione o tipo de documento para criar</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl font-display font-bold text-foreground">Módulos de Documentos</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Escolha um serviço para começar</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {modules.map((mod) => (
-          <div
-            key={mod.name}
-            onClick={() => mod.available && handleModuleClick(mod.name)}
-            className={`glass-card p-6 space-y-4 transition-all ${mod.available ? "hover:shadow-xl cursor-pointer hover:border-accent/50" : "opacity-50"}`}
-          >
-            <div className="flex items-start justify-between">
-              <div className="w-12 h-12 rounded-xl navy-gradient flex items-center justify-center">
-                <FileText className="w-6 h-6 text-primary-foreground" />
+      {grouped.map((group) => (
+        <div key={group.category} className="space-y-3">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{group.category}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {group.items.map((mod) => (
+              <div
+                key={mod.name}
+                onClick={() => handleModuleClick(mod)}
+                className={`glass-card px-4 py-3.5 flex items-center gap-3 transition-all ${
+                  mod.available
+                    ? "hover:border-accent/60 cursor-pointer"
+                    : "opacity-60"
+                }`}
+              >
+                <div className="w-10 h-10 rounded-lg navy-gradient flex items-center justify-center shrink-0 text-primary-foreground">
+                  {mod.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm text-foreground truncate">{mod.name}</h3>
+                  <p className="text-xs text-muted-foreground truncate">{mod.desc}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {mod.example && (
+                    <span className="flex items-center gap-1 text-[10px] text-green-400">
+                      <Eye className="w-3 h-3" />
+                      Exemplo
+                    </span>
+                  )}
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{mod.credits} cred.</span>
+                  {mod.available ? (
+                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 flex items-center gap-1">
+                      ✓ Ativo
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-medium uppercase px-2 py-0.5 rounded-full bg-muted text-muted-foreground flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      Breve
+                    </span>
+                  )}
+                </div>
               </div>
-              {mod.available ? (
-                <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/10 text-success">
-                  Disponível
-                </span>
-              ) : (
-                <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                  Em breve
-                </span>
-              )}
-            </div>
-            <div>
-              <h3 className="font-display font-semibold text-foreground">{mod.name}</h3>
-              <p className="text-xs text-muted-foreground mt-1">{mod.desc}</p>
-            </div>
-            {mod.available && (
-              <Button size="sm" className="w-full navy-gradient text-primary-foreground">
-                <Plus className="w-3.5 h-3.5 mr-1.5" />
-                Criar Documento
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div className="glass-card p-6 border-dashed border-2 border-border">
-        <div className="text-center space-y-3">
-          <Upload className="w-10 h-10 mx-auto text-muted-foreground" />
-          <div>
-            <p className="font-medium text-foreground text-sm">Área do Administrador</p>
-            <p className="text-xs text-muted-foreground">
-              O administrador pode adicionar ou remover PDFs editáveis em cada módulo diretamente pelo painel.
-            </p>
+            ))}
           </div>
         </div>
-      </div>
+      ))}
     </div>
   );
 };
