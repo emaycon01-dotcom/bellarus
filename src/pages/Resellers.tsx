@@ -1,5 +1,6 @@
 import { Crown, Star, Shield, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const plans = [
   {
@@ -27,6 +28,7 @@ const plans = [
 ];
 
 const Resellers = () => {
+  const navigate = useNavigate();
   return (
     <div className="space-y-8 max-w-4xl">
       <div>
@@ -59,7 +61,10 @@ const Resellers = () => {
               <Zap className="w-4 h-4 text-accent shrink-0 mt-0.5" />
               <span>{plan.benefit}</span>
             </div>
-            <Button className="w-full navy-gradient text-primary-foreground font-semibold">
+            <Button
+              onClick={() => navigate(`/dashboard/resellers/payment?plan=${encodeURIComponent(plan.title)}&price=${encodeURIComponent(plan.price)}`)}
+              className="w-full navy-gradient text-primary-foreground font-semibold"
+            >
               Adquirir Plano
             </Button>
           </div>

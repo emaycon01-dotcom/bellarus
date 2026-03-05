@@ -125,6 +125,15 @@ const Credits = () => {
               <Clock className="w-3.5 h-3.5" />
               <span>Você só poderá gerar outro QR Code em 2 minutos</span>
             </div>
+            <a
+              href="https://wa.me/message/W3POEZOTHB2AK1"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button className="w-full navy-gradient text-primary-foreground font-semibold mt-2">
+                ✅ Concluir Recarga — Falar no WhatsApp
+              </Button>
+            </a>
           </div>
         )}
       </div>
