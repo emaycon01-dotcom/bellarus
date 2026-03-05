@@ -58,7 +58,7 @@ const mockUsers: MockUser[] = [
   { id: 16, name: "Igor Rangel de Oliveira", email: "rangeligor41@gmail.com", role: "Cliente", credits: 0, docs: 0, avatar: "IR" },
 ];
 
-const roles = ["Cliente", "Revendedor", "Sub Gerente", "Gerente", "Admin"];
+const roles = ["Cliente", "Dealer", "Master", "Diamont", "Admin"];
 
 const AdminUsers = () => {
   const [search, setSearch] = useState("");
