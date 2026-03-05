@@ -1,5 +1,6 @@
 import { FileText, Plus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const modules = [
   { name: "CNH Digital", desc: "Carteira Nacional de Habilitação", available: true },
@@ -13,6 +14,14 @@ const modules = [
 ];
 
 const Documents = () => {
+  const navigate = useNavigate();
+
+  const handleModuleClick = (modName: string) => {
+    if (modName === "CNH Digital") {
+      navigate("/dashboard/documents/cnh");
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -26,6 +35,7 @@ const Documents = () => {
         {modules.map((mod) => (
           <div
             key={mod.name}
+            onClick={() => mod.available && handleModuleClick(mod.name)}
             className={`glass-card p-6 space-y-4 transition-all ${mod.available ? "hover:shadow-xl cursor-pointer hover:border-accent/50" : "opacity-50"}`}
           >
             <div className="flex items-start justify-between">
