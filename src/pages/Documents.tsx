@@ -13,17 +13,17 @@ interface DocModule {
 
 const modules: DocModule[] = [
   // DOCUMENTOS DIGITAIS
-  { name: "CNH Digital", desc: "Carteira Nacional de Habilitação", credits: 1, available: true, example: true, icon: <FileText className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
+  { name: "CNH Digital (2024)", desc: "Carteira Nacional de Habilitação", credits: 1, available: true, example: true, icon: <FileText className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
   { name: "CIN (RG Digital)", desc: "Carteira de Identidade Nacional", credits: 1, available: true, example: true, icon: <CreditCard className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
   { name: "Arrais Náutica", desc: "Habilitação Náutica", credits: 1, available: true, example: true, icon: <Anchor className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
-  { name: "Passaporte Digital", desc: "Passaporte Brasileiro", credits: 1, available: false, icon: <Globe className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
+  { name: "Passaporte Digital", desc: "Passaporte Brasileiro", credits: 1, available: true, icon: <Globe className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
 
   // CARTEIRA ESTUDANTIL
   { name: "ABAFE", desc: "Carteira de Estudante", credits: 1, available: true, example: true, icon: <GraduationCap className="w-5 h-5" />, category: "CARTEIRA ESTUDANTIL" },
 
   // PDF
-  { name: "CRLV-e Digital", desc: "Certificado de Registro e Licenciamento de Veículo", credits: 1, available: false, icon: <Car className="w-5 h-5" />, category: "PDF" },
-  { name: "Comprovante de Residência", desc: "Comprovante de endereço", credits: 1, available: false, icon: <Home className="w-5 h-5" />, category: "PDF" },
+  { name: "CRLV-e Digital", desc: "Certificado de Registro e Licenciamento de Veículo", credits: 1, available: true, icon: <Car className="w-5 h-5" />, category: "PDF" },
+  { name: "Comprovante de Residência", desc: "Comprovante de endereço", credits: 1, available: true, icon: <Home className="w-5 h-5" />, category: "PDF" },
 
   // ATESTADOS
   { name: "Atestado Médico", desc: "Atestados com QR Code", credits: 1, available: true, icon: <Stethoscope className="w-5 h-5" />, category: "ATESTADOS" },
@@ -33,16 +33,16 @@ const modules: DocModule[] = [
   { name: "Certidão de Nascimento", desc: "Certidões de nascimento", credits: 1, available: true, icon: <Heart className="w-5 h-5" />, category: "CERTIDÕES" },
   { name: "Certidão de Casamento", desc: "Certidões de casamento", credits: 1, available: true, icon: <ScrollText className="w-5 h-5" />, category: "CERTIDÕES" },
 
-  // NOVOS MÓDULOS
-  { name: "E-SIM Chip Virtual", desc: "Chip virtual eSIM", credits: 1, available: false, icon: <Smartphone className="w-5 h-5" />, category: "OUTROS" },
-  { name: "Diploma", desc: "Diploma de graduação", credits: 1, available: false, icon: <Award className="w-5 h-5" />, category: "OUTROS" },
-  { name: "Certificado Escolar", desc: "Certificado de conclusão escolar", credits: 1, available: false, icon: <BookOpen className="w-5 h-5" />, category: "OUTROS" },
-  { name: "Declaração Escolar", desc: "Declaração de matrícula escolar", credits: 1, available: false, icon: <ScrollText className="w-5 h-5" />, category: "OUTROS" },
+  // OUTROS
+  { name: "E-SIM Chip Virtual", desc: "Chip virtual eSIM", credits: 1, available: true, icon: <Smartphone className="w-5 h-5" />, category: "OUTROS" },
+  { name: "Diploma", desc: "Diploma de graduação", credits: 1, available: true, icon: <Award className="w-5 h-5" />, category: "OUTROS" },
+  { name: "Certificado Escolar", desc: "Certificado de conclusão escolar", credits: 1, available: true, icon: <BookOpen className="w-5 h-5" />, category: "OUTROS" },
+  { name: "Declaração Escolar", desc: "Declaração de matrícula escolar", credits: 1, available: true, icon: <ScrollText className="w-5 h-5" />, category: "OUTROS" },
 
   // IMAGENS MANIPULADAS
-  { name: "CNH em cima da mesa", desc: "Mockup realista de CNH", credits: 1, available: false, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
-  { name: "RG em cima da mesa", desc: "Mockup realista de RG", credits: 1, available: false, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
-  { name: "Passaporte em cima da mesa", desc: "Mockup realista de Passaporte", credits: 1, available: false, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
+  { name: "CNH em cima da mesa", desc: "Mockup realista de CNH", credits: 1, available: true, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
+  { name: "RG em cima da mesa", desc: "Mockup realista de RG", credits: 1, available: true, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
+  { name: "Passaporte em cima da mesa", desc: "Mockup realista de Passaporte", credits: 1, available: true, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
 ];
 
 const categoryOrder = ["DOCUMENTOS DIGITAIS", "CARTEIRA ESTUDANTIL", "PDF", "ATESTADOS", "CERTIDÕES", "OUTROS", "IMAGENS MANIPULADAS"];
@@ -52,7 +52,7 @@ const Documents = () => {
 
   const handleModuleClick = (mod: DocModule) => {
     if (!mod.available) return;
-    if (mod.name === "CNH Digital") {
+    if (mod.name === "CNH Digital (2024)") {
       navigate("/dashboard/documents/cnh");
     }
   };
