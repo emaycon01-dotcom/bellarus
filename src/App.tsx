@@ -11,6 +11,7 @@ import Documents from "./pages/Documents";
 import Credits from "./pages/Credits";
 import DocumentHistory from "./pages/DocumentHistory";
 import Resellers from "./pages/Resellers";
+import ResellerPayment from "./pages/ResellerPayment";
 import Support from "./pages/Support";
 import AdminPanel from "./pages/AdminPanel";
 import AdminUsers from "./pages/AdminUsers";
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="credits" element={<Credits />} />
             <Route path="history" element={<DocumentHistory />} />
             <Route path="resellers" element={<Resellers />} />
+            <Route path="resellers/payment" element={<ResellerPayment />} />
             <Route path="support" element={<Support />} />
             <Route path="admin" element={<AdminPanel />} />
             <Route path="admin/users" element={<AdminUsers />} />
