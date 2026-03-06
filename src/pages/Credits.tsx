@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 
 const allPackages = [
+  // Unitários
+  { credits: 1, pricePerUnit: 15.0, total: 15, discount: 0, category: "popular" },
+  { credits: 2, pricePerUnit: 14.5, total: 29, discount: 3, category: "popular" },
+  { credits: 3, pricePerUnit: 14.5, total: 43.5, discount: 3, category: "popular" },
   // Populares
   { credits: 5, pricePerUnit: 14.0, total: 70, discount: 0, category: "popular" },
   { credits: 10, pricePerUnit: 14.0, total: 140, discount: 0, category: "popular" },
@@ -22,7 +26,7 @@ const allPackages = [
   { credits: 1000, pricePerUnit: 9.0, total: 9000, discount: 36, category: "large", premium: true },
 ];
 
-const sliderSteps = [5, 10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 1000];
+const sliderSteps = [1, 2, 3, 5, 10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 1000];
 
 const formatPrice = (v: number) =>
   v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
