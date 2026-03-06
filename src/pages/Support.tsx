@@ -2,8 +2,7 @@ import { HeadphonesIcon, MessageCircle, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Support = () => {
-  // Mock: admin sets this WhatsApp link in admin panel
-  const whatsappLink = "https://wa.me/5500000000000";
+  const whatsappLink = "https://wa.me/message/W3POEZOTHB2AK1";
 
   return (
     <div className="space-y-8 max-w-lg">
@@ -16,10 +15,13 @@ const Support = () => {
         <div className="w-20 h-20 mx-auto navy-gradient rounded-2xl flex items-center justify-center">
           <HeadphonesIcon className="w-10 h-10 text-primary-foreground" />
         </div>
+        <div className="space-y-1">
+          <h2 className="text-xl font-display font-bold text-foreground">SOUZA7</h2>
+          <p className="text-xs font-medium" style={{ color: "hsl(50, 90%, 55%)" }}>CEO & DEV</p>
+        </div>
         <div className="space-y-2">
-          <h2 className="text-lg font-display font-semibold text-foreground">Precisa de ajuda?</h2>
           <p className="text-sm text-muted-foreground">
-            Nossa equipe está pronta para ajudá-lo. Clique no botão abaixo para abrir o WhatsApp.
+            Precisa de ajuda? Clique no botão abaixo para abrir o WhatsApp e tirar suas dúvidas diretamente.
           </p>
         </div>
         <Button
