@@ -4,26 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 
 const allPackages = [
-  // Unitários
-  { credits: 1, pricePerUnit: 15.0, total: 15, discount: 0, category: "popular" },
-  { credits: 2, pricePerUnit: 14.5, total: 29, discount: 3, category: "popular" },
-  { credits: 3, pricePerUnit: 14.5, total: 43.5, discount: 3, category: "popular" },
-  // Populares
-  { credits: 5, pricePerUnit: 14.0, total: 70, discount: 0, category: "popular" },
-  { credits: 10, pricePerUnit: 14.0, total: 140, discount: 0, category: "popular" },
-  { credits: 25, pricePerUnit: 13.5, total: 337.5, discount: 4, category: "popular" },
-  { credits: 50, pricePerUnit: 13.0, total: 650, discount: 7, category: "popular" },
+  // Unitários (sem desconto)
+  { credits: 1, pricePerUnit: 20.0, total: 20, discount: 0, category: "popular" },
+  { credits: 2, pricePerUnit: 20.0, total: 40, discount: 0, category: "popular" },
+  { credits: 3, pricePerUnit: 20.0, total: 60, discount: 0, category: "popular" },
+  // Populares (desconto a partir de 5)
+  { credits: 5, pricePerUnit: 19.0, total: 95, discount: 5, category: "popular" },
+  { credits: 10, pricePerUnit: 18.0, total: 180, discount: 10, category: "popular" },
+  { credits: 25, pricePerUnit: 17.0, total: 425, discount: 15, category: "popular" },
+  { credits: 50, pricePerUnit: 16.0, total: 800, discount: 20, category: "popular" },
   // Intermediários
-  { credits: 75, pricePerUnit: 12.5, total: 937.5, discount: 11, category: "intermediary" },
-  { credits: 100, pricePerUnit: 12.0, total: 1200, discount: 14, category: "intermediary" },
-  { credits: 150, pricePerUnit: 11.5, total: 1725, discount: 18, category: "intermediary" },
-  { credits: 200, pricePerUnit: 11.0, total: 2200, discount: 21, category: "intermediary" },
+  { credits: 75, pricePerUnit: 15.0, total: 1125, discount: 25, category: "intermediary" },
+  { credits: 100, pricePerUnit: 14.5, total: 1450, discount: 28, category: "intermediary" },
+  { credits: 150, pricePerUnit: 14.0, total: 2100, discount: 30, category: "intermediary" },
+  { credits: 200, pricePerUnit: 13.5, total: 2700, discount: 33, category: "intermediary" },
   // Grandes Volumes
-  { credits: 250, pricePerUnit: 10.5, total: 2625, discount: 25, category: "large" },
-  { credits: 300, pricePerUnit: 10.2, total: 3060, discount: 27, category: "large" },
-  { credits: 400, pricePerUnit: 9.8, total: 3920, discount: 30, category: "large" },
-  { credits: 500, pricePerUnit: 9.65, total: 4825, discount: 31, category: "large" },
-  { credits: 1000, pricePerUnit: 9.0, total: 9000, discount: 36, category: "large", premium: true },
+  { credits: 250, pricePerUnit: 13.0, total: 3250, discount: 35, category: "large" },
+  { credits: 300, pricePerUnit: 12.5, total: 3750, discount: 38, category: "large" },
+  { credits: 400, pricePerUnit: 12.0, total: 4800, discount: 40, category: "large" },
+  { credits: 500, pricePerUnit: 11.5, total: 5750, discount: 43, category: "large" },
+  { credits: 1000, pricePerUnit: 10.0, total: 10000, discount: 50, category: "large", premium: true },
 ];
 
 const sliderSteps = [1, 2, 3, 5, 10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 1000];
