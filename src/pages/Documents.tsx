@@ -16,10 +16,6 @@ const modules: DocModule[] = [
   { name: "CNH Digital (2024)", desc: "Carteira Nacional de Habilitação", credits: 1, available: true, example: true, icon: <FileText className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
   { name: "CIN (RG Digital)", desc: "Carteira de Identidade Nacional", credits: 1, available: true, example: true, icon: <CreditCard className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
   { name: "Arrais Náutica", desc: "Habilitação Náutica", credits: 1, available: false, icon: <Anchor className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
-  { name: "Passaporte Digital", desc: "Passaporte Brasileiro", credits: 1, available: false, icon: <Globe className="w-5 h-5" />, category: "DOCUMENTOS DIGITAIS" },
-
-  // CARTEIRA ESTUDANTIL
-  { name: "ABAFE", desc: "Carteira de Estudante", credits: 1, available: false, icon: <GraduationCap className="w-5 h-5" />, category: "CARTEIRA ESTUDANTIL" },
 
   // PDF
   { name: "CRLV-e Digital", desc: "Certificado de Registro e Licenciamento de Veículo", credits: 1, available: true, icon: <Car className="w-5 h-5" />, category: "PDF" },
@@ -39,13 +35,9 @@ const modules: DocModule[] = [
   { name: "Certificado Escolar", desc: "Certificado de conclusão escolar", credits: 1, available: false, icon: <BookOpen className="w-5 h-5" />, category: "OUTROS" },
   { name: "Declaração Escolar", desc: "Declaração de matrícula escolar", credits: 1, available: false, icon: <ScrollText className="w-5 h-5" />, category: "OUTROS" },
 
-  // IMAGENS MANIPULADAS
-  { name: "CNH em cima da mesa", desc: "Mockup realista de CNH", credits: 1, available: false, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
-  { name: "RG em cima da mesa", desc: "Mockup realista de RG", credits: 1, available: false, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
-  { name: "Passaporte em cima da mesa", desc: "Mockup realista de Passaporte", credits: 1, available: false, icon: <Image className="w-5 h-5" />, category: "IMAGENS MANIPULADAS" },
 ];
 
-const categoryOrder = ["DOCUMENTOS DIGITAIS", "CARTEIRA ESTUDANTIL", "PDF", "ATESTADOS", "CERTIDÕES", "OUTROS", "IMAGENS MANIPULADAS"];
+const categoryOrder = ["DOCUMENTOS DIGITAIS", "PDF", "ATESTADOS", "CERTIDÕES", "OUTROS"];
 
 const Documents = () => {
   const navigate = useNavigate();
