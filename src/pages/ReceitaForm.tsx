@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Activity, CheckCircle2, Shuffle, Search, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Activity, CheckCircle2, Shuffle, Search, Plus, Trash2, Wand2, MapPin, Phone, Building2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
@@ -48,26 +49,103 @@ const ReceitaForm = () => {
   const [crm, setCrm] = useState("");
   const [ufMedico, setUfMedico] = useState("");
   const [especialidade, setEspecialidade] = useState("");
-  const [clinica, setClinica] = useState("");
   const [dataReceita, setDataReceita] = useState("");
   const [observacoes, setObservacoes] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+
+  // UPA/Hospital fields
+  const [nomeUpa, setNomeUpa] = useState("");
+  const [enderecoUpa, setEnderecoUpa] = useState("");
+  const [telefoneUpa, setTelefoneUpa] = useState("");
+  const [cnesUpa, setCnesUpa] = useState("");
 
   // Medicamentos
   const [medSearch, setMedSearch] = useState("");
   const [showMedResults, setShowMedResults] = useState(false);
   const [medicamentos, setMedicamentos] = useState<MedicamentoItem[]>([]);
 
-  const medResults = useMemo(() => {
+  // AI states
+  const [loadingMedAi, setLoadingMedAi] = useState(false);
+  const [aiMedResults, setAiMedResults] = useState<{ nome: string; tipo: string; dose: string }[]>([]);
+  const [loadingMedico, setLoadingMedico] = useState(false);
+  const [loadingUpa, setLoadingUpa] = useState(false);
+
+  const localMedResults = useMemo(() => {
     if (!medSearch || medSearch.length < 2) return [];
     const q = medSearch.toLowerCase();
     return MEDICAMENTOS_DATABASE.filter(m => m.nome.toLowerCase().includes(q) || m.tipo.toLowerCase().includes(q)).slice(0, 5);
   }, [medSearch]);
 
-  const addMedicamento = (med: typeof MEDICAMENTOS_DATABASE[0]) => {
+  const combinedMedResults = useMemo(() => {
+    const aiOnly = aiMedResults.filter(ai => !localMedResults.some(l => l.nome === ai.nome));
+    return [...localMedResults, ...aiOnly].slice(0, 8);
+  }, [localMedResults, aiMedResults]);
+
+  const searchMedWithAI = async () => {
+    if (!medSearch || medSearch.length < 2) return;
+    setLoadingMedAi(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("medical-ai", {
+        body: { type: "medicamento", query: medSearch }
+      });
+      if (error) throw error;
+      if (data?.results) {
+        setAiMedResults(data.results);
+        setShowMedResults(true);
+      }
+    } catch {
+      toast.error("Erro ao buscar medicamentos com IA");
+    } finally {
+      setLoadingMedAi(false);
+    }
+  };
+
+  const generateMedicoAI = async () => {
+    setLoadingMedico(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("medical-ai", {
+        body: { type: "medico", query: `Gere um médico ${especialidade || "clínico geral"} do estado ${ufMedico || "SP"}` }
+      });
+      if (error) throw error;
+      if (data?.nome) {
+        setNomeMedico(data.nome.toUpperCase());
+        setCrm(`CRM/${ufMedico || "SP"} ${data.crm}`);
+        if (data.especialidade) setEspecialidade(data.especialidade.toUpperCase());
+        toast.success("Dados do médico gerados pela IA!");
+      }
+    } catch {
+      toast.error("Erro ao gerar médico com IA");
+    } finally {
+      setLoadingMedico(false);
+    }
+  };
+
+  const generateUpaAI = async () => {
+    setLoadingUpa(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("medical-ai", {
+        body: { type: "upa", query: `Gere dados de uma UPA/Hospital no estado ${ufMedico || "SP"}` }
+      });
+      if (error) throw error;
+      if (data?.nome) {
+        setNomeUpa(data.nome.toUpperCase());
+        setEnderecoUpa(data.endereco);
+        setTelefoneUpa(data.telefone);
+        setCnesUpa(data.cnes);
+        toast.success("Dados da UPA gerados pela IA!");
+      }
+    } catch {
+      toast.error("Erro ao gerar UPA com IA");
+    } finally {
+      setLoadingUpa(false);
+    }
+  };
+
+  const addMedicamento = (med: { nome: string; dose: string }) => {
     setMedicamentos(prev => [...prev, { nome: med.nome, dose: med.dose }]);
     setMedSearch("");
     setShowMedResults(false);
+    setAiMedResults([]);
     toast.success(`${med.nome} adicionado!`);
   };
 
@@ -86,7 +164,7 @@ const ReceitaForm = () => {
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        {[{ icon: Shield, label: "Receita Segura", desc: "Com QR Code" },{ icon: Users, label: "IA Inteligente", desc: "Busca medicamentos" },{ icon: Clock, label: "Validade 45 Dias", desc: "Tempo garantido" }].map((f) => (
+        {[{ icon: Shield, label: "Receita Segura", desc: "Com QR Code" },{ icon: Users, label: "IA Inteligente", desc: "Medicamentos + UPA" },{ icon: Clock, label: "Validade 45 Dias", desc: "Tempo garantido" }].map((f) => (
           <div key={f.label} className="glass-card p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl navy-gradient flex items-center justify-center shrink-0"><f.icon className="w-5 h-5 text-primary-foreground" /></div>
             <div className="min-w-0"><p className="text-sm font-semibold text-foreground truncate">{f.label}</p><p className="text-xs text-muted-foreground">{f.desc}</p></div>
@@ -109,11 +187,12 @@ const ReceitaForm = () => {
       <div className="glass-card p-8 text-center space-y-2">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto"><Activity className="w-8 h-8 text-white" /></div>
         <h2 className="text-xl font-display font-bold text-primary">Receita Médica</h2>
-        <p className="text-sm text-muted-foreground">Receita médica digital com busca inteligente de medicamentos</p>
+        <p className="text-sm text-muted-foreground">Receita médica com IA inteligente para medicamentos, médicos e UPA</p>
       </div>
 
       {!showPreview ? (
         <>
+          {/* Dados do Paciente */}
           <div className="glass-card p-6 space-y-5">
             <div className="flex items-center gap-3 border-b border-border pb-4">
               <Activity className="w-5 h-5 text-primary" />
@@ -125,10 +204,17 @@ const ReceitaForm = () => {
             </div>
           </div>
 
+          {/* Dados do Médico */}
           <div className="glass-card p-6 space-y-5">
-            <div className="flex items-center gap-3 border-b border-border pb-4">
-              <Search className="w-5 h-5 text-primary" />
-              <h3 className="text-lg font-display font-bold text-foreground">Dados do Médico</h3>
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <div className="flex items-center gap-3">
+                <Search className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-display font-bold text-foreground">Dados do Médico</h3>
+              </div>
+              <Button variant="outline" size="sm" className="gap-1.5 border-accent/50 text-accent" onClick={generateMedicoAI} disabled={loadingMedico}>
+                {loadingMedico ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                Gerar com IA
+              </Button>
             </div>
             <div className="space-y-4">
               <div><Label className="text-sm font-semibold text-primary">Nome do Médico <span className="text-destructive">*</span></Label><Input placeholder="Ex: DR. CARLOS MENDES" value={nomeMedico} onChange={(e) => setNomeMedico(e.target.value.toUpperCase())} className="mt-1.5 bg-secondary/50" /></div>
@@ -149,32 +235,70 @@ const ReceitaForm = () => {
                 <Label className="text-sm font-semibold text-primary">Especialidade</Label>
                 <Select value={especialidade} onValueChange={setEspecialidade}><SelectTrigger className="mt-1.5 bg-secondary/50"><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{ESPECIALIDADES.map(e=><SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent></Select>
               </div>
-              <div><Label className="text-sm font-semibold text-primary">Clínica / Hospital</Label><Input placeholder="Ex: HOSPITAL SÃO LUCAS" value={clinica} onChange={(e) => setClinica(e.target.value.toUpperCase())} className="mt-1.5 bg-secondary/50" /></div>
               <div><Label className="text-sm font-semibold text-primary">Data da Receita</Label><Input placeholder="DD/MM/AAAA" value={dataReceita} onChange={(e) => setDataReceita(e.target.value)} className="mt-1.5 bg-secondary/50" /></div>
             </div>
           </div>
 
+          {/* Dados da UPA/Hospital */}
+          <div className="glass-card p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <div className="flex items-center gap-3">
+                <Building2 className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-display font-bold text-foreground">UPA / Hospital / Clínica</h3>
+              </div>
+              <Button variant="outline" size="sm" className="gap-1.5 border-accent/50 text-accent" onClick={generateUpaAI} disabled={loadingUpa}>
+                {loadingUpa ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                Gerar com IA
+              </Button>
+            </div>
+            <div className="space-y-4">
+              <div><Label className="text-sm font-semibold text-primary">Nome da UPA / Hospital <span className="text-destructive">*</span></Label><Input placeholder="Ex: UPA 24H SÃO MATEUS" value={nomeUpa} onChange={(e) => setNomeUpa(e.target.value.toUpperCase())} className="mt-1.5 bg-secondary/50" /></div>
+              <div><Label className="text-sm font-semibold text-primary">Endereço Completo <span className="text-destructive">*</span></Label>
+                <div className="relative mt-1.5">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input placeholder="Rua, Número, Bairro, Cidade - UF" value={enderecoUpa} onChange={(e) => setEnderecoUpa(e.target.value)} className="pl-10 bg-secondary/50" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><Label className="text-sm font-semibold text-primary">Telefone</Label>
+                  <div className="relative mt-1.5">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input placeholder="(00) 0000-0000" value={telefoneUpa} onChange={(e) => setTelefoneUpa(e.target.value)} className="pl-10 bg-secondary/50" />
+                  </div>
+                </div>
+                <div><Label className="text-sm font-semibold text-primary">CNES</Label><Input placeholder="0000000" value={cnesUpa} onChange={(e) => setCnesUpa(e.target.value)} className="mt-1.5 bg-secondary/50" /></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Medicamentos com IA */}
           <div className="glass-card p-6 space-y-5">
             <div className="flex items-center gap-3 border-b border-border pb-4">
               <Sparkles className="w-5 h-5 text-accent" />
-              <h3 className="text-lg font-display font-bold text-foreground">Medicamentos <span className="text-xs text-accent font-normal ml-2">✦ Busca Inteligente</span></h3>
+              <h3 className="text-lg font-display font-bold text-foreground">Medicamentos <span className="text-xs text-accent font-normal ml-2">✦ IA Inteligente</span></h3>
             </div>
             <div className="space-y-4">
               <div className="relative">
                 <Label className="text-sm font-semibold text-primary">Buscar Medicamento</Label>
-                <div className="relative mt-1.5">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Digite o nome do medicamento..."
-                    value={medSearch}
-                    onChange={(e) => { setMedSearch(e.target.value); setShowMedResults(true); }}
-                    onFocus={() => setShowMedResults(true)}
-                    className="pl-10 bg-secondary/50"
-                  />
+                <div className="relative mt-1.5 flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Digite sintomas ou nome do medicamento..."
+                      value={medSearch}
+                      onChange={(e) => { setMedSearch(e.target.value); setShowMedResults(true); }}
+                      onFocus={() => setShowMedResults(true)}
+                      className="pl-10 bg-secondary/50"
+                    />
+                  </div>
+                  <Button variant="outline" size="sm" className="shrink-0 gap-1.5 border-accent/50 text-accent" onClick={searchMedWithAI} disabled={loadingMedAi || medSearch.length < 2}>
+                    {loadingMedAi ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                    IA
+                  </Button>
                 </div>
-                {showMedResults && medResults.length > 0 && (
+                {showMedResults && combinedMedResults.length > 0 && (
                   <div className="absolute z-50 w-full mt-1 rounded-xl border border-border bg-popover shadow-xl max-h-60 overflow-y-auto">
-                    {medResults.map((med, i) => (
+                    {combinedMedResults.map((med, i) => (
                       <button key={i} className="w-full px-4 py-3 text-left hover:bg-accent/10 transition-colors border-b border-border/30 last:border-0"
                         onClick={() => addMedicamento(med)}>
                         <div className="flex items-center justify-between">
@@ -229,11 +353,18 @@ const ReceitaForm = () => {
           </div>
           <div className="rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 p-6 space-y-5 relative overflow-hidden">
             <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none"><Activity className="w-64 h-64" /></div>
+            {/* Header */}
             <div className="text-center space-y-1 border-b border-border pb-4 relative">
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">RECEITA MÉDICA</p>
-              <h3 className="text-lg font-display font-bold text-foreground">{clinica || "CLÍNICA MÉDICA"}</h3>
+              <h3 className="text-lg font-display font-bold text-foreground">{nomeUpa || "CLÍNICA MÉDICA"}</h3>
+              {enderecoUpa && <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1"><MapPin className="w-3 h-3" /> {enderecoUpa}</p>}
+              <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground">
+                {telefoneUpa && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {telefoneUpa}</span>}
+                {cnesUpa && <span>CNES: {cnesUpa}</span>}
+              </div>
               <p className="text-xs text-muted-foreground">{dataReceita}</p>
             </div>
+            {/* Body */}
             <div className="space-y-3 relative">
               <div className="grid grid-cols-2 gap-4">
                 <div><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Paciente</p><p className="text-sm font-bold text-foreground">{nomePaciente || "---"}</p></div>
@@ -254,7 +385,7 @@ const ReceitaForm = () => {
               {observacoes && <div className="border-t border-border pt-4"><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Observações</p><p className="text-sm text-foreground mt-1">{observacoes}</p></div>}
               <div className="border-t border-border pt-4 grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Médico</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Médico Responsável</p>
                   <p className="text-sm font-bold text-foreground">{nomeMedico || "---"}</p>
                   <p className="text-xs text-muted-foreground">{especialidade}</p>
                 </div>

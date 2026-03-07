@@ -5,32 +5,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Stethoscope, CheckCircle2, Shuffle, Search } from "lucide-react";
+import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Stethoscope, CheckCircle2, Shuffle, Search, Wand2, MapPin, Phone, Building2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
 const CID_DATABASE = [
-  { code: "J00", name: "Nasofaringite aguda (resfriado comum)" },
-  { code: "J06.9", name: "Infecção aguda das vias aéreas superiores" },
-  { code: "J11", name: "Influenza (gripe)" },
-  { code: "K29.7", name: "Gastrite não especificada" },
-  { code: "R51", name: "Cefaleia" },
-  { code: "M54.5", name: "Dor lombar baixa (lombalgia)" },
-  { code: "R10.4", name: "Dor abdominal" },
-  { code: "A09", name: "Gastroenterite infecciosa" },
-  { code: "N39.0", name: "Infecção do trato urinário" },
-  { code: "R50.9", name: "Febre não especificada" },
-  { code: "J02.9", name: "Faringite aguda" },
-  { code: "J03.9", name: "Amigdalite aguda" },
-  { code: "B34.9", name: "Infecção viral" },
-  { code: "R11", name: "Náusea e vômitos" },
-  { code: "G43.9", name: "Enxaqueca não especificada" },
-  { code: "F41.0", name: "Transtorno de pânico" },
-  { code: "F32.0", name: "Episódio depressivo leve" },
-  { code: "M79.1", name: "Mialgia" },
-  { code: "H10.9", name: "Conjuntivite" },
-  { code: "L30.9", name: "Dermatite não especificada" },
+  { code: "J00", name: "Nasofaringite aguda (resfriado comum)", days: 2 },
+  { code: "J06.9", name: "Infecção aguda das vias aéreas superiores", days: 3 },
+  { code: "J11", name: "Influenza (gripe)", days: 5 },
+  { code: "K29.7", name: "Gastrite não especificada", days: 2 },
+  { code: "R51", name: "Cefaleia", days: 1 },
+  { code: "M54.5", name: "Dor lombar baixa (lombalgia)", days: 3 },
+  { code: "R10.4", name: "Dor abdominal", days: 2 },
+  { code: "A09", name: "Gastroenterite infecciosa", days: 3 },
+  { code: "N39.0", name: "Infecção do trato urinário", days: 3 },
+  { code: "R50.9", name: "Febre não especificada", days: 2 },
+  { code: "J02.9", name: "Faringite aguda", days: 3 },
+  { code: "J03.9", name: "Amigdalite aguda", days: 3 },
+  { code: "B34.9", name: "Infecção viral", days: 3 },
+  { code: "R11", name: "Náusea e vômitos", days: 1 },
+  { code: "G43.9", name: "Enxaqueca não especificada", days: 2 },
+  { code: "F41.0", name: "Transtorno de pânico", days: 5 },
+  { code: "F32.0", name: "Episódio depressivo leve", days: 7 },
+  { code: "M79.1", name: "Mialgia", days: 2 },
+  { code: "H10.9", name: "Conjuntivite", days: 3 },
+  { code: "L30.9", name: "Dermatite não especificada", days: 2 },
 ];
 
 const ESPECIALIDADES = ["CLÍNICO GERAL", "CARDIOLOGISTA", "ORTOPEDISTA", "DERMATOLOGISTA", "NEUROLOGISTA", "GINECOLOGISTA", "PEDIATRA", "PSIQUIATRA", "OFTALMOLOGISTA", "OTORRINOLARINGOLOGISTA"];
@@ -54,15 +55,92 @@ const AtestadoForm = () => {
   const [dataAtestado, setDataAtestado] = useState("");
   const [horaAtendimento, setHoraAtendimento] = useState("");
   const [observacoes, setObservacoes] = useState("");
-  const [clinica, setClinica] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [showCidResults, setShowCidResults] = useState(false);
+
+  // UPA/Hospital fields
+  const [nomeUpa, setNomeUpa] = useState("");
+  const [enderecoUpa, setEnderecoUpa] = useState("");
+  const [telefoneUpa, setTelefoneUpa] = useState("");
+  const [cnesUpa, setCnesUpa] = useState("");
+
+  // AI loading states
+  const [loadingCidAi, setLoadingCidAi] = useState(false);
+  const [aiCidResults, setAiCidResults] = useState<{ code: string; name: string; days: number }[]>([]);
+  const [loadingMedico, setLoadingMedico] = useState(false);
+  const [loadingUpa, setLoadingUpa] = useState(false);
 
   const cidResults = useMemo(() => {
     if (!cidSearch || cidSearch.length < 2) return [];
     const q = cidSearch.toLowerCase();
     return CID_DATABASE.filter(c => c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)).slice(0, 5);
   }, [cidSearch]);
+
+  const combinedCidResults = useMemo(() => {
+    const local = cidResults.map(c => ({ ...c, days: c.days }));
+    const aiOnly = aiCidResults.filter(ai => !local.some(l => l.code === ai.code));
+    return [...local, ...aiOnly].slice(0, 8);
+  }, [cidResults, aiCidResults]);
+
+  const searchCidWithAI = async () => {
+    if (!cidSearch || cidSearch.length < 2) return;
+    setLoadingCidAi(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("medical-ai", {
+        body: { type: "cid", query: cidSearch }
+      });
+      if (error) throw error;
+      if (data?.results) {
+        setAiCidResults(data.results);
+        setShowCidResults(true);
+      }
+    } catch {
+      toast.error("Erro ao buscar CIDs com IA");
+    } finally {
+      setLoadingCidAi(false);
+    }
+  };
+
+  const generateMedicoAI = async () => {
+    setLoadingMedico(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("medical-ai", {
+        body: { type: "medico", query: `Gere um médico ${especialidade || "clínico geral"} do estado ${ufMedico || "SP"}` }
+      });
+      if (error) throw error;
+      if (data?.nome) {
+        setNomeMedico(data.nome.toUpperCase());
+        setCrm(`CRM/${ufMedico || "SP"} ${data.crm}`);
+        if (data.especialidade) setEspecialidade(data.especialidade.toUpperCase());
+        toast.success("Dados do médico gerados pela IA!");
+      }
+    } catch {
+      toast.error("Erro ao gerar médico com IA");
+    } finally {
+      setLoadingMedico(false);
+    }
+  };
+
+  const generateUpaAI = async () => {
+    setLoadingUpa(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("medical-ai", {
+        body: { type: "upa", query: `Gere dados de uma UPA/Hospital no estado ${ufMedico || "SP"}` }
+      });
+      if (error) throw error;
+      if (data?.nome) {
+        setNomeUpa(data.nome.toUpperCase());
+        setEnderecoUpa(data.endereco);
+        setTelefoneUpa(data.telefone);
+        setCnesUpa(data.cnes);
+        toast.success("Dados da UPA gerados pela IA!");
+      }
+    } catch {
+      toast.error("Erro ao gerar UPA com IA");
+    } finally {
+      setLoadingUpa(false);
+    }
+  };
 
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado!"); };
   const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
@@ -75,7 +153,7 @@ const AtestadoForm = () => {
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        {[{ icon: Shield, label: "Documento Seguro", desc: "Com QR Code" },{ icon: Users, label: "Processo Rápido", desc: "IA inteligente" },{ icon: Clock, label: "Validade 45 Dias", desc: "Tempo garantido" }].map((f) => (
+        {[{ icon: Shield, label: "Documento Seguro", desc: "Com QR Code" },{ icon: Users, label: "IA Inteligente", desc: "CID + Médico + UPA" },{ icon: Clock, label: "Validade 45 Dias", desc: "Tempo garantido" }].map((f) => (
           <div key={f.label} className="glass-card p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl navy-gradient flex items-center justify-center shrink-0"><f.icon className="w-5 h-5 text-primary-foreground" /></div>
             <div className="min-w-0"><p className="text-sm font-semibold text-foreground truncate">{f.label}</p><p className="text-xs text-muted-foreground">{f.desc}</p></div>
@@ -98,11 +176,12 @@ const AtestadoForm = () => {
       <div className="glass-card p-8 text-center space-y-2">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-destructive to-primary flex items-center justify-center mx-auto"><Stethoscope className="w-8 h-8 text-white" /></div>
         <h2 className="text-xl font-display font-bold text-primary">Atestado Médico</h2>
-        <p className="text-sm text-muted-foreground">Atestado médico com busca inteligente de CID</p>
+        <p className="text-sm text-muted-foreground">Atestado médico com IA inteligente para CID, médicos e UPA</p>
       </div>
 
       {!showPreview ? (
         <>
+          {/* Dados do Paciente */}
           <div className="glass-card p-6 space-y-5">
             <div className="flex items-center gap-3 border-b border-border pb-4">
               <Stethoscope className="w-5 h-5 text-primary" />
@@ -117,10 +196,17 @@ const AtestadoForm = () => {
             </div>
           </div>
 
+          {/* Dados do Médico */}
           <div className="glass-card p-6 space-y-5">
-            <div className="flex items-center gap-3 border-b border-border pb-4">
-              <Search className="w-5 h-5 text-primary" />
-              <h3 className="text-lg font-display font-bold text-foreground">Dados do Médico <span className="text-xs text-accent font-normal ml-2">✦ IA Inteligente</span></h3>
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <div className="flex items-center gap-3">
+                <Search className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-display font-bold text-foreground">Dados do Médico</h3>
+              </div>
+              <Button variant="outline" size="sm" className="gap-1.5 border-accent/50 text-accent" onClick={generateMedicoAI} disabled={loadingMedico}>
+                {loadingMedico ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                Gerar com IA
+              </Button>
             </div>
             <div className="space-y-4">
               <div><Label className="text-sm font-semibold text-primary">Nome do Médico <span className="text-destructive">*</span></Label><Input placeholder="Ex: DR. CARLOS MENDES" value={nomeMedico} onChange={(e) => setNomeMedico(e.target.value.toUpperCase())} className="mt-1.5 bg-secondary/50" /></div>
@@ -141,35 +227,74 @@ const AtestadoForm = () => {
                 <Label className="text-sm font-semibold text-primary">Especialidade</Label>
                 <Select value={especialidade} onValueChange={setEspecialidade}><SelectTrigger className="mt-1.5 bg-secondary/50"><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{ESPECIALIDADES.map(e=><SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent></Select>
               </div>
-              <div><Label className="text-sm font-semibold text-primary">Clínica / Hospital</Label><Input placeholder="Ex: HOSPITAL SÃO LUCAS" value={clinica} onChange={(e) => setClinica(e.target.value.toUpperCase())} className="mt-1.5 bg-secondary/50" /></div>
             </div>
           </div>
 
+          {/* Dados da UPA/Hospital */}
+          <div className="glass-card p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <div className="flex items-center gap-3">
+                <Building2 className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-display font-bold text-foreground">UPA / Hospital / Clínica</h3>
+              </div>
+              <Button variant="outline" size="sm" className="gap-1.5 border-accent/50 text-accent" onClick={generateUpaAI} disabled={loadingUpa}>
+                {loadingUpa ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                Gerar com IA
+              </Button>
+            </div>
+            <div className="space-y-4">
+              <div><Label className="text-sm font-semibold text-primary">Nome da UPA / Hospital <span className="text-destructive">*</span></Label><Input placeholder="Ex: UPA 24H SÃO MATEUS" value={nomeUpa} onChange={(e) => setNomeUpa(e.target.value.toUpperCase())} className="mt-1.5 bg-secondary/50" /></div>
+              <div><Label className="text-sm font-semibold text-primary">Endereço Completo <span className="text-destructive">*</span></Label>
+                <div className="relative mt-1.5">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input placeholder="Rua, Número, Bairro, Cidade - UF" value={enderecoUpa} onChange={(e) => setEnderecoUpa(e.target.value)} className="pl-10 bg-secondary/50" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div><Label className="text-sm font-semibold text-primary">Telefone</Label>
+                  <div className="relative mt-1.5">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input placeholder="(00) 0000-0000" value={telefoneUpa} onChange={(e) => setTelefoneUpa(e.target.value)} className="pl-10 bg-secondary/50" />
+                  </div>
+                </div>
+                <div><Label className="text-sm font-semibold text-primary">CNES</Label><Input placeholder="0000000" value={cnesUpa} onChange={(e) => setCnesUpa(e.target.value)} className="mt-1.5 bg-secondary/50" /></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Diagnóstico com IA */}
           <div className="glass-card p-6 space-y-5">
             <div className="flex items-center gap-3 border-b border-border pb-4">
               <Sparkles className="w-5 h-5 text-accent" />
-              <h3 className="text-lg font-display font-bold text-foreground">Diagnóstico <span className="text-xs text-accent font-normal ml-2">✦ Busca Inteligente</span></h3>
+              <h3 className="text-lg font-display font-bold text-foreground">Diagnóstico <span className="text-xs text-accent font-normal ml-2">✦ IA Inteligente</span></h3>
             </div>
             <div className="space-y-4">
               <div className="relative">
                 <Label className="text-sm font-semibold text-primary">Buscar CID (Código da Doença) <span className="text-destructive">*</span></Label>
-                <div className="relative mt-1.5">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Digite o código ou nome da doença..."
-                    value={cidSearch}
-                    onChange={(e) => { setCidSearch(e.target.value); setShowCidResults(true); }}
-                    onFocus={() => setShowCidResults(true)}
-                    className="pl-10 bg-secondary/50"
-                  />
+                <div className="relative mt-1.5 flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Digite sintomas ou nome da doença..."
+                      value={cidSearch}
+                      onChange={(e) => { setCidSearch(e.target.value); setShowCidResults(true); }}
+                      onFocus={() => setShowCidResults(true)}
+                      className="pl-10 bg-secondary/50"
+                    />
+                  </div>
+                  <Button variant="outline" size="sm" className="shrink-0 gap-1.5 border-accent/50 text-accent" onClick={searchCidWithAI} disabled={loadingCidAi || cidSearch.length < 2}>
+                    {loadingCidAi ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                    IA
+                  </Button>
                 </div>
-                {showCidResults && cidResults.length > 0 && (
-                  <div className="absolute z-50 w-full mt-1 rounded-xl border border-border bg-popover shadow-xl max-h-48 overflow-y-auto">
-                    {cidResults.map((cid) => (
+                {showCidResults && combinedCidResults.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 rounded-xl border border-border bg-popover shadow-xl max-h-60 overflow-y-auto">
+                    {combinedCidResults.map((cid) => (
                       <button key={cid.code} className="w-full px-4 py-3 text-left hover:bg-accent/10 transition-colors flex items-center gap-3 border-b border-border/30 last:border-0"
-                        onClick={() => { setCidSelecionado(cid); setCidSearch(`${cid.code} - ${cid.name}`); setShowCidResults(false); }}>
+                        onClick={() => { setCidSelecionado({ code: cid.code, name: cid.name }); setCidSearch(`${cid.code} - ${cid.name}`); setDiasAfastamento(String(cid.days)); setShowCidResults(false); setAiCidResults([]); }}>
                         <span className="text-xs font-mono font-bold text-primary bg-primary/10 px-2 py-1 rounded">{cid.code}</span>
-                        <span className="text-sm text-foreground">{cid.name}</span>
+                        <span className="text-sm text-foreground flex-1">{cid.name}</span>
+                        <span className="text-[10px] text-muted-foreground">{cid.days}d</span>
                       </button>
                     ))}
                   </div>
@@ -205,16 +330,24 @@ const AtestadoForm = () => {
           </div>
           <div className="rounded-2xl border-2 border-destructive/30 bg-gradient-to-br from-card via-card to-destructive/5 p-6 space-y-5 relative overflow-hidden">
             <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none"><Stethoscope className="w-64 h-64" /></div>
+            {/* Header */}
             <div className="text-center space-y-1 border-b border-border pb-4 relative">
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-destructive">ATESTADO MÉDICO</p>
-              <h3 className="text-lg font-display font-bold text-foreground">{clinica || "CLÍNICA MÉDICA"}</h3>
+              <h3 className="text-lg font-display font-bold text-foreground">{nomeUpa || "CLÍNICA MÉDICA"}</h3>
+              {enderecoUpa && <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1"><MapPin className="w-3 h-3" /> {enderecoUpa}</p>}
+              <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground">
+                {telefoneUpa && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {telefoneUpa}</span>}
+                {cnesUpa && <span>CNES: {cnesUpa}</span>}
+              </div>
               <p className="text-xs text-muted-foreground">{dataAtestado} às {horaAtendimento}</p>
             </div>
+            {/* Body */}
             <div className="space-y-4 relative">
               <div className="p-4 rounded-xl bg-card border border-border">
                 <p className="text-sm text-foreground leading-relaxed">
                   Atesto para os devidos fins que o(a) paciente <span className="font-bold">{nomePaciente || "___"}</span>,
                   portador(a) do CPF <span className="font-mono font-bold">{cpfPaciente || "___"}</span>,
+                  nascido(a) em <span className="font-bold">{dataNascPaciente || "___"}</span>,
                   foi atendido(a) nesta data e necessita de <span className="font-bold text-primary">{diasAfastamento || "___"} dia(s)</span> de afastamento
                   de suas atividades.
                 </p>
@@ -228,7 +361,7 @@ const AtestadoForm = () => {
               {observacoes && <div className="border-t border-border pt-4"><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Observações</p><p className="text-sm text-foreground mt-1">{observacoes}</p></div>}
               <div className="border-t border-border pt-4 grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Médico</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Médico Responsável</p>
                   <p className="text-sm font-bold text-foreground">{nomeMedico || "---"}</p>
                   <p className="text-xs text-muted-foreground">{especialidade}</p>
                 </div>
