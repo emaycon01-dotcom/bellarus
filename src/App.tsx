@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import DashboardLayout from "./components/DashboardLayout";
@@ -46,7 +48,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="documents" element={<Documents />} />
             <Route path="documents/cnh" element={<CnhForm />} />
@@ -71,9 +73,9 @@ const App = () => (
             <Route path="resellers" element={<Resellers />} />
             <Route path="resellers/payment" element={<ResellerPayment />} />
             <Route path="support" element={<Support />} />
-            <Route path="admin" element={<AdminPanel />} />
-            <Route path="admin/users" element={<AdminUsers />} />
-            <Route path="admin/finance" element={<AdminFinance />} />
+            <Route path="admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+            <Route path="admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+            <Route path="admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
