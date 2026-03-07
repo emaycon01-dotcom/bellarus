@@ -583,10 +583,8 @@ const CnhForm = () => {
       </div>
 
       {/* Preview Button */}
-      <div className="glass-card p-6 bg-muted/30 flex items-center justify-center gap-3">
-        <Button variant="outline" size="lg" className="gap-2 border-accent/50 text-accent" onClick={fillTest}><Sparkles className="w-5 h-5" /> Teste</Button>
+      <div className="flex items-center justify-center">
         <Button variant="outline" size="lg" className="gap-2 border-primary/50 text-primary hover:bg-primary/10" onClick={handlePreview}><Eye className="w-5 h-5" /> Gerar Preview</Button>
-        <Button variant="outline" size="lg" className="gap-2 border-destructive/50 text-destructive" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
       </div>
 
       {/* Important Info */}
