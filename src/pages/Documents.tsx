@@ -84,7 +84,7 @@ const Documents = () => {
               >
                 {/* New badge */}
                 {mod.isNew && (
-                  <span className="absolute top-3 right-3 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center gap-1">
+                  <span className="absolute top-3 right-3 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-success/20 text-success flex items-center gap-1">
                     ✦ Novo
                   </span>
                 )}
