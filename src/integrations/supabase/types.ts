@@ -14,13 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      credit_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          pix_code: string | null
+          status: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          pix_code?: string | null
+          status?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          pix_code?: string | null
+          status?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          credits: number
+          id: string
+          name: string
+          plan: string
+        }
+        Insert: {
+          created_at?: string
+          credits?: number
+          id: string
+          name?: string
+          plan?: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          id?: string
+          name?: string
+          plan?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      confirm_credit_purchase: {
+        Args: { transaction_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
