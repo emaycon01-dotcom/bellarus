@@ -100,7 +100,11 @@ const CertificadoEscolarForm = () => {
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
       <div className="flex items-center justify-between">
         <Button variant="outline" onClick={() => navigate("/dashboard/documents")} className="gap-2"><ArrowLeft className="w-4 h-4" />Voltar</Button>
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-primary/20 text-primary"><Sparkles className="w-3 h-3" />1 crédito</span>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5 border-accent/50 text-accent text-xs h-8 px-3" onClick={fillTest}><Zap className="w-3.5 h-3.5" /> Teste</Button>
+          <Button variant="outline" size="sm" className="gap-1.5 border-destructive/50 text-destructive text-xs h-8 px-3" onClick={clearAll}><Trash2 className="w-3.5 h-3.5" /> Excluir</Button>
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-primary/20 text-primary"><Sparkles className="w-3 h-3" />1 crédito</span>
+        </div>
       </div>
       <div className="glass-card p-8 text-center space-y-2">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-success to-primary flex items-center justify-center mx-auto"><BookOpen className="w-8 h-8 text-white" /></div>
@@ -129,11 +133,7 @@ const CertificadoEscolarForm = () => {
         <div><Label className="text-sm font-semibold text-primary">Data Emissão</Label><Input value={dataEmissao} onChange={(e) => setDataEmissao(e.target.value)} placeholder="DD/MM/AAAA" className="mt-1.5 bg-secondary/50" /></div>
         <Button variant="outline" onClick={handleAIFill} disabled={loading} className="w-full gap-2 border-accent/50 text-accent hover:bg-accent/10"><Wand2 className="w-4 h-4" />{loading ? "Gerando..." : "Preencher dados da escola com IA"}</Button>
       </div>
-      <div className="flex gap-3">
-        <Button variant="outline" className="gap-2 border-accent/50 text-accent flex-1" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
-        <Button onClick={handlePreview} className="flex-[2] navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
-        <Button variant="outline" className="gap-2 border-destructive/50 text-destructive flex-1" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
-      </div>
+      <Button onClick={handlePreview} className="w-full navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
     </div>
   );
 };
