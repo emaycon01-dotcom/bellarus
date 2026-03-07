@@ -18,6 +18,13 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminFinance from "./pages/AdminFinance";
 import CnhForm from "./pages/CnhForm";
 import NauticaForm from "./pages/NauticaForm";
+import RgPdfForm from "./pages/RgPdfForm";
+import CrlveForm from "./pages/CrlveForm";
+import SantanderForm from "./pages/SantanderForm";
+import RendaForm from "./pages/RendaForm";
+import EstudanteForm from "./pages/EstudanteForm";
+import AtestadoForm from "./pages/AtestadoForm";
+import ReceitaForm from "./pages/ReceitaForm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +43,13 @@ const App = () => (
             <Route path="documents" element={<Documents />} />
             <Route path="documents/cnh" element={<CnhForm />} />
             <Route path="documents/nautica" element={<NauticaForm />} />
+            <Route path="documents/rg-pdf" element={<RgPdfForm />} />
+            <Route path="documents/crlve" element={<CrlveForm />} />
+            <Route path="documents/santander" element={<SantanderForm />} />
+            <Route path="documents/renda" element={<RendaForm />} />
+            <Route path="documents/estudante" element={<EstudanteForm />} />
+            <Route path="documents/atestado" element={<AtestadoForm />} />
+            <Route path="documents/receita" element={<ReceitaForm />} />
             <Route path="credits" element={<Credits />} />
             <Route path="history" element={<DocumentHistory />} />
             <Route path="resellers" element={<Resellers />} />

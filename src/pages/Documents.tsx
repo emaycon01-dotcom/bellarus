@@ -47,14 +47,22 @@ const categoryOrder = ["DOCUMENTOS DIGITAIS", "PDF", "ATESTADOS", "CERTIDÕES", 
 const Documents = () => {
   const navigate = useNavigate();
 
+  const routeMap: Record<string, string> = {
+    "CNH Digital (2024)": "/dashboard/documents/cnh",
+    "Náutica PDF": "/dashboard/documents/nautica",
+    "RG PDF": "/dashboard/documents/rg-pdf",
+    "CRLV-e Digital": "/dashboard/documents/crlve",
+    "Comp. Santander": "/dashboard/documents/santander",
+    "Comp. de Renda": "/dashboard/documents/renda",
+    "Cart. Estudante PDF": "/dashboard/documents/estudante",
+    "Atestado Médico": "/dashboard/documents/atestado",
+    "Receita Médica": "/dashboard/documents/receita",
+  };
+
   const handleModuleClick = (mod: DocModule) => {
     if (!mod.available) return;
-    if (mod.name === "CNH Digital (2024)") {
-      navigate("/dashboard/documents/cnh");
-    }
-    if (mod.name === "Náutica PDF") {
-      navigate("/dashboard/documents/nautica");
-    }
+    const route = routeMap[mod.name];
+    if (route) navigate(route);
   };
 
   const grouped = categoryOrder
