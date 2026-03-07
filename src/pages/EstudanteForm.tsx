@@ -61,7 +61,11 @@ const EstudanteForm = () => {
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
       <div className="flex items-center justify-between">
         <Button variant="outline" onClick={() => navigate("/dashboard/documents")} className="gap-2"><ArrowLeft className="w-4 h-4" /> Voltar</Button>
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-primary/20 text-primary"><Sparkles className="w-3 h-3" /> 1 Crédito</span>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5 border-accent/50 text-accent text-xs h-8 px-3" onClick={fillTest}><Zap className="w-3.5 h-3.5" /> Teste</Button>
+          <Button variant="outline" size="sm" className="gap-1.5 border-destructive/50 text-destructive text-xs h-8 px-3" onClick={clearAll}><Trash2 className="w-3.5 h-3.5" /> Excluir</Button>
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-primary/20 text-primary"><Sparkles className="w-3 h-3" /> 1 Crédito</span>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
@@ -154,9 +158,7 @@ const EstudanteForm = () => {
           </div>
 
           <div className="glass-card p-6 bg-muted/30 flex items-center justify-center gap-3">
-            <Button variant="outline" size="lg" className="gap-2 border-accent/50 text-accent" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
             <Button size="lg" className="gap-2 bg-gradient-to-r from-warning to-destructive text-white" onClick={handlePreview}><Eye className="w-5 h-5" /> Gerar Preview</Button>
-            <Button variant="outline" size="lg" className="gap-2 border-destructive/50 text-destructive" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
           </div>
         </>
       ) : (
