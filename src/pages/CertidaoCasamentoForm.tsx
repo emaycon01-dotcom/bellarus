@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ScrollText, Sparkles, Eye, Download, Wand2, Shuffle } from "lucide-react";
+import { ArrowLeft, ScrollText, Sparkles, Eye, Download, Wand2, Shuffle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -52,6 +52,18 @@ const CertidaoCasamentoForm = () => {
     setLoading(false);
   };
 
+  const fillTest = () => {
+    setNomeConjuge1("MARCOS ANTÔNIO PEREIRA"); setNomeConjuge2("JULIANA SOUZA FERREIRA");
+    setDataCasamento("15/06/2025"); setRegimeBens("Comunhão Parcial de Bens");
+    setLocalCasamento("SÃO PAULO"); setUf("SP"); setCartorio("2º CARTÓRIO DE REGISTRO CIVIL DE SÃO PAULO");
+    setMatricula(generateDigits(32)); setLivro("B-089"); setFolha("234"); setTermo("56789"); setDataRegistro("20/06/2025");
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setNomeConjuge1(""); setNomeConjuge2(""); setDataCasamento(""); setRegimeBens("");
+    setLocalCasamento(""); setUf(""); setCartorio(""); setMatricula(""); setLivro(""); setFolha(""); setTermo(""); setDataRegistro("");
+    toast.success("Campos limpos!");
+  };
   const handlePreview = () => {
     if (!nomeConjuge1 || !nomeConjuge2 || !dataCasamento) { toast.error("Preencha os campos obrigatórios."); return; }
     setStep("preview");
@@ -120,7 +132,11 @@ const CertidaoCasamentoForm = () => {
         <div><Label className="text-sm font-semibold text-primary">Data do Registro</Label><Input value={dataRegistro} onChange={(e) => setDataRegistro(e.target.value)} placeholder="DD/MM/AAAA" className="mt-1.5 bg-secondary/50" /></div>
         <Button variant="outline" onClick={handleAIFill} disabled={loading} className="w-full gap-2 border-accent/50 text-accent hover:bg-accent/10"><Wand2 className="w-4 h-4" />{loading ? "Gerando..." : "Preencher dados do cartório com IA"}</Button>
       </div>
-      <Button onClick={handlePreview} className="w-full navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
+      <div className="flex gap-3">
+        <Button variant="outline" className="gap-2 border-accent/50 text-accent flex-1" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
+        <Button onClick={handlePreview} className="flex-[2] navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
+        <Button variant="outline" className="gap-2 border-destructive/50 text-destructive flex-1" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
+      </div>
     </div>
   );
 };

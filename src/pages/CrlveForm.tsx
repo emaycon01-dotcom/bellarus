@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Shield, Users, Clock, Shuffle, Sparkles, Eye, Car, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Shield, Users, Clock, Shuffle, Sparkles, Eye, Car, CheckCircle2, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
@@ -37,6 +37,20 @@ const CrlveForm = () => {
   const [exercicio, setExercicio] = useState("2024");
   const [showPreview, setShowPreview] = useState(false);
 
+  const fillTest = () => {
+    setPlaca(generatePlaca()); setRenavam(generateRenavam()); setChassi(`9BW${generateDigits(14)}`);
+    setMarca("VOLKSWAGEN"); setModelo("GOL 1.0"); setAnoFab("2022"); setAnoMod("2023"); setCor("PRATA");
+    setCombustivel("FLEX"); setTipoVeiculo("AUTOMÓVEL"); setUf("SP"); setMunicipio("SÃO PAULO");
+    setNomeProprietario("ROBERTO CARLOS SILVA"); setCpfProprietario("789.012.345-67");
+    setDataEmissao("10/01/2024"); setExercicio("2024");
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setPlaca(""); setRenavam(""); setChassi(""); setMarca(""); setModelo(""); setAnoFab(""); setAnoMod("");
+    setCor(""); setCombustivel(""); setTipoVeiculo(""); setUf(""); setMunicipio(""); setNomeProprietario("");
+    setCpfProprietario(""); setDataEmissao(""); setExercicio("2024");
+    toast.success("Campos limpos!");
+  };
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado!"); };
   const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
 
@@ -149,8 +163,10 @@ const CrlveForm = () => {
             </div>
           </div>
 
-          <div className="glass-card p-6 bg-muted/30 text-center">
+          <div className="glass-card p-6 bg-muted/30 flex items-center justify-center gap-3">
+            <Button variant="outline" size="lg" className="gap-2 border-accent/50 text-accent" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
             <Button size="lg" className="gap-2 bg-gradient-to-r from-primary to-ring text-white" onClick={handlePreview}><Eye className="w-5 h-5" /> Gerar Preview</Button>
+            <Button variant="outline" size="lg" className="gap-2 border-destructive/50 text-destructive" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
           </div>
         </>
       ) : (

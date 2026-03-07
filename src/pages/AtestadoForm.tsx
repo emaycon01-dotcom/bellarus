@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Stethoscope, CheckCircle2, Shuffle, Search, Wand2, MapPin, Phone, Building2, Loader2, Download } from "lucide-react";
+import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Stethoscope, CheckCircle2, Shuffle, Search, Wand2, MapPin, Building2, Loader2, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import atestadoTemplate from "@/assets/atestado-template.png";
@@ -263,6 +263,32 @@ const AtestadoForm = () => {
     }
   }, [showPreview, drawAtestado]);
 
+  const fillTest = () => {
+    setNomePaciente("DAIANI MANSANARI DOS SANTOS");
+    setCnsPaciente("40274054809");
+    setNomeUpa("UPA 24H ITAQUERA - CONSULTÓRIOS");
+    setEnderecoUpa("Av. Miguel Ignácio Curi, 44 - Arthur Alvim, São Paulo - SP");
+    setCepUpa("08295005");
+    setNomeMedico("DR. ABDO LAFIT FARES");
+    setCrm("163120");
+    setUfMedico("SP");
+    setEspecialidade("CLÍNICO GERAL");
+    setCidSelecionado({ code: "A90", name: "Dengue" });
+    setCidSearch("A90 - Dengue");
+    setDiasAfastamento("7");
+    setDataAtestado("16/02/2026");
+    setHoraAtendimento("09:19");
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+
+  const clearAll = () => {
+    setNomePaciente(""); setCnsPaciente(""); setNomeUpa(""); setEnderecoUpa(""); setCepUpa("");
+    setNomeMedico(""); setCrm(""); setUfMedico(""); setEspecialidade("");
+    setCidSelecionado(null); setCidSearch(""); setDiasAfastamento("");
+    setDataAtestado(""); setHoraAtendimento("");
+    toast.success("Campos limpos!");
+  };
+
   const handlePreview = () => {
     if (!templateImgRef.current) {
       toast.error("Template ainda carregando, aguarde...");
@@ -438,8 +464,10 @@ const AtestadoForm = () => {
             </div>
           </div>
 
-          <div className="glass-card p-6 bg-muted/30 text-center">
+          <div className="glass-card p-6 bg-muted/30 flex items-center justify-center gap-3">
+            <Button variant="outline" size="lg" className="gap-2 border-accent/50 text-accent" onClick={fillTest}><Sparkles className="w-5 h-5" /> Teste</Button>
             <Button size="lg" className="gap-2 bg-gradient-to-r from-destructive to-primary text-white" onClick={handlePreview}><Eye className="w-5 h-5" /> Gerar Preview</Button>
+            <Button variant="outline" size="lg" className="gap-2 border-destructive/50 text-destructive" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
           </div>
         </>
       ) : (

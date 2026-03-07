@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Heart, Sparkles, Eye, Download, Wand2, Shuffle } from "lucide-react";
+import { ArrowLeft, Heart, Sparkles, Eye, Download, Wand2, Shuffle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -58,6 +58,22 @@ const CertidaoNascimentoForm = () => {
     setLoading(false);
   };
 
+  const fillTest = () => {
+    setNomeCompleto("GABRIEL HENRIQUE SILVA SANTOS"); setDataNascimento("10/03/2024"); setHoraNascimento("08:45");
+    setSexo("Masculino"); setLocalNascimento("SÃO PAULO"); setUf("SP");
+    setNomePai("CARLOS EDUARDO SILVA"); setNomeMae("AMANDA SANTOS SILVA");
+    setAvoPaterno("JOSÉ CARLOS SILVA"); setAvoPaterna("MARIA HELENA SILVA");
+    setAvoMaterno("ANTÔNIO SANTOS"); setAvoMaterna("ROSA MARIA SANTOS");
+    setMatricula(generateDigits(32)); setCartorio("1º OFÍCIO DE REGISTRO CIVIL DE SÃO PAULO");
+    setLivro("A-245"); setFolha("123"); setTermo("45678"); setDataRegistro("15/03/2024");
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setNomeCompleto(""); setDataNascimento(""); setHoraNascimento(""); setSexo(""); setLocalNascimento("");
+    setUf(""); setNomePai(""); setNomeMae(""); setAvoPaterno(""); setAvoPaterna(""); setAvoMaterno("");
+    setAvoMaterna(""); setMatricula(""); setCartorio(""); setLivro(""); setFolha(""); setTermo(""); setDataRegistro("");
+    toast.success("Campos limpos!");
+  };
   const handlePreview = () => {
     if (!nomeCompleto || !dataNascimento || !nomeMae) { toast.error("Preencha os campos obrigatórios."); return; }
     setStep("preview");
@@ -140,7 +156,11 @@ const CertidaoNascimentoForm = () => {
         <div><Label className="text-sm font-semibold text-primary">Data do Registro</Label><Input value={dataRegistro} onChange={(e) => setDataRegistro(e.target.value)} placeholder="DD/MM/AAAA" className="mt-1.5 bg-secondary/50" /></div>
         <Button variant="outline" onClick={handleAIFill} disabled={loading} className="w-full gap-2 border-accent/50 text-accent hover:bg-accent/10"><Wand2 className="w-4 h-4" />{loading ? "Gerando..." : "Preencher dados do cartório com IA"}</Button>
       </div>
-      <Button onClick={handlePreview} className="w-full navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
+      <div className="flex gap-3">
+        <Button variant="outline" className="gap-2 border-accent/50 text-accent flex-1" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
+        <Button onClick={handlePreview} className="flex-[2] navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
+        <Button variant="outline" className="gap-2 border-destructive/50 text-destructive flex-1" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
+      </div>
     </div>
   );
 };

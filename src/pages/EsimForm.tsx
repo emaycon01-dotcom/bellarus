@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Smartphone, Sparkles, Eye, Download, Shuffle } from "lucide-react";
+import { ArrowLeft, Smartphone, Sparkles, Eye, Download, Shuffle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 const generateDigits = (len: number) => Array.from({ length: len }, () => Math.floor(Math.random() * 10)).join("");
@@ -37,6 +37,16 @@ const EsimForm = () => {
     return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
   };
 
+  const fillTest = () => {
+    setOperadora("Claro"); setNumero("(11) 99876-5432"); setIccid(generateDigits(20));
+    setImei(generateDigits(15)); setPlano("Controle 15GB"); setNomeCliente("AMANDA COSTA RIBEIRO");
+    setCpf("345.678.901-23");
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setOperadora(""); setNumero(""); setIccid(""); setImei(""); setPlano(""); setNomeCliente(""); setCpf("");
+    toast.success("Campos limpos!");
+  };
   const handlePreview = () => {
     if (!nomeCliente || !operadora || !numero) { toast.error("Preencha os campos obrigatórios."); return; }
     setStep("preview");
@@ -94,7 +104,11 @@ const EsimForm = () => {
         </div>
         <div><Label className="text-sm font-semibold text-primary">Plano</Label><Input value={plano} onChange={(e) => setPlano(e.target.value)} placeholder="Ex: Controle 15GB" className="mt-1.5 bg-secondary/50" /></div>
       </div>
-      <Button onClick={handlePreview} className="w-full navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
+      <div className="flex gap-3">
+        <Button variant="outline" className="gap-2 border-accent/50 text-accent flex-1" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
+        <Button onClick={handlePreview} className="flex-[2] navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
+        <Button variant="outline" className="gap-2 border-destructive/50 text-destructive flex-1" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
+      </div>
     </div>
   );
 };

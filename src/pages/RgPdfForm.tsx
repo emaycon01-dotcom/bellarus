@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Shield, Users, Clock, CreditCard, Shuffle, ImagePlus, CheckCircle2, Sparkles, Eye, UserCircle, FileCheck, Contact } from "lucide-react";
+import { ArrowLeft, Shield, Users, Clock, CreditCard, Shuffle, ImagePlus, CheckCircle2, Sparkles, Eye, UserCircle, FileCheck, Contact, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
@@ -53,6 +53,19 @@ const RgPdfForm = () => {
     reader.readAsDataURL(file);
   };
 
+  const fillTest = () => {
+    setCpf("456.789.012-34"); setNomeCompleto("ANA BEATRIZ FERREIRA LIMA"); setRg(generateDigits(9));
+    setUf("SP"); setGenero("Feminino"); setNacionalidade("BRASILEIRA"); setDataNascimento("22/08/1995");
+    setNaturalidade("SÃO PAULO"); setDataEmissao("15/03/2023"); setOrgaoEmissor("SSP/SP");
+    setNomePai("JOSÉ FERREIRA LIMA"); setNomeMae("MARIA APARECIDA FERREIRA");
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setCpf(""); setNomeCompleto(""); setRg(""); setUf(""); setGenero(""); setNacionalidade("");
+    setDataNascimento(""); setNaturalidade(""); setDataEmissao(""); setOrgaoEmissor("");
+    setNomePai(""); setNomeMae(""); setFotoPreview(null); setAssinaturaPreview(null);
+    toast.success("Campos limpos!");
+  };
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado com sucesso!"); };
   const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
 
@@ -195,10 +208,10 @@ const RgPdfForm = () => {
               </div>
             </div>
           </div>
-          <div className="glass-card p-6 bg-muted/30 text-center">
-            <Button size="lg" className="gap-2 bg-gradient-to-r from-success to-primary text-white" onClick={handlePreview}>
-              <Eye className="w-5 h-5" /> Gerar Preview
-            </Button>
+          <div className="glass-card p-6 bg-muted/30 flex items-center justify-center gap-3">
+            <Button variant="outline" size="lg" className="gap-2 border-accent/50 text-accent" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
+            <Button size="lg" className="gap-2 bg-gradient-to-r from-primary to-accent text-white" onClick={handlePreview}><Eye className="w-5 h-5" /> Gerar Preview</Button>
+            <Button variant="outline" size="lg" className="gap-2 border-destructive/50 text-destructive" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
           </div>
         </>
       ) : (

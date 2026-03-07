@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Activity, CheckCircle2, Shuffle, Search, Plus, Trash2, Wand2, MapPin, Phone, Building2, Loader2 } from "lucide-react";
+import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Activity, CheckCircle2, Shuffle, Search, Plus, Trash2, Wand2, MapPin, Phone, Building2, Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -153,6 +153,20 @@ const ReceitaForm = () => {
     setMedicamentos(prev => prev.filter((_, i) => i !== index));
   };
 
+  const fillTest = () => {
+    setNomePaciente("MARIA SILVA SANTOS"); setCpfPaciente("123.456.789-00"); setNomeMedico("DR. CARLOS HENRIQUE OLIVEIRA");
+    setCrm("CRM/SP 184523"); setUfMedico("SP"); setEspecialidade("CLÍNICO GERAL"); setDataReceita("15/03/2026");
+    setNomeUpa("UPA 24H VILA PRUDENTE"); setEnderecoUpa("Rua do Oratório, 1500 - Vila Prudente, SP");
+    setTelefoneUpa("(11) 2061-8022"); setCnesUpa("2078015");
+    setMedicamentos([{ nome: "Amoxicilina 500mg", dose: "1 cápsula de 8 em 8 horas por 7 dias" }, { nome: "Paracetamol 750mg", dose: "1 comprimido de 6 em 6 horas se dor" }]);
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setNomePaciente(""); setCpfPaciente(""); setNomeMedico(""); setCrm(""); setUfMedico(""); setEspecialidade("");
+    setDataReceita(""); setObservacoes(""); setNomeUpa(""); setEnderecoUpa(""); setTelefoneUpa(""); setCnesUpa("");
+    setMedicamentos([]); setMedSearch(""); setAiMedResults([]);
+    toast.success("Campos limpos!");
+  };
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado!"); };
   const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
 
@@ -338,8 +352,10 @@ const ReceitaForm = () => {
             </div>
           </div>
 
-          <div className="glass-card p-6 bg-muted/30 text-center">
+          <div className="glass-card p-6 bg-muted/30 flex items-center justify-center gap-3">
+            <Button variant="outline" size="lg" className="gap-2 border-accent/50 text-accent" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
             <Button size="lg" className="gap-2 bg-gradient-to-r from-primary to-accent text-white" onClick={handlePreview}><Eye className="w-5 h-5" /> Gerar Preview</Button>
+            <Button variant="outline" size="lg" className="gap-2 border-destructive/50 text-destructive" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
           </div>
         </>
       ) : (

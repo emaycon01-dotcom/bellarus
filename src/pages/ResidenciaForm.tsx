@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Home, Sparkles, Eye, Download, Wand2 } from "lucide-react";
+import { ArrowLeft, Home, Sparkles, Eye, Download, Wand2, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -72,6 +72,19 @@ const ResidenciaForm = () => {
     setLoading(false);
   };
 
+  const fillTest = () => {
+    setTipoComprovante("Conta de Energia"); setNomeCompleto("PATRICIA SOUZA LIMA"); setCpf("123.456.789-00");
+    setRua("RUA DAS ACÁCIAS"); setNumero("456"); setComplemento("APTO 12"); setBairro("JARDIM PAULISTA");
+    setCidade("SÃO PAULO"); setUf("SP"); setCep("01310-100"); setMesReferencia("MARÇO/2026");
+    setValor("R$ 185,50"); setCodigoCliente(generateDigits(10)); setEmpresa("ENEL DISTRIBUIÇÃO SÃO PAULO");
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setTipoComprovante(""); setNomeCompleto(""); setCpf(""); setRua(""); setNumero(""); setComplemento("");
+    setBairro(""); setCidade(""); setUf(""); setCep(""); setMesReferencia(""); setValor("");
+    setCodigoCliente(""); setEmpresa("");
+    toast.success("Campos limpos!");
+  };
   const handlePreview = () => {
     if (!nomeCompleto || !rua || !numero || !cidade || !uf) { toast.error("Preencha os campos obrigatórios."); return; }
     setStep("preview");
@@ -154,7 +167,11 @@ const ResidenciaForm = () => {
         </Button>
       </div>
 
-      <Button onClick={handlePreview} className="w-full navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
+      <div className="flex gap-3">
+        <Button variant="outline" className="gap-2 border-accent/50 text-accent flex-1" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
+        <Button onClick={handlePreview} className="flex-[2] navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
+        <Button variant="outline" className="gap-2 border-destructive/50 text-destructive flex-1" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
+      </div>
     </div>
   );
 };
