@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, GraduationCap, CheckCircle2, Shuffle, ImagePlus, UserCircle } from "lucide-react";
+import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, GraduationCap, CheckCircle2, Shuffle, ImagePlus, UserCircle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
@@ -41,6 +41,19 @@ const EstudanteForm = () => {
     reader.readAsDataURL(file);
   };
 
+  const fillTest = () => {
+    setNomeCompleto("FERNANDA OLIVEIRA SANTOS"); setCpf("890.123.456-78"); setRg(generateDigits(9));
+    setDataNascimento("10/05/2000"); setInstituicao("UNIVERSIDADE DE SÃO PAULO - USP");
+    setCurso("ENGENHARIA DE COMPUTAÇÃO"); setTipoCurso("GRADUAÇÃO"); setPeriodo("INTEGRAL");
+    setMatricula(generateMatricula()); setUf("SP"); setDataValidade("31/12/2026"); setSemestre("6º SEMESTRE");
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setNomeCompleto(""); setCpf(""); setRg(""); setDataNascimento(""); setInstituicao("");
+    setCurso(""); setTipoCurso(""); setPeriodo(""); setMatricula(""); setUf("");
+    setDataValidade(""); setSemestre(""); setFotoPreview(null);
+    toast.success("Campos limpos!");
+  };
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado!"); };
   const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
 
@@ -140,8 +153,10 @@ const EstudanteForm = () => {
             </div>
           </div>
 
-          <div className="glass-card p-6 bg-muted/30 text-center">
+          <div className="glass-card p-6 bg-muted/30 flex items-center justify-center gap-3">
+            <Button variant="outline" size="lg" className="gap-2 border-accent/50 text-accent" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
             <Button size="lg" className="gap-2 bg-gradient-to-r from-warning to-destructive text-white" onClick={handlePreview}><Eye className="w-5 h-5" /> Gerar Preview</Button>
+            <Button variant="outline" size="lg" className="gap-2 border-destructive/50 text-destructive" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
           </div>
         </>
       ) : (

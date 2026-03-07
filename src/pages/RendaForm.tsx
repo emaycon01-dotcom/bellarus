@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, TrendingUp, CheckCircle2, Shuffle } from "lucide-react";
+import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, TrendingUp, CheckCircle2, Shuffle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 const MESES = ["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
@@ -29,6 +29,22 @@ const RendaForm = () => {
   const [matricula, setMatricula] = useState("");
   const [showPreview, setShowPreview] = useState(false);
 
+  const fillTest = () => {
+    setNomeEmpresa("TECH SOLUTIONS LTDA"); setCnpjEmpresa("12.345.678/0001-90");
+    setNomeFuncionario("LUCAS PEREIRA SANTOS"); setCpfFuncionario("234.567.890-12");
+    setCargo("ANALISTA DE SISTEMAS"); setDataAdmissao("01/03/2020"); setMesReferencia("MARÇO");
+    setAnoReferencia("2026"); setSalarioBruto("R$ 5.500,00"); setInss("R$ 605,00");
+    setIrrf("R$ 247,50"); setValeTransporte("R$ 220,00"); setValeRefeicao("R$ 660,00");
+    setSalarioLiquido("R$ 4.427,50"); setMatricula(generateDigits(8));
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setNomeEmpresa(""); setCnpjEmpresa(""); setNomeFuncionario(""); setCpfFuncionario("");
+    setCargo(""); setDataAdmissao(""); setMesReferencia(""); setAnoReferencia("2024");
+    setSalarioBruto(""); setInss(""); setIrrf(""); setValeTransporte(""); setValeRefeicao("");
+    setSalarioLiquido(""); setMatricula("");
+    toast.success("Campos limpos!");
+  };
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado!"); };
   const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
 
@@ -127,8 +143,10 @@ const RendaForm = () => {
             </div>
           </div>
 
-          <div className="glass-card p-6 bg-muted/30 text-center">
-            <Button size="lg" className="gap-2 bg-gradient-to-r from-success to-accent text-white" onClick={handlePreview}><Eye className="w-5 h-5" /> Gerar Preview</Button>
+          <div className="glass-card p-6 bg-muted/30 flex items-center justify-center gap-3">
+            <Button variant="outline" size="lg" className="gap-2 border-accent/50 text-accent" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
+            <Button size="lg" className="gap-2 bg-gradient-to-r from-primary to-accent text-white" onClick={handlePreview}><Eye className="w-5 h-5" /> Gerar Preview</Button>
+            <Button variant="outline" size="lg" className="gap-2 border-destructive/50 text-destructive" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
           </div>
         </>
       ) : (

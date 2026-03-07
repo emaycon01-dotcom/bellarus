@@ -26,6 +26,8 @@ import {
   Ship,
   Anchor,
   Contact,
+  Trash2,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -91,6 +93,24 @@ const NauticaForm = () => {
 
   // Preview mode
   const [showPreview, setShowPreview] = useState(false);
+
+  const fillTest = () => {
+    setCpf("901.234.567-89"); setNomeCompleto("RICARDO MENDES COSTA"); setUf("RJ"); setGenero("Masculino");
+    setNacionalidade("BRASILEIRA"); setDataNascimento("20/11/1985"); setNaturalidade("RIO DE JANEIRO");
+    setRegistro(generateRegistro()); setCategoria("Arrais-Amador");
+    setDataEmissao("15/01/2024"); setDataValidade("15/01/2029");
+    setProtocolo(generateProtocolo()); setCapitania("CAPITANIA DOS PORTOS DO RIO DE JANEIRO");
+    setEstadoExtenso("RIO DE JANEIRO"); setNomePai("MARCOS MENDES COSTA");
+    setNomeMae("REGINA MENDES COSTA"); setRg(`${generateDigits(7)} SSP RJ`);
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setCpf(""); setNomeCompleto(""); setUf(""); setGenero(""); setNacionalidade(""); setDataNascimento("");
+    setNaturalidade(""); setFotoPreview(null); setAssinaturaPreview(null); setRegistro(""); setCategoria("");
+    setDataEmissao(""); setDataValidade(""); setProtocolo(""); setCapitania(""); setEstadoExtenso("");
+    setNomePai(""); setNomeMae(""); setRg("");
+    toast.success("Campos limpos!");
+  };
 
   const handleUfChange = (val: string) => {
     setUf(val);
@@ -465,17 +485,10 @@ const NauticaForm = () => {
           </div>
 
           {/* Preview Button */}
-          <div className="glass-card p-6 bg-muted/30">
-            <div className="text-center">
-              <Button
-                size="lg"
-                className="gap-2 bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600"
-                onClick={handlePreview}
-              >
-                <Eye className="w-5 h-5" />
-                Gerar Preview do Documento
-              </Button>
-            </div>
+          <div className="glass-card p-6 bg-muted/30 flex items-center justify-center gap-3">
+            <Button variant="outline" size="lg" className="gap-2 border-accent/50 text-accent" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
+            <Button size="lg" className="gap-2 bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600" onClick={handlePreview}><Eye className="w-5 h-5" /> Gerar Preview</Button>
+            <Button variant="outline" size="lg" className="gap-2 border-destructive/50 text-destructive" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
           </div>
         </>
       ) : (

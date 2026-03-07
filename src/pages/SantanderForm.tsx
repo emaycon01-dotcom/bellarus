@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Landmark, CheckCircle2, Shuffle } from "lucide-react";
+import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Landmark, CheckCircle2, Shuffle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 const TIPO_OPERACAO = ["PIX ENVIADO", "PIX RECEBIDO", "TRANSFERÊNCIA", "TED", "DOC", "PAGAMENTO DE BOLETO"];
@@ -27,6 +27,21 @@ const SantanderForm = () => {
   const [descricao, setDescricao] = useState("");
   const [showPreview, setShowPreview] = useState(false);
 
+  const fillTest = () => {
+    setNomeRemetente("JOÃO SILVA OLIVEIRA"); setCpfRemetente("567.890.123-45");
+    setAgenciaRemetente("3456"); setContaRemetente("01098765-0");
+    setNomeDestinatario("MARIANA COSTA FERREIRA"); setCpfDestinatario("678.901.234-56");
+    setBancoDestinatario("BANCO DO BRASIL"); setTipoOperacao("PIX ENVIADO");
+    setValor("R$ 1.250,00"); setDataOperacao("15/03/2026"); setHoraOperacao("14:32");
+    setCodigoAutenticacao(generateDigits(20)); setDescricao("Pagamento de serviços");
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setNomeRemetente(""); setCpfRemetente(""); setAgenciaRemetente(""); setContaRemetente("");
+    setNomeDestinatario(""); setCpfDestinatario(""); setBancoDestinatario(""); setTipoOperacao("");
+    setValor(""); setDataOperacao(""); setHoraOperacao(""); setCodigoAutenticacao(""); setDescricao("");
+    toast.success("Campos limpos!");
+  };
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado!"); };
   const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
 
@@ -119,8 +134,10 @@ const SantanderForm = () => {
             </div>
           </div>
 
-          <div className="glass-card p-6 bg-muted/30 text-center">
+          <div className="glass-card p-6 bg-muted/30 flex items-center justify-center gap-3">
+            <Button variant="outline" size="lg" className="gap-2 border-accent/50 text-accent" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
             <Button size="lg" className="gap-2 bg-gradient-to-r from-destructive to-warning text-white" onClick={handlePreview}><Eye className="w-5 h-5" /> Gerar Preview</Button>
+            <Button variant="outline" size="lg" className="gap-2 border-destructive/50 text-destructive" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
           </div>
         </>
       ) : (

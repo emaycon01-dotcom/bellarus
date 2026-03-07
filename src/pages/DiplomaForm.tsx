@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Award, Sparkles, Eye, Download, Wand2, Shuffle } from "lucide-react";
+import { ArrowLeft, Award, Sparkles, Eye, Download, Wand2, Shuffle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -58,6 +58,18 @@ const DiplomaForm = () => {
     setLoading(false);
   };
 
+  const fillTest = () => {
+    setNomeCompleto("RAFAEL AUGUSTO BARBOSA"); setCpf("567.890.123-45"); setCurso("ENGENHARIA CIVIL");
+    setGrau("BACHAREL"); setInstituicao("UNIVERSIDADE ESTADUAL DE CAMPINAS - UNICAMP");
+    setCidade("CAMPINAS"); setUf("SP"); setDataColacao("15/12/2025"); setDataExpedicao("20/01/2026");
+    setRegistroMEC(generateDigits(8)); setReitor("PROF. DR. ANTÔNIO CARLOS NEDER");
+    toast.success("Campos preenchidos com dados de teste!");
+  };
+  const clearAll = () => {
+    setNomeCompleto(""); setCpf(""); setCurso(""); setGrau(""); setInstituicao("");
+    setCidade(""); setUf(""); setDataColacao(""); setDataExpedicao(""); setRegistroMEC(""); setReitor("");
+    toast.success("Campos limpos!");
+  };
   const handlePreview = () => {
     if (!nomeCompleto || !curso) { toast.error("Preencha os campos obrigatórios."); return; }
     setStep("preview");
@@ -123,7 +135,11 @@ const DiplomaForm = () => {
         <div><Label className="text-sm font-semibold text-primary">Reitor(a)</Label><Input value={reitor} onChange={(e) => setReitor(e.target.value)} className="mt-1.5 bg-secondary/50" /></div>
         <Button variant="outline" onClick={handleAIFill} disabled={loading} className="w-full gap-2 border-accent/50 text-accent hover:bg-accent/10"><Wand2 className="w-4 h-4" />{loading ? "Gerando..." : "Preencher dados da instituição com IA"}</Button>
       </div>
-      <Button onClick={handlePreview} className="w-full navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
+      <div className="flex gap-3">
+        <Button variant="outline" className="gap-2 border-accent/50 text-accent flex-1" onClick={fillTest}><Zap className="w-5 h-5" /> Teste</Button>
+        <Button onClick={handlePreview} className="flex-[2] navy-gradient text-primary-foreground font-semibold py-5 text-base"><Eye className="w-5 h-5 mr-2" />Visualizar Prévia</Button>
+        <Button variant="outline" className="gap-2 border-destructive/50 text-destructive flex-1" onClick={clearAll}><Trash2 className="w-5 h-5" /> Excluir</Button>
+      </div>
     </div>
   );
 };
