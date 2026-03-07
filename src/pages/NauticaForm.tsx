@@ -159,19 +159,11 @@ const NauticaForm = () => {
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={() => navigate("/dashboard/documents")} className="gap-2">
-          <ArrowLeft className="w-4 h-4" />
-          Voltar ao Dashboard
-        </Button>
-        <div className="text-right">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <CreditCard className="w-4 h-4" />
-            Saldo: {saldo} créditos
-          </div>
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-primary/20 text-primary mt-1">
-            <Sparkles className="w-3 h-3" />
-            Usa 0.75 crédito
-          </span>
+        <Button variant="outline" onClick={() => navigate("/dashboard/documents")} className="gap-2"><ArrowLeft className="w-4 h-4" /> Voltar</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5 border-accent/50 text-accent text-xs h-8 px-3" onClick={fillTest}><Zap className="w-3.5 h-3.5" /> Teste</Button>
+          <Button variant="outline" size="sm" className="gap-1.5 border-destructive/50 text-destructive text-xs h-8 px-3" onClick={clearAll}><Trash2 className="w-3.5 h-3.5" /> Excluir</Button>
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-primary/20 text-primary"><Sparkles className="w-3 h-3" /> 0.75 crédito</span>
         </div>
       </div>
 
