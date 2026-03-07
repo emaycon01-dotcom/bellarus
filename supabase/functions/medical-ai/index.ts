@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { type, query } = await req.json();
+    const { type, query, prompt } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -118,6 +118,36 @@ serve(async (req) => {
         }
       };
       toolChoice = { type: "function", function: { name: "suggest_upa" } };
+    } else if (type === "custom") {
+      // Free-form AI prompt, returns text result
+      const customBody = {
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: "Você é um assistente inteligente. Responda EXATAMENTE no formato solicitado pelo usuário. Se pedir JSON, retorne APENAS JSON válido sem markdown." },
+          { role: "user", content: prompt || query || "Gere dados" }
+        ],
+      };
+
+      const customResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(customBody),
+      });
+
+      if (!customResponse.ok) {
+        const t = await customResponse.text();
+        console.error("AI error:", customResponse.status, t);
+        throw new Error("AI gateway error");
+      }
+
+      const customData = await customResponse.json();
+      const result = customData.choices?.[0]?.message?.content || "";
+      return new Response(JSON.stringify({ result }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     } else {
       return new Response(JSON.stringify({ error: "Invalid type" }), {
         status: 400,
