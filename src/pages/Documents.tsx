@@ -57,6 +57,9 @@ const Documents = () => {
     if (mod.name === "CNH Digital (2024)") {
       navigate("/dashboard/documents/cnh");
     }
+    if (mod.name === "Náutica PDF") {
+      navigate("/dashboard/documents/nautica");
+    }
   };
 
   const grouped = categoryOrder

@@ -17,6 +17,7 @@ import AdminPanel from "./pages/AdminPanel";
 import AdminUsers from "./pages/AdminUsers";
 import AdminFinance from "./pages/AdminFinance";
 import CnhForm from "./pages/CnhForm";
+import NauticaForm from "./pages/NauticaForm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
             <Route index element={<Dashboard />} />
             <Route path="documents" element={<Documents />} />
             <Route path="documents/cnh" element={<CnhForm />} />
+            <Route path="documents/nautica" element={<NauticaForm />} />
             <Route path="credits" element={<Credits />} />
             <Route path="history" element={<DocumentHistory />} />
             <Route path="resellers" element={<Resellers />} />
