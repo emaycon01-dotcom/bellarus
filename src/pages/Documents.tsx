@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 interface DocModule {
   name: string;
   desc: string;
-  credits: number;
-  price: number;
   available: boolean;
   example?: boolean;
   isNew?: boolean;
@@ -16,38 +14,35 @@ interface DocModule {
 
 const modules: DocModule[] = [
   // DOCUMENTOS DIGITAIS
-  { name: "CNH Digital (2024)", desc: "CNH Digital com login, APK e QR Code", credits: 1, price: 20, available: true, example: true, icon: <FileText className="w-5 h-5" />, iconColor: "from-amber-500 to-yellow-600", category: "DOCUMENTOS DIGITAIS" },
-  { name: "CIN (RG Digital)", desc: "Carteira de Identidade Nacional", credits: 1, price: 20, available: true, example: true, icon: <CreditCard className="w-5 h-5" />, iconColor: "from-blue-500 to-cyan-500", category: "DOCUMENTOS DIGITAIS" },
-  { name: "Arrais Náutica", desc: "Habilitação Náutica Digital", credits: 1, price: 20, available: false, icon: <Anchor className="w-5 h-5" />, iconColor: "from-teal-500 to-emerald-500", category: "DOCUMENTOS DIGITAIS" },
+  { name: "CNH Digital (2024)", desc: "CNH Digital com login, APK e QR Code", available: true, example: true, icon: <FileText className="w-5 h-5" />, iconColor: "from-primary to-accent", category: "DOCUMENTOS DIGITAIS" },
+  { name: "CIN (RG Digital)", desc: "Carteira de Identidade Nacional", available: true, example: true, icon: <CreditCard className="w-5 h-5" />, iconColor: "from-accent to-primary", category: "DOCUMENTOS DIGITAIS" },
+  { name: "Arrais Náutica", desc: "Habilitação Náutica Digital", available: false, icon: <Anchor className="w-5 h-5" />, iconColor: "from-success to-accent", category: "DOCUMENTOS DIGITAIS" },
 
   // PDF
-  { name: "RG PDF", desc: "RG em PDF com dados completos", credits: 0.75, price: 15, available: true, isNew: true, icon: <FileCheck className="w-5 h-5" />, iconColor: "from-emerald-500 to-green-600", category: "PDF" },
-  { name: "CRLV-e Digital", desc: "Certificado de Registro e Licenciamento de Veículo", credits: 1, price: 20, available: true, icon: <Car className="w-5 h-5" />, iconColor: "from-blue-600 to-indigo-600", category: "PDF" },
-  { name: "Náutica PDF", desc: "CHA em PDF com dados completos", credits: 0.75, price: 15, available: true, isNew: true, icon: <Ship className="w-5 h-5" />, iconColor: "from-cyan-500 to-teal-500", category: "PDF" },
-  { name: "Comp. Santander", desc: "Comprovante bancário Santander", credits: 0.5, price: 10, available: true, isNew: true, icon: <Landmark className="w-5 h-5" />, iconColor: "from-red-500 to-rose-600", category: "PDF" },
-  { name: "Comprovante de Residência", desc: "Comprovante de endereço", credits: 1, price: 20, available: false, icon: <Home className="w-5 h-5" />, iconColor: "from-slate-500 to-gray-600", category: "PDF" },
-  { name: "Comp. de Renda", desc: "Recibo de pagamento de salário", credits: 1, price: 20, available: true, isNew: true, icon: <TrendingUp className="w-5 h-5" />, iconColor: "from-green-500 to-emerald-600", category: "PDF" },
-  { name: "Cart. Estudante PDF", desc: "Carteirinha de estudante universitária", credits: 1, price: 20, available: true, isNew: true, icon: <GraduationCap className="w-5 h-5" />, iconColor: "from-orange-500 to-red-500", category: "PDF" },
+  { name: "RG PDF", desc: "RG em PDF com dados completos", available: true, isNew: true, icon: <FileCheck className="w-5 h-5" />, iconColor: "from-success to-primary", category: "PDF" },
+  { name: "CRLV-e Digital", desc: "Certificado de Registro e Licenciamento de Veículo", available: true, icon: <Car className="w-5 h-5" />, iconColor: "from-primary to-ring", category: "PDF" },
+  { name: "Náutica PDF", desc: "CHA em PDF com dados completos", available: true, isNew: true, icon: <Ship className="w-5 h-5" />, iconColor: "from-accent to-success", category: "PDF" },
+  { name: "Comp. Santander", desc: "Comprovante bancário Santander", available: true, isNew: true, icon: <Landmark className="w-5 h-5" />, iconColor: "from-destructive to-warning", category: "PDF" },
+  { name: "Comprovante de Residência", desc: "Comprovante de endereço", available: false, icon: <Home className="w-5 h-5" />, iconColor: "from-muted-foreground to-secondary", category: "PDF" },
+  { name: "Comp. de Renda", desc: "Recibo de pagamento de salário", available: true, isNew: true, icon: <TrendingUp className="w-5 h-5" />, iconColor: "from-success to-accent", category: "PDF" },
+  { name: "Cart. Estudante PDF", desc: "Carteirinha de estudante universitária", available: true, isNew: true, icon: <GraduationCap className="w-5 h-5" />, iconColor: "from-warning to-destructive", category: "PDF" },
 
   // ATESTADOS
-  { name: "Atestado Médico", desc: "Atestados com QR Code", credits: 1, price: 20, available: true, icon: <Stethoscope className="w-5 h-5" />, iconColor: "from-pink-500 to-rose-500", category: "ATESTADOS" },
-  { name: "Receita Médica", desc: "Receitas médicas digitais", credits: 1, price: 20, available: true, icon: <Activity className="w-5 h-5" />, iconColor: "from-violet-500 to-purple-600", category: "ATESTADOS" },
+  { name: "Atestado Médico", desc: "Atestados com QR Code", available: true, icon: <Stethoscope className="w-5 h-5" />, iconColor: "from-destructive to-primary", category: "ATESTADOS" },
+  { name: "Receita Médica", desc: "Receitas médicas digitais", available: true, icon: <Activity className="w-5 h-5" />, iconColor: "from-primary to-accent", category: "ATESTADOS" },
 
   // CERTIDÕES
-  { name: "Certidão de Nascimento", desc: "Certidões de nascimento", credits: 1, price: 20, available: false, icon: <Heart className="w-5 h-5" />, iconColor: "from-pink-400 to-rose-500", category: "CERTIDÕES" },
-  { name: "Certidão de Casamento", desc: "Certidões de casamento", credits: 1, price: 20, available: false, icon: <ScrollText className="w-5 h-5" />, iconColor: "from-amber-400 to-orange-500", category: "CERTIDÕES" },
+  { name: "Certidão de Nascimento", desc: "Certidões de nascimento", available: false, icon: <Heart className="w-5 h-5" />, iconColor: "from-destructive to-warning", category: "CERTIDÕES" },
+  { name: "Certidão de Casamento", desc: "Certidões de casamento", available: false, icon: <ScrollText className="w-5 h-5" />, iconColor: "from-warning to-gold", category: "CERTIDÕES" },
 
   // OUTROS
-  { name: "E-SIM Chip Virtual", desc: "Chip virtual eSIM", credits: 1, price: 20, available: false, icon: <Smartphone className="w-5 h-5" />, iconColor: "from-indigo-500 to-blue-600", category: "OUTROS" },
-  { name: "Diploma", desc: "Diploma de graduação", credits: 1, price: 20, available: false, icon: <Award className="w-5 h-5" />, iconColor: "from-yellow-500 to-amber-600", category: "OUTROS" },
-  { name: "Certificado Escolar", desc: "Certificado de conclusão escolar", credits: 1, price: 20, available: false, icon: <BookOpen className="w-5 h-5" />, iconColor: "from-emerald-400 to-teal-500", category: "OUTROS" },
-  { name: "Declaração Escolar", desc: "Declaração de matrícula escolar", credits: 1, price: 20, available: false, icon: <ScrollText className="w-5 h-5" />, iconColor: "from-slate-400 to-gray-500", category: "OUTROS" },
+  { name: "E-SIM Chip Virtual", desc: "Chip virtual eSIM", available: false, icon: <Smartphone className="w-5 h-5" />, iconColor: "from-primary to-accent", category: "OUTROS" },
+  { name: "Diploma", desc: "Diploma de graduação", available: false, icon: <Award className="w-5 h-5" />, iconColor: "from-warning to-gold", category: "OUTROS" },
+  { name: "Certificado Escolar", desc: "Certificado de conclusão escolar", available: false, icon: <BookOpen className="w-5 h-5" />, iconColor: "from-success to-primary", category: "OUTROS" },
+  { name: "Declaração Escolar", desc: "Declaração de matrícula escolar", available: false, icon: <ScrollText className="w-5 h-5" />, iconColor: "from-muted-foreground to-secondary", category: "OUTROS" },
 ];
 
 const categoryOrder = ["DOCUMENTOS DIGITAIS", "PDF", "ATESTADOS", "CERTIDÕES", "OUTROS"];
-
-const formatPrice = (v: number) =>
-  v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
 const Documents = () => {
   const navigate = useNavigate();
@@ -89,7 +84,7 @@ const Documents = () => {
               >
                 {/* New badge */}
                 {mod.isNew && (
-                  <span className="absolute top-3 right-3 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center gap-1">
+                  <span className="absolute top-3 right-3 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-success/20 text-success flex items-center gap-1">
                     ✦ Novo
                   </span>
                 )}
@@ -105,19 +100,18 @@ const Documents = () => {
                   <p className="text-xs text-muted-foreground mt-0.5">{mod.desc}</p>
                 </div>
 
-                {/* Price & Credits row */}
+                {/* Credits & Status row */}
                 <div className="flex items-center justify-between pt-1 border-t border-border/30">
-                  <span className="text-sm font-display font-bold text-foreground">R${formatPrice(mod.price)}</span>
+                  <span className="text-xs font-mono font-bold text-primary">1 Crédito</span>
                   <div className="flex items-center gap-2">
                     {mod.example && (
-                      <span className="flex items-center gap-1 text-[10px] text-emerald-400">
+                      <span className="flex items-center gap-1 text-[10px] text-success">
                         <Eye className="w-3 h-3" />
                         Exemplo
                       </span>
                     )}
-                    <span className="text-xs font-mono font-bold text-primary">{mod.credits} CR</span>
                     {mod.available ? (
-                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-success/20 text-success">
                         ✓ Ativo
                       </span>
                     ) : (
