@@ -49,15 +49,23 @@ const Documents = () => {
 
   const routeMap: Record<string, string> = {
     "CNH Digital (2024)": "/dashboard/documents/cnh",
+    "CIN (RG Digital)": "/dashboard/documents/cin",
     "Náutica PDF": "/dashboard/documents/nautica",
     "Arrais Náutica": "/dashboard/documents/nautica",
     "RG PDF": "/dashboard/documents/rg-pdf",
     "CRLV-e Digital": "/dashboard/documents/crlve",
     "Comp. Santander": "/dashboard/documents/santander",
+    "Comprovante de Residência": "/dashboard/documents/residencia",
     "Comp. de Renda": "/dashboard/documents/renda",
     "Cart. Estudante PDF": "/dashboard/documents/estudante",
     "Atestado Médico": "/dashboard/documents/atestado",
     "Receita Médica": "/dashboard/documents/receita",
+    "Certidão de Nascimento": "/dashboard/documents/certidao-nascimento",
+    "Certidão de Casamento": "/dashboard/documents/certidao-casamento",
+    "E-SIM Chip Virtual": "/dashboard/documents/esim",
+    "Diploma": "/dashboard/documents/diploma",
+    "Certificado Escolar": "/dashboard/documents/certificado-escolar",
+    "Declaração Escolar": "/dashboard/documents/declaracao-escolar",
   };
 
   const handleModuleClick = (mod: DocModule) => {

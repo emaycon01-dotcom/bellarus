@@ -25,6 +25,14 @@ import RendaForm from "./pages/RendaForm";
 import EstudanteForm from "./pages/EstudanteForm";
 import AtestadoForm from "./pages/AtestadoForm";
 import ReceitaForm from "./pages/ReceitaForm";
+import CinForm from "./pages/CinForm";
+import ResidenciaForm from "./pages/ResidenciaForm";
+import CertidaoNascimentoForm from "./pages/CertidaoNascimentoForm";
+import CertidaoCasamentoForm from "./pages/CertidaoCasamentoForm";
+import EsimForm from "./pages/EsimForm";
+import DiplomaForm from "./pages/DiplomaForm";
+import CertificadoEscolarForm from "./pages/CertificadoEscolarForm";
+import DeclaracaoEscolarForm from "./pages/DeclaracaoEscolarForm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +58,14 @@ const App = () => (
             <Route path="documents/estudante" element={<EstudanteForm />} />
             <Route path="documents/atestado" element={<AtestadoForm />} />
             <Route path="documents/receita" element={<ReceitaForm />} />
+            <Route path="documents/cin" element={<CinForm />} />
+            <Route path="documents/residencia" element={<ResidenciaForm />} />
+            <Route path="documents/certidao-nascimento" element={<CertidaoNascimentoForm />} />
+            <Route path="documents/certidao-casamento" element={<CertidaoCasamentoForm />} />
+            <Route path="documents/esim" element={<EsimForm />} />
+            <Route path="documents/diploma" element={<DiplomaForm />} />
+            <Route path="documents/certificado-escolar" element={<CertificadoEscolarForm />} />
+            <Route path="documents/declaracao-escolar" element={<DeclaracaoEscolarForm />} />
             <Route path="credits" element={<Credits />} />
             <Route path="history" element={<DocumentHistory />} />
             <Route path="resellers" element={<Resellers />} />
