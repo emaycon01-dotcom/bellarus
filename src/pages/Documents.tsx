@@ -100,19 +100,18 @@ const Documents = () => {
                   <p className="text-xs text-muted-foreground mt-0.5">{mod.desc}</p>
                 </div>
 
-                {/* Price & Credits row */}
+                {/* Credits & Status row */}
                 <div className="flex items-center justify-between pt-1 border-t border-border/30">
-                  <span className="text-sm font-display font-bold text-foreground">R${formatPrice(mod.price)}</span>
+                  <span className="text-xs font-mono font-bold text-primary">1 Crédito</span>
                   <div className="flex items-center gap-2">
                     {mod.example && (
-                      <span className="flex items-center gap-1 text-[10px] text-emerald-400">
+                      <span className="flex items-center gap-1 text-[10px] text-success">
                         <Eye className="w-3 h-3" />
                         Exemplo
                       </span>
                     )}
-                    <span className="text-xs font-mono font-bold text-primary">{mod.credits} CR</span>
                     {mod.available ? (
-                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-success/20 text-success">
                         ✓ Ativo
                       </span>
                     ) : (
