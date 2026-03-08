@@ -128,7 +128,7 @@ const Credits = () => {
         </Button>
 
         {showQR && (
-          <div className="glass-card p-6 space-y-5 max-w-sm mx-auto">
+          <div ref={qrRef} className="glass-card p-6 space-y-5 max-w-sm mx-auto">
             <p className="text-center text-sm font-semibold text-foreground">
               Escaneie o QR Code para pagar
             </p>
