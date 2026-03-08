@@ -9,6 +9,7 @@ const AdminPanel = () => {
   const [monthRevenue, setMonthRevenue] = useState(0);
   const [totalDocs, setTotalDocs] = useState(0);
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
   const [recentTxns, setRecentTxns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
