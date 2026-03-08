@@ -2,23 +2,23 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import bellarusRobot from "@/assets/bellarus-robot.png";
+import bellarusLogo from "@/assets/bellarus-logo.png";
 
 const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col bg-black relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-[hsl(230,35%,8%)] relative overflow-hidden">
       {/* Ambient glow effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/5 blur-[150px]" />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-purple-600/10 blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-purple-600/8 blur-[150px]" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-800/15 blur-[120px]" />
       </div>
 
       {/* Header */}
       <header className="relative z-20 flex items-center justify-between px-6 md:px-12 py-4 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <img src={bellarusRobot} alt="Bellarus" className="w-10 h-10 object-contain" />
+          <img src={bellarusLogo} alt="Bellarus" className="w-10 h-10 object-contain rounded-lg" />
           <span className="font-display font-bold text-xl text-white tracking-tight">BELLARUS</span>
         </div>
         <Button onClick={() => navigate("/login")} variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
@@ -29,16 +29,16 @@ const Landing = () => {
       {/* Hero */}
       <section className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="max-w-5xl mx-auto flex flex-col items-center text-center space-y-8">
-          {/* Robot image with floating animation */}
+          {/* Logo with pulse animation */}
           <motion.div
-            animate={{ y: [0, -15, 0] }}
+            animate={{ scale: [1, 1.04, 1] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             className="relative"
           >
             <motion.img
-              src={bellarusRobot}
-              alt="Bellarus Robot"
-              className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain drop-shadow-[0_0_40px_rgba(100,140,255,0.3)]"
+              src={bellarusLogo}
+              alt="Bellarus Logo"
+              className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain drop-shadow-[0_0_60px_rgba(120,80,200,0.4)] rounded-2xl"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8 }}
@@ -53,7 +53,7 @@ const Landing = () => {
           >
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-white leading-tight">
               Documentos com{" "}
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                 qualidade
               </span>{" "}
               e segurança
@@ -74,7 +74,7 @@ const Landing = () => {
             <Button
               size="lg"
               onClick={() => navigate("/login")}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-8 py-6 text-base font-semibold shadow-xl shadow-blue-500/20 hover:shadow-2xl transition-all hover:scale-105"
+              className="bg-gradient-to-r from-purple-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white px-8 py-6 text-base font-semibold shadow-xl shadow-purple-500/20 hover:shadow-2xl transition-all hover:scale-105"
             >
               Começar Agora
               <ArrowRight className="w-4 h-4 ml-2" />

@@ -1,4 +1,4 @@
-import bellarusRobot from "@/assets/bellarus-robot.png";
+import bellarusLogo from "@/assets/bellarus-logo.png";
 
 const BellarusLogo = ({ size = "md", showText = true }: { size?: "sm" | "md" | "lg"; showText?: boolean }) => {
   const sizes = {
@@ -11,7 +11,7 @@ const BellarusLogo = ({ size = "md", showText = true }: { size?: "sm" | "md" | "
 
   return (
     <div className="flex items-center gap-3">
-      <img src={bellarusRobot} alt="Bellarus" className={`${s.icon} object-contain`} />
+      <img src={bellarusLogo} alt="Bellarus" className={`${s.icon} object-contain rounded-lg`} />
       {showText && (
         <div className="flex flex-col">
           <span className={`font-display font-bold ${s.text} text-foreground tracking-tight leading-none`}>
