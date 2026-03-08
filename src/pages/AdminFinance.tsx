@@ -46,6 +46,16 @@ const AdminFinance = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  // Realtime: auto-refresh when data changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-finance-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'credit_transactions' }, () => fetchData())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   const openCreditDialog = (user: any, mode: "add" | "remove") => {
     setSelectedUser(user);
     setDialogMode(mode);
