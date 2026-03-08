@@ -127,125 +127,161 @@ const CnhForm = () => {
         const w = img.width;
         const h = img.height;
 
-        // === CNH CARD AREA (upper-left of page) ===
-        // All positions as fractions of image width/height based on the real PDF layout
+        // ===== CLEAR ALL DATA AREAS WITH WHITE RECTANGLES =====
+        ctx.fillStyle = "#e8e8e0"; // Match the CNH card background color
 
-        // Clear text areas before writing (white rectangles to overwrite template data)
+        // Photo area (3x4)
+        ctx.fillRect(w * 0.042, h * 0.094, w * 0.1, h * 0.155);
+        // Signature area
+        ctx.fillRect(w * 0.042, h * 0.257, w * 0.132, h * 0.05);
+
+        // Name field
+        ctx.fillRect(w * 0.12, h * 0.078, w * 0.29, h * 0.02);
+        // 1ª Habilitação field
+        ctx.fillRect(w * 0.42, h * 0.078, w * 0.11, h * 0.02);
+        // Data nascimento / local / UF field
+        ctx.fillRect(w * 0.19, h * 0.105, w * 0.33, h * 0.02);
+        // Data emissão field
+        ctx.fillRect(w * 0.19, h * 0.132, w * 0.1, h * 0.02);
+        // Validade field
+        ctx.fillRect(w * 0.31, h * 0.132, w * 0.1, h * 0.02);
+        // ACC / Categoria large area
+        ctx.fillRect(w * 0.43, h * 0.122, w * 0.08, h * 0.035);
+        // Doc identidade field
+        ctx.fillRect(w * 0.19, h * 0.158, w * 0.33, h * 0.02);
+        // CPF field
+        ctx.fillRect(w * 0.19, h * 0.184, w * 0.12, h * 0.02);
+        // Nº Registro field
+        ctx.fillRect(w * 0.33, h * 0.184, w * 0.12, h * 0.02);
+        // Cat Hab field
+        ctx.fillRect(w * 0.465, h * 0.184, w * 0.05, h * 0.02);
+        // Nacionalidade field
+        ctx.fillRect(w * 0.19, h * 0.21, w * 0.33, h * 0.02);
+        // Filiação pai field
+        ctx.fillRect(w * 0.19, h * 0.235, w * 0.33, h * 0.02);
+        // Filiação mãe field
+        ctx.fillRect(w * 0.19, h * 0.258, w * 0.33, h * 0.02);
+
+        // Category table - dates columns (clear all date values in the grid)
+        // Left table dates (column 12 left)
+        ctx.fillRect(w * 0.20, h * 0.335, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.20, h * 0.352, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.20, h * 0.369, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.20, h * 0.386, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.20, h * 0.403, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.20, h * 0.420, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.20, h * 0.437, w * 0.08, h * 0.012);
+        // Right table dates (column 12 right)
+        ctx.fillRect(w * 0.41, h * 0.335, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.41, h * 0.352, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.41, h * 0.369, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.41, h * 0.386, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.41, h * 0.403, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.41, h * 0.420, w * 0.08, h * 0.012);
+        ctx.fillRect(w * 0.41, h * 0.437, w * 0.08, h * 0.012);
+
+        // 12 OBSERVAÇÕES value
+        ctx.fillRect(w * 0.065, h * 0.462, w * 0.18, h * 0.015);
+
+        // ASSINADO DIGITALMENTE line
+        // Espelho number area
+        ctx.fillRect(w * 0.35, h * 0.537, w * 0.14, h * 0.015);
+        // Renach number area
+        ctx.fillRect(w * 0.35, h * 0.555, w * 0.14, h * 0.015);
+
+        // LOCAL: cidade, UF
+        ctx.fillRect(w * 0.065, h * 0.575, w * 0.18, h * 0.02);
+
+        // Estado extenso (BAHIA)
         ctx.fillStyle = "#FFFFFF";
-        // Name area
-        ctx.fillRect(w * 0.135, h * 0.072, w * 0.27, h * 0.016);
-        // 1ª Habilitação area
-        ctx.fillRect(w * 0.39, h * 0.072, w * 0.12, h * 0.016);
-        // Data nascimento area
-        ctx.fillRect(w * 0.195, h * 0.095, w * 0.27, h * 0.016);
-        // Data emissão area
-        ctx.fillRect(w * 0.195, h * 0.118, w * 0.1, h * 0.016);
-        // Validade area
-        ctx.fillRect(w * 0.31, h * 0.118, w * 0.1, h * 0.016);
-        // Categoria area
-        ctx.fillRect(w * 0.435, h * 0.118, w * 0.04, h * 0.02);
-        // Doc identidade area
-        ctx.fillRect(w * 0.195, h * 0.143, w * 0.27, h * 0.016);
-        // CPF area
-        ctx.fillRect(w * 0.195, h * 0.166, w * 0.12, h * 0.016);
-        // Nº Registro area
-        ctx.fillRect(w * 0.34, h * 0.166, w * 0.12, h * 0.016);
-        // Cat Hab area
-        ctx.fillRect(w * 0.46, h * 0.166, w * 0.04, h * 0.016);
-        // Nacionalidade area
-        ctx.fillRect(w * 0.195, h * 0.19, w * 0.27, h * 0.016);
-        // Filiação Pai area
-        ctx.fillRect(w * 0.195, h * 0.215, w * 0.27, h * 0.016);
-        // Filiação Mae area
-        ctx.fillRect(w * 0.195, h * 0.235, w * 0.27, h * 0.016);
-        // Photo area
-        ctx.fillRect(w * 0.06, h * 0.1, w * 0.09, h * 0.12);
-        // Assinatura area
-        ctx.fillRect(w * 0.06, h * 0.22, w * 0.12, h * 0.04);
-        // Observações area
-        ctx.fillRect(w * 0.08, h * 0.38, w * 0.12, h * 0.015);
-        // LOCAL / cidade area
-        ctx.fillRect(w * 0.06, h * 0.495, w * 0.15, h * 0.015);
-        // Espelho / Renach numbers area
-        ctx.fillRect(w * 0.36, h * 0.478, w * 0.12, h * 0.015);
-        ctx.fillRect(w * 0.36, h * 0.493, w * 0.12, h * 0.015);
-        // Estado extenso area
-        ctx.fillRect(w * 0.12, h * 0.52, w * 0.28, h * 0.025);
+        ctx.fillRect(w * 0.065, h * 0.595, w * 0.44, h * 0.04);
 
-        // === WRITE FORM DATA ===
+        // Barcode number on left side (26040051771) - vertical
+        ctx.fillStyle = "#e8e8e0";
+        ctx.fillRect(w * 0.042, h * 0.12, w * 0.02, h * 0.42);
+
+        // MRZ lines at bottom
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(w * 0.065, h * 0.79, w * 0.42, h * 0.06);
+
+        // ===== WRITE FORM DATA =====
         ctx.fillStyle = "#000";
 
         // 2 e 1 NOME E SOBRENOME
-        ctx.font = `bold ${w * 0.012}px Arial`;
-        ctx.fillText(nomeCompleto || "", w * 0.135, h * 0.085);
+        ctx.font = `bold ${w * 0.013}px Arial`;
+        ctx.fillText(nomeCompleto || "", w * 0.125, h * 0.093);
 
         // 1ª HABILITAÇÃO
-        ctx.font = `${w * 0.01}px Arial`;
-        ctx.fillText(dataPrimeiraHab || "", w * 0.39, h * 0.085);
+        ctx.font = `${w * 0.011}px Arial`;
+        ctx.fillText(dataPrimeiraHab || "", w * 0.425, h * 0.093);
 
         // 3 DATA, LOCAL E UF DE NASCIMENTO
-        ctx.font = `bold ${w * 0.01}px Arial`;
-        ctx.fillText(dataNascimento || "", w * 0.2, h * 0.108);
+        ctx.font = `bold ${w * 0.011}px Arial`;
+        ctx.fillText(dataNascimento || "", w * 0.195, h * 0.12);
 
         // 4a DATA EMISSÃO
-        ctx.fillText(dataEmissao || "", w * 0.2, h * 0.131);
+        ctx.fillText(dataEmissao || "", w * 0.195, h * 0.147);
 
         // 4b VALIDADE
-        ctx.fillText(dataValidade || "", w * 0.315, h * 0.131);
+        ctx.fillText(dataValidade || "", w * 0.315, h * 0.147);
 
-        // Categoria (large, bold next to validade)
-        ctx.font = `bold ${w * 0.018}px Arial`;
-        ctx.fillText(categoria || "", w * 0.44, h * 0.134);
+        // ACC / Categoria (large bold)
+        ctx.font = `bold ${w * 0.022}px Arial`;
+        ctx.fillText(categoria || "", w * 0.445, h * 0.15);
 
         // 4c DOC IDENTIDADE / ORG EMISSOR / UF
-        ctx.font = `bold ${w * 0.01}px Arial`;
-        ctx.fillText(rg || "", w * 0.2, h * 0.155);
+        ctx.font = `bold ${w * 0.011}px Arial`;
+        ctx.fillText(rg || "", w * 0.195, h * 0.173);
 
         // 4d CPF
-        ctx.fillText(cpf || "", w * 0.2, h * 0.178);
+        ctx.fillText(cpf || "", w * 0.195, h * 0.199);
 
         // 5 Nº REGISTRO
-        ctx.fillText(registro || "", w * 0.345, h * 0.178);
+        ctx.fillText(registro || "", w * 0.335, h * 0.199);
 
         // 9 CAT HAB
-        ctx.fillText(categoria || "", w * 0.465, h * 0.178);
+        ctx.fillText(categoria || "", w * 0.47, h * 0.199);
 
         // NACIONALIDADE
-        ctx.font = `bold ${w * 0.01}px Arial`;
-        ctx.fillText(nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO", w * 0.2, h * 0.202);
+        ctx.fillText(nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO", w * 0.195, h * 0.225);
 
         // FILIAÇÃO - PAI
-        ctx.fillText(nomePai || "", w * 0.2, h * 0.226);
+        ctx.fillText(nomePai || "", w * 0.195, h * 0.25);
 
         // FILIAÇÃO - MÃE
-        ctx.fillText(nomeMae || "", w * 0.2, h * 0.246);
+        ctx.fillText(nomeMae || "", w * 0.195, h * 0.273);
 
         // 12 OBSERVAÇÕES
         ctx.font = `${w * 0.009}px Arial`;
-        ctx.fillText(observacoes.join(", "), w * 0.085, h * 0.392);
+        ctx.fillText(observacoes.join(", "), w * 0.07, h * 0.473);
 
         // LOCAL (cidade, UF)
-        ctx.font = `bold ${w * 0.009}px Arial`;
-        ctx.fillText(cidadeEstado || "", w * 0.065, h * 0.505);
+        ctx.font = `bold ${w * 0.01}px Arial`;
+        ctx.fillText(cidadeEstado || "", w * 0.07, h * 0.588);
 
         // Espelho number
         ctx.font = `${w * 0.009}px Arial`;
-        ctx.fillText(espelho || "", w * 0.365, h * 0.488);
+        ctx.fillText(espelho || "", w * 0.355, h * 0.548);
 
         // Renach
-        ctx.fillText(renach || "", w * 0.365, h * 0.503);
+        ctx.fillText(renach || "", w * 0.355, h * 0.565);
 
-        // Código segurança
-        ctx.fillText(codigoSeguranca || "", w * 0.365, h * 0.518);
+        // Código segurança (vertical barcode number)
+        ctx.save();
+        ctx.translate(w * 0.056, h * 0.5);
+        ctx.rotate(-Math.PI / 2);
+        ctx.font = `bold ${w * 0.012}px Arial`;
+        ctx.fillText(codigoSeguranca || "", 0, 0);
+        ctx.restore();
 
         // ESTADO POR EXTENSO (centered)
-        ctx.font = `bold ${w * 0.02}px Arial`;
+        ctx.font = `bold ${w * 0.025}px Arial`;
         ctx.textAlign = "center";
-        ctx.fillText(estadoExtenso || "", w * 0.25, h * 0.54);
+        ctx.fillText(estadoExtenso || "", w * 0.27, h * 0.62);
         ctx.textAlign = "left";
 
         // MRZ lines at bottom
-        ctx.font = `${w * 0.012}px "Courier New", monospace`;
+        ctx.font = `${w * 0.013}px "Courier New", monospace`;
         const regClean = (registro || "").replace(/\D/g, "");
         const cpfClean = (cpf || "").replace(/\D/g, "");
         const nascParts = (dataNascimento || "").split(",")[0]?.split("/") || [];
@@ -255,17 +291,15 @@ const CnhForm = () => {
         const gChar = genero === "Feminino" ? "F" : "M";
         const nameMRZ = nomeCompleto.replace(/\s+/g, "<").toUpperCase();
 
-        ctx.fillRect(w * 0.1, h * 0.76, w * 0.4, h * 0.05);
-        ctx.fillStyle = "#000";
-        ctx.fillText(`I<BRA${regClean.padEnd(15, "<")}`, w * 0.105, h * 0.775);
-        ctx.fillText(`${nascYYMMDD}${gChar}${valYYMMDD}BRA${"<".repeat(12)}4`, w * 0.105, h * 0.79);
-        ctx.fillText(`${nameMRZ}${"<".repeat(Math.max(0, 30 - nameMRZ.length))}`, w * 0.105, h * 0.805);
+        ctx.fillText(`I<BRA${regClean.padEnd(15, "<")}`, w * 0.1, h * 0.805);
+        ctx.fillText(`${nascYYMMDD}${gChar}${valYYMMDD}BRA${"<".repeat(12)}4`, w * 0.1, h * 0.82);
+        ctx.fillText(`${nameMRZ}${"<".repeat(Math.max(0, 30 - nameMRZ.length))}`, w * 0.1, h * 0.835);
 
         // Photo (3x4 area)
         if (fotoPreview) {
           const photoImg = new Image();
           photoImg.onload = () => {
-            ctx.drawImage(photoImg, w * 0.062, h * 0.1, w * 0.085, h * 0.115);
+            ctx.drawImage(photoImg, w * 0.046, h * 0.098, w * 0.092, h * 0.148);
             drawSignatureAndFinish();
           };
           photoImg.src = fotoPreview;
@@ -277,7 +311,7 @@ const CnhForm = () => {
           if (assinaturaPreview) {
             const sigImg = new Image();
             sigImg.onload = () => {
-              ctx.drawImage(sigImg, w * 0.065, h * 0.225, w * 0.11, h * 0.035);
+              ctx.drawImage(sigImg, w * 0.05, h * 0.262, w * 0.12, h * 0.04);
               finish();
             };
             sigImg.src = assinaturaPreview;
