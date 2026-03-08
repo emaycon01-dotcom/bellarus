@@ -53,6 +53,15 @@ const Credits = () => {
   const handleSelect = (credits: number) => {
     setSelectedCredits(credits);
     setShowQR(false);
+    // Auto-generate QR and scroll
+    setTimeout(() => {
+      if (!cooldown) {
+        setShowQR(true);
+        setCooldown(true);
+        setTimeout(() => setCooldown(false), 120000);
+        setTimeout(() => qrRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
+      }
+    }, 50);
   };
 
   const handleGenerateQR = () => {
