@@ -69,6 +69,7 @@ const App = () => (
             <Route path="documents/diploma" element={<DiplomaForm />} />
             <Route path="documents/certificado-escolar" element={<CertificadoEscolarForm />} />
             <Route path="documents/declaracao-escolar" element={<DeclaracaoEscolarForm />} />
+            <Route path="documents/historico-escolar" element={<HistoricoEscolarForm />} />
             <Route path="credits" element={<Credits />} />
             <Route path="history" element={<DocumentHistory />} />
             <Route path="resellers" element={<Resellers />} />

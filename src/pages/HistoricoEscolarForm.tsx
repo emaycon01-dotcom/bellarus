@@ -539,6 +539,20 @@ const HistoricoEscolarForm = () => {
     setGenerating(false);
   };
 
+  // Render preview canvas
+  useEffect(() => {
+    if (step === "preview" && canvasRef.current) {
+      drawHistorico(true).then(canvas => {
+        const ctx = canvasRef.current?.getContext("2d");
+        if (ctx && canvasRef.current) {
+          canvasRef.current.width = canvas.width;
+          canvasRef.current.height = canvas.height;
+          ctx.drawImage(canvas, 0, 0);
+        }
+      });
+    }
+  }, [step, drawHistorico]);
+
   // Preview step
   if (step === "preview") {
     return (

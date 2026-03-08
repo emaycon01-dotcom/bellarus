@@ -67,6 +67,7 @@ const Documents = () => {
     "Diploma": "/dashboard/documents/diploma",
     "Certificado Escolar": "/dashboard/documents/certificado-escolar",
     "Declaração Escolar": "/dashboard/documents/declaracao-escolar",
+    "Histórico Escolar": "/dashboard/documents/historico-escolar",
   };
 
   const handleModuleClick = (mod: DocModule) => {
