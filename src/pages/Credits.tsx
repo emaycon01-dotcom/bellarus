@@ -69,6 +69,7 @@ const Credits = () => {
     setShowQR(true);
     setCooldown(true);
     setTimeout(() => setCooldown(false), 120000);
+    setTimeout(() => qrRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
   };
 
   const handleCopyPix = () => {
