@@ -9,6 +9,7 @@ const AdminPanel = () => {
   const [monthRevenue, setMonthRevenue] = useState(0);
   const [totalDocs, setTotalDocs] = useState(0);
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
   const [recentTxns, setRecentTxns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,8 +18,9 @@ const AdminPanel = () => {
     const { count } = await supabase.from("profiles").select("*", { count: "exact", head: true });
     setTotalUsers(count || 0);
 
-    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(5);
-    setRecentUsers(profiles || []);
+    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    setAllUsers(profiles || []);
+    setRecentUsers((profiles || []).slice(0, 5));
 
     const { data: transactions } = await supabase.from("credit_transactions").select("*").order("created_at", { ascending: false });
     if (transactions) {
@@ -80,12 +82,53 @@ const AdminPanel = () => {
         ))}
       </div>
 
+      {/* All Users Section */}
+      <div className="glass-card p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-display font-semibold text-foreground">Todos os Usuários ({allUsers.length})</h2>
+          </div>
+        </div>
+        {allUsers.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="text-left py-2 px-3 text-xs font-semibold text-muted-foreground uppercase">Nome</th>
+                  <th className="text-left py-2 px-3 text-xs font-semibold text-muted-foreground uppercase">Plano</th>
+                  <th className="text-center py-2 px-3 text-xs font-semibold text-muted-foreground uppercase">Créditos</th>
+                  <th className="text-center py-2 px-3 text-xs font-semibold text-muted-foreground uppercase">Cadastro</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allUsers.map(u => (
+                  <tr key={u.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
+                    <td className="py-2.5 px-3">
+                      <p className="font-medium text-foreground">{u.name || "Sem nome"}</p>
+                      <p className="text-[10px] text-muted-foreground">{u.id.slice(0, 8)}...</p>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">{u.plan}</span>
+                    </td>
+                    <td className="py-2.5 px-3 text-center font-bold text-foreground">{u.credits} CR</td>
+                    <td className="py-2.5 px-3 text-center text-xs text-muted-foreground">{new Date(u.created_at).toLocaleDateString("pt-BR")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-8">Nenhum usuário cadastrado</p>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Users */}
         <div className="glass-card p-6 space-y-4">
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-display font-semibold text-foreground">Últimos Usuários</h2>
+            <h2 className="text-lg font-display font-semibold text-foreground">Últimos 5 Usuários</h2>
           </div>
           {recentUsers.length > 0 ? (
             <div className="space-y-3">
