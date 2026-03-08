@@ -18,8 +18,9 @@ const AdminPanel = () => {
     const { count } = await supabase.from("profiles").select("*", { count: "exact", head: true });
     setTotalUsers(count || 0);
 
-    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(5);
-    setRecentUsers(profiles || []);
+    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    setAllUsers(profiles || []);
+    setRecentUsers((profiles || []).slice(0, 5));
 
     const { data: transactions } = await supabase.from("credit_transactions").select("*").order("created_at", { ascending: false });
     if (transactions) {
