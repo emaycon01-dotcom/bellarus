@@ -563,17 +563,6 @@ const HistoricoEscolarForm = () => {
     );
   }
 
-  // Render preview canvas when entering preview
-  if (step === "preview" && canvasRef.current) {
-    drawHistorico(true).then(canvas => {
-      const ctx = canvasRef.current?.getContext("2d");
-      if (ctx && canvasRef.current) {
-        canvasRef.current.width = canvas.width;
-        canvasRef.current.height = canvas.height;
-        ctx.drawImage(canvas, 0, 0);
-      }
-    });
-  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
