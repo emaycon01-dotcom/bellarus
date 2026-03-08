@@ -469,21 +469,31 @@ const CnhForm = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-success to-primary flex items-center justify-center"><Eye className="w-5 h-5 text-white" /></div>
-              <h3 className="text-lg font-display font-bold text-foreground">Preview da CNH</h3>
+              <div>
+                <h3 className="text-lg font-display font-bold text-foreground">Preview da CNH</h3>
+                <p className="text-xs text-muted-foreground">Visualização com marca d'água de proteção</p>
+              </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowPreview(false)} className="gap-2"><ArrowLeft className="w-4 h-4" /> Editar</Button>
           </div>
 
           {previewImage && (
-            <div className="rounded-2xl border-2 border-success/30 overflow-hidden">
+            <div className="rounded-2xl border-2 border-success/30 overflow-hidden shadow-lg">
               <img src={previewImage} alt="Preview CNH" className="w-full" />
             </div>
           )}
 
+          <div className="glass-card p-4 bg-muted/30 rounded-xl">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Shield className="w-4 h-4 text-primary" />
+              <span>O PDF final será gerado <strong>sem marca d'água</strong> após o pagamento de 1 crédito.</span>
+            </div>
+          </div>
+
           <div className="flex items-center justify-center gap-4">
-            <Button variant="outline" size="lg" onClick={() => setShowPreview(false)} className="gap-2"><ArrowLeft className="w-4 h-4" /> Editar</Button>
-            <Button size="lg" disabled={confirming} className="gap-2 bg-gradient-to-r from-success to-primary text-white" onClick={handleConfirm}>
-              <CheckCircle2 className="w-5 h-5" /> {confirming ? "Processando..." : "Pronto (1 Crédito)"}
+            <Button variant="outline" size="lg" onClick={() => setShowPreview(false)} className="gap-2"><ArrowLeft className="w-4 h-4" /> Editar Dados</Button>
+            <Button size="lg" disabled={confirming} className="gap-2 bg-gradient-to-r from-success to-primary text-white shadow-lg hover:shadow-xl transition-all" onClick={handleConfirm}>
+              <FileText className="w-5 h-5" /> {confirming ? "Gerando PDF..." : "Gerar PDF (1 Crédito)"}
             </Button>
           </div>
         </div>
