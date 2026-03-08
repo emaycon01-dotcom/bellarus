@@ -34,6 +34,7 @@ const Credits = () => {
   const [showQR, setShowQR] = useState(false);
   const [cooldown, setCooldown] = useState(false);
   const [copied, setCopied] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const selectedPkg = allPackages.find((p) => p.credits === selectedCredits) || allPackages[0];
   const sliderIndex = sliderSteps.indexOf(selectedCredits);
