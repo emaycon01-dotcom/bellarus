@@ -37,6 +37,16 @@ const AdminPanel = () => {
 
   useEffect(() => { fetchStats(); }, []);
 
+  // Realtime: auto-refresh when profiles or transactions change
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-panel-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'credit_transactions' }, () => fetchStats())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   const stats = [
     { label: "Total de Usuários", value: String(totalUsers), icon: Users },
     { label: "Depósitos Totais", value: `R$ ${totalDeposits.toFixed(2)}`, icon: DollarSign },

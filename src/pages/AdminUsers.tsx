@@ -43,6 +43,15 @@ const AdminUsers = () => {
 
   useEffect(() => { fetchUsers(); }, []);
 
+  // Realtime: auto-refresh when profiles change
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-users-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchUsers())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   const filtered = users.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
     u.id.toLowerCase().includes(search.toLowerCase())
