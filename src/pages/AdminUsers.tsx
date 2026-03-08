@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Ban, Plus, Minus, Users } from "lucide-react";
+import { Search, Plus, Minus, Users, RefreshCw, Ban } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 interface UserProfile {
   id: string;
   name: string;
-  email: string;
   credits: number;
   plan: string;
   created_at: string;
@@ -28,18 +27,16 @@ const AdminUsers = () => {
   const [creditAmount, setCreditAmount] = useState(1);
 
   const fetchUsers = async () => {
-    const { data: profiles } = await supabase.from("profiles").select("*");
+    setLoading(true);
+    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
     if (profiles) {
-      // We can't query auth.users, so we show profile data
-      const mapped: UserProfile[] = profiles.map(p => ({
+      setUsers(profiles.map(p => ({
         id: p.id,
         name: p.name || "Sem nome",
-        email: "", // Not available from profiles
         credits: p.credits,
         plan: p.plan,
         created_at: p.created_at,
-      }));
-      setUsers(mapped);
+      })));
     }
     setLoading(false);
   };
@@ -91,17 +88,22 @@ const AdminUsers = () => {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-display font-bold text-foreground">Gerenciar Usuários</h1>
-          <p className="text-sm text-muted-foreground mt-1">{users.length} usuários cadastrados</p>
+          <p className="text-sm text-muted-foreground mt-1">{users.length} usuários cadastrados — Dados reais</p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-          <Users className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold text-primary">{users.length}</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+            <Users className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-primary">{users.length}</span>
+          </div>
+          <Button variant="outline" size="sm" onClick={fetchUsers}>
+            <RefreshCw className="w-4 h-4 mr-2" />Atualizar
+          </Button>
         </div>
       </div>
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Buscar por nome..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Input placeholder="Buscar por nome ou ID..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
       <div className="glass-card overflow-hidden">
@@ -110,8 +112,9 @@ const AdminUsers = () => {
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nome</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Cargo</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Cargo / Plano</th>
                 <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Créditos</th>
+                <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Cadastro</th>
                 <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ações</th>
               </tr>
             </thead>
@@ -121,7 +124,10 @@ const AdminUsers = () => {
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary shrink-0">{getInitials(user.name)}</div>
-                      <span className="font-medium text-foreground truncate max-w-[200px]">{user.name}</span>
+                      <div>
+                        <span className="font-medium text-foreground truncate max-w-[200px] block">{user.name}</span>
+                        <span className="text-[10px] text-muted-foreground">{user.id.slice(0, 8)}...</span>
+                      </div>
                     </div>
                   </td>
                   <td className="py-3.5 px-4">
@@ -134,6 +140,9 @@ const AdminUsers = () => {
                     <span className={`font-bold ${user.credits > 0 ? "text-foreground" : "text-muted-foreground"}`}>{user.credits}</span>
                     <span className="text-muted-foreground text-xs ml-1">CR</span>
                   </td>
+                  <td className="py-3.5 px-4 text-center text-xs text-muted-foreground">
+                    {new Date(user.created_at).toLocaleDateString("pt-BR")}
+                  </td>
                   <td className="py-3.5 px-4">
                     <div className="flex items-center justify-center gap-1">
                       <Button variant="ghost" size="icon" className="h-7 w-7 text-success hover:text-success hover:bg-success/10" onClick={() => openCreditDialog(user, "add")} title="Adicionar créditos"><Plus className="w-3.5 h-3.5" /></Button>
@@ -143,7 +152,7 @@ const AdminUsers = () => {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={4} className="text-center py-12 text-muted-foreground">Nenhum usuário encontrado</td></tr>
+                <tr><td colSpan={5} className="text-center py-12 text-muted-foreground">Nenhum usuário encontrado</td></tr>
               )}
             </tbody>
           </table>
