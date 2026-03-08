@@ -53,6 +53,7 @@ export type Database = {
           credits: number
           id: string
           name: string
+          pin_hash: string | null
           plan: string
         }
         Insert: {
@@ -60,6 +61,7 @@ export type Database = {
           credits?: number
           id: string
           name?: string
+          pin_hash?: string | null
           plan?: string
         }
         Update: {
@@ -67,6 +69,7 @@ export type Database = {
           credits?: number
           id?: string
           name?: string
+          pin_hash?: string | null
           plan?: string
         }
         Relationships: []
@@ -80,6 +83,9 @@ export type Database = {
         Args: { transaction_id: string }
         Returns: boolean
       }
+      has_user_pin: { Args: never; Returns: boolean }
+      set_user_pin: { Args: { pin_code: string }; Returns: boolean }
+      verify_user_pin: { Args: { pin_code: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
