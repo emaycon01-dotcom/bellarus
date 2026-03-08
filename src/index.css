@@ -6,50 +6,50 @@
 
 @layer base {
   :root {
-    --background: 220 65% 18%;
+    --background: 230 35% 14%;
     --foreground: 210 20% 95%;
 
-    --card: 220 60% 22%;
+    --card: 230 30% 18%;
     --card-foreground: 210 20% 95%;
 
-    --popover: 220 60% 20%;
+    --popover: 230 30% 16%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 200 80% 55%;
-    --primary-foreground: 220 80% 10%;
+    --primary: 265 60% 55%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 50% 28%;
+    --secondary: 230 30% 24%;
     --secondary-foreground: 210 20% 95%;
 
-    --muted: 220 50% 25%;
-    --muted-foreground: 210 20% 70%;
+    --muted: 230 30% 20%;
+    --muted-foreground: 210 20% 65%;
 
-    --accent: 200 80% 50%;
+    --accent: 265 55% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 40% 28%;
-    --input: 220 40% 28%;
-    --ring: 200 80% 55%;
+    --border: 230 25% 24%;
+    --input: 230 25% 24%;
+    --ring: 265 60% 55%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 220 70% 12%;
+    --sidebar-background: 230 40% 10%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 200 80% 55%;
+    --sidebar-primary: 265 60% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 55% 20%;
+    --sidebar-accent: 230 35% 18%;
     --sidebar-accent-foreground: 210 20% 95%;
-    --sidebar-border: 220 50% 22%;
-    --sidebar-ring: 200 80% 55%;
+    --sidebar-border: 230 30% 20%;
+    --sidebar-ring: 265 60% 55%;
 
-    --navy: 220 70% 25%;
-    --navy-light: 220 60% 35%;
-    --navy-dark: 220 80% 15%;
+    --navy: 230 40% 22%;
+    --navy-light: 230 35% 32%;
+    --navy-dark: 230 45% 12%;
     --gold: 45 90% 55%;
-    --gold-foreground: 220 70% 15%;
+    --gold-foreground: 230 40% 15%;
     --success: 152 60% 45%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
@@ -57,48 +57,48 @@
   }
 
   .dark {
-    --background: 222 47% 6%;
+    --background: 230 40% 6%;
     --foreground: 210 20% 95%;
 
-    --card: 222 40% 10%;
+    --card: 230 35% 10%;
     --card-foreground: 210 20% 95%;
 
-    --popover: 222 40% 10%;
+    --popover: 230 35% 10%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 200 80% 55%;
-    --primary-foreground: 220 80% 10%;
+    --primary: 265 60% 55%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 30% 18%;
+    --secondary: 230 25% 16%;
     --secondary-foreground: 210 20% 95%;
 
-    --muted: 220 30% 15%;
-    --muted-foreground: 215 20% 60%;
+    --muted: 230 25% 13%;
+    --muted-foreground: 215 20% 55%;
 
-    --accent: 200 80% 50%;
+    --accent: 265 55% 50%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 30% 20%;
-    --input: 220 30% 20%;
-    --ring: 200 80% 55%;
+    --border: 230 25% 18%;
+    --input: 230 25% 18%;
+    --ring: 265 60% 55%;
 
-    --sidebar-background: 222 50% 8%;
+    --sidebar-background: 230 45% 6%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 200 80% 55%;
+    --sidebar-primary: 265 60% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 40% 14%;
+    --sidebar-accent: 230 35% 12%;
     --sidebar-accent-foreground: 210 20% 95%;
-    --sidebar-border: 222 30% 16%;
-    --sidebar-ring: 200 80% 55%;
+    --sidebar-border: 230 30% 14%;
+    --sidebar-ring: 265 60% 55%;
 
-    --navy: 220 60% 35%;
-    --navy-light: 220 50% 45%;
-    --navy-dark: 222 50% 8%;
+    --navy: 230 35% 30%;
+    --navy-light: 230 30% 40%;
+    --navy-dark: 230 45% 6%;
     --gold: 45 90% 55%;
-    --gold-foreground: 220 70% 15%;
+    --gold-foreground: 230 40% 15%;
     --success: 152 60% 45%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
@@ -127,7 +127,7 @@
   }
 
   .navy-gradient {
-    background: linear-gradient(135deg, hsl(220 80% 15%), hsl(220 70% 25%), hsl(200 80% 35%));
+    background: linear-gradient(135deg, hsl(230 45% 12%), hsl(230 40% 22%), hsl(265 55% 35%));
   }
 
   .gold-gradient {

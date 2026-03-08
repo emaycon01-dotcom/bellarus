@@ -7,7 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import bellarusRobot from "@/assets/bellarus-robot.png";
+import bellarusLogo from "@/assets/bellarus-logo.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -52,24 +52,24 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-black relative overflow-hidden">
+    <div className="min-h-screen flex bg-[hsl(230,35%,8%)] relative overflow-hidden">
       {/* Ambient effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full bg-blue-600/8 blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-purple-600/8 blur-[100px]" />
+        <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full bg-purple-600/8 blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-blue-800/10 blur-[100px]" />
       </div>
 
-      {/* Left panel - Robot */}
+      {/* Left panel - Logo */}
       <div className="hidden lg:flex lg:w-[50%] relative items-center justify-center">
         <motion.div
-          animate={{ y: [0, -15, 0] }}
+          animate={{ scale: [1, 1.04, 1] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           className="relative z-10"
         >
           <motion.img
-            src={bellarusRobot}
-            alt="Bellarus Robot"
-            className="w-[420px] h-[420px] object-contain drop-shadow-[0_0_60px_rgba(100,140,255,0.3)]"
+            src={bellarusLogo}
+            alt="Bellarus Logo"
+            className="w-[350px] h-[350px] object-contain drop-shadow-[0_0_60px_rgba(120,80,200,0.4)] rounded-3xl"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
@@ -83,10 +83,10 @@ const Login = () => {
           {/* Mobile logo */}
           <div className="lg:hidden flex flex-col items-center gap-3 mb-4">
             <motion.img
-              src={bellarusRobot}
+              src={bellarusLogo}
               alt="Bellarus"
-              className="w-24 h-24 object-contain"
-              animate={{ y: [0, -8, 0] }}
+              className="w-24 h-24 object-contain rounded-xl"
+              animate={{ scale: [1, 1.03, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
             <p className="text-xs font-mono tracking-[0.3em] text-white/40">BELLARUS SISTEMAS</p>
@@ -102,26 +102,26 @@ const Login = () => {
               {!isLogin && (
                 <motion.div key="name-field" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="space-y-2 overflow-hidden">
                   <Label htmlFor="name" className="text-white/70">Nome completo</Label>
-                  <Input id="name" placeholder="Seu nome" value={name} onChange={(e) => setName(e.target.value)} className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-blue-500/50" />
+                  <Input id="name" placeholder="Seu nome" value={name} onChange={(e) => setName(e.target.value)} className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-purple-500/50" />
                 </motion.div>
               )}
             </AnimatePresence>
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white/70">E-mail</Label>
-              <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-blue-500/50" />
+              <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-purple-500/50" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password" className="text-white/70">Senha</Label>
               <div className="relative">
-                <Input id="password" type={showPass ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-blue-500/50 pr-10" />
+                <Input id="password" type={showPass ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-purple-500/50 pr-10" />
                 <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors">
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
-            {isLogin && <div className="flex justify-end"><button type="button" className="text-xs text-blue-400 hover:underline">Esqueceu a senha?</button></div>}
+            {isLogin && <div className="flex justify-end"><button type="button" className="text-xs text-purple-400 hover:underline">Esqueceu a senha?</button></div>}
             <motion.div whileTap={{ scale: 0.98 }}>
-              <Button type="submit" disabled={submitting} className="w-full py-5 font-semibold text-sm bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg shadow-blue-500/20">
+              <Button type="submit" disabled={submitting} className="w-full py-5 font-semibold text-sm bg-gradient-to-r from-purple-700 to-blue-700 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg shadow-purple-500/20">
                 {submitting ? "Aguarde..." : isLogin ? "Entrar" : "Criar Conta"}
               </Button>
             </motion.div>
@@ -135,7 +135,7 @@ const Login = () => {
 
           <p className="text-center text-sm text-white/50">
             {isLogin ? "Não tem conta?" : "Já tem conta?"}{" "}
-            <button onClick={() => setIsLogin(!isLogin)} className="text-blue-400 font-semibold hover:underline">{isLogin ? "Criar agora" : "Entrar"}</button>
+            <button onClick={() => setIsLogin(!isLogin)} className="text-purple-400 font-semibold hover:underline">{isLogin ? "Criar agora" : "Entrar"}</button>
           </p>
 
           <p className="text-center text-[10px] text-white/20 pt-4">© 2026 Bellarus Sistemas. Todos os direitos reservados.</p>
