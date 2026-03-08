@@ -118,8 +118,42 @@ serve(async (req) => {
         }
       };
       toolChoice = { type: "function", function: { name: "suggest_upa" } };
+    } else if (type === "brasao") {
+      // Generate state coat of arms image using AI image model
+      const estado = query || "São Paulo";
+      const imageBody = {
+        model: "google/gemini-2.5-flash-image",
+        messages: [
+          {
+            role: "user",
+            content: `Generate the official coat of arms (brasão) of the Brazilian state of ${estado}. It should be a realistic, detailed, official-looking heraldic coat of arms on a clean white background. High quality, centered, with the state name banner at the bottom.`
+          }
+        ],
+        modalities: ["image", "text"]
+      };
+
+      const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(imageBody),
+      });
+
+      if (!imageResponse.ok) {
+        const t = await imageResponse.text();
+        console.error("AI image error:", imageResponse.status, t);
+        throw new Error("AI image generation error");
+      }
+
+      const imageData = await imageResponse.json();
+      const imageUrl = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url || "";
+      
+      return new Response(JSON.stringify({ image: imageUrl }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     } else if (type === "custom") {
-      // Free-form AI prompt, returns text result
       const customBody = {
         model: "google/gemini-3-flash-preview",
         messages: [

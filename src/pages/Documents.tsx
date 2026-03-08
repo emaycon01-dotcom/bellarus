@@ -40,6 +40,7 @@ const modules: DocModule[] = [
   { name: "Diploma", desc: "Diploma de graduação", available: true, icon: <Award className="w-5 h-5" />, iconColor: "from-warning to-gold", category: "OUTROS" },
   { name: "Certificado Escolar", desc: "Certificado de conclusão escolar", available: true, icon: <BookOpen className="w-5 h-5" />, iconColor: "from-success to-primary", category: "OUTROS" },
   { name: "Declaração Escolar", desc: "Declaração de matrícula escolar", available: true, icon: <ScrollText className="w-5 h-5" />, iconColor: "from-muted-foreground to-secondary", category: "OUTROS" },
+  { name: "Histórico Escolar", desc: "Histórico escolar com notas e brasão", available: true, isNew: true, icon: <BookOpen className="w-5 h-5" />, iconColor: "from-primary to-warning", category: "OUTROS" },
 ];
 
 const categoryOrder = ["DOCUMENTOS DIGITAIS", "PDF", "ATESTADOS", "CERTIDÕES", "OUTROS"];
@@ -66,6 +67,7 @@ const Documents = () => {
     "Diploma": "/dashboard/documents/diploma",
     "Certificado Escolar": "/dashboard/documents/certificado-escolar",
     "Declaração Escolar": "/dashboard/documents/declaracao-escolar",
+    "Histórico Escolar": "/dashboard/documents/historico-escolar",
   };
 
   const handleModuleClick = (mod: DocModule) => {

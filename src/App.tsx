@@ -35,6 +35,7 @@ import EsimForm from "./pages/EsimForm";
 import DiplomaForm from "./pages/DiplomaForm";
 import CertificadoEscolarForm from "./pages/CertificadoEscolarForm";
 import DeclaracaoEscolarForm from "./pages/DeclaracaoEscolarForm";
+import HistoricoEscolarForm from "./pages/HistoricoEscolarForm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ const App = () => (
             <Route path="documents/diploma" element={<DiplomaForm />} />
             <Route path="documents/certificado-escolar" element={<CertificadoEscolarForm />} />
             <Route path="documents/declaracao-escolar" element={<DeclaracaoEscolarForm />} />
+            <Route path="documents/historico-escolar" element={<HistoricoEscolarForm />} />
             <Route path="credits" element={<Credits />} />
             <Route path="history" element={<DocumentHistory />} />
             <Route path="resellers" element={<Resellers />} />
