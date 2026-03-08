@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Tag, Star, TrendingUp, Box, Diamond, QrCode, Clock, MessageCircle, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -34,6 +34,7 @@ const Credits = () => {
   const [showQR, setShowQR] = useState(false);
   const [cooldown, setCooldown] = useState(false);
   const [copied, setCopied] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const selectedPkg = allPackages.find((p) => p.credits === selectedCredits) || allPackages[0];
   const sliderIndex = sliderSteps.indexOf(selectedCredits);
@@ -52,6 +53,15 @@ const Credits = () => {
   const handleSelect = (credits: number) => {
     setSelectedCredits(credits);
     setShowQR(false);
+    // Auto-generate QR and scroll
+    setTimeout(() => {
+      if (!cooldown) {
+        setShowQR(true);
+        setCooldown(true);
+        setTimeout(() => setCooldown(false), 120000);
+        setTimeout(() => qrRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
+      }
+    }, 50);
   };
 
   const handleGenerateQR = () => {
@@ -59,6 +69,7 @@ const Credits = () => {
     setShowQR(true);
     setCooldown(true);
     setTimeout(() => setCooldown(false), 120000);
+    setTimeout(() => qrRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
   };
 
   const handleCopyPix = () => {
@@ -117,7 +128,7 @@ const Credits = () => {
         </Button>
 
         {showQR && (
-          <div className="glass-card p-6 space-y-5 max-w-sm mx-auto">
+          <div ref={qrRef} className="glass-card p-6 space-y-5 max-w-sm mx-auto">
             <p className="text-center text-sm font-semibold text-foreground">
               Escaneie o QR Code para pagar
             </p>
