@@ -76,7 +76,7 @@ const CinForm = () => {
   };
 
   const handleConcluir = () => {
-    if (user) saveDocumentHistory(user.id, "CIN (RG Digital)", nomeCompleto || "Sem nome");
+    if (user) saveDocumentHistory(user.id, "CIN (RG Digital)", nome || "Sem nome");
     toast.success("CIN (RG Digital) gerado com sucesso!");
   };
 
