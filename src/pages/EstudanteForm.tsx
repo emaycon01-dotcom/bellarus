@@ -17,6 +17,7 @@ const generateMatricula = () => `${new Date().getFullYear()}${generateDigits(6)}
 
 const EstudanteForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const fotoRef = useRef<HTMLInputElement>(null);
 
   const [nomeCompleto, setNomeCompleto] = useState("");

@@ -22,6 +22,7 @@ const formatCPF = (v: string) => {
 
 const CinForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const fotoRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<"form" | "preview">("form");
 

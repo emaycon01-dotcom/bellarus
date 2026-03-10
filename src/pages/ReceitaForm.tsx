@@ -44,6 +44,7 @@ interface MedicamentoItem {
 
 const ReceitaForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [nomePaciente, setNomePaciente] = useState("");
   const [cpfPaciente, setCpfPaciente] = useState("");

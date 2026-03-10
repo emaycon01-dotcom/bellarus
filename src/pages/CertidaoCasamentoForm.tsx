@@ -15,6 +15,7 @@ const generateDigits = (len: number) => Array.from({ length: len }, () => Math.f
 
 const CertidaoCasamentoForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState<"form" | "preview">("form");
   const [loading, setLoading] = useState(false);
 

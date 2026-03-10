@@ -14,6 +14,7 @@ const generateDigits = (len: number) => Array.from({ length: len }, () => Math.f
 
 const RendaForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [nomeEmpresa, setNomeEmpresa] = useState("");
   const [cnpjEmpresa, setCnpjEmpresa] = useState("");
   const [nomeFuncionario, setNomeFuncionario] = useState("");

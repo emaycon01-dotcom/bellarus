@@ -14,6 +14,7 @@ const generateDigits = (len: number) => Array.from({ length: len }, () => Math.f
 
 const SantanderForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [nomeRemetente, setNomeRemetente] = useState("");
   const [cpfRemetente, setCpfRemetente] = useState("");
   const [agenciaRemetente, setAgenciaRemetente] = useState("");

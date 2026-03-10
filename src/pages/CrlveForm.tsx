@@ -21,6 +21,7 @@ const generateRenavam = () => generateDigits(11);
 
 const CrlveForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [placa, setPlaca] = useState("");
   const [renavam, setRenavam] = useState("");
   const [chassi, setChassi] = useState("");

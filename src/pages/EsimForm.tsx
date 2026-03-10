@@ -14,6 +14,7 @@ const OPERADORAS = ["Claro", "Vivo", "TIM", "Oi"];
 
 const EsimForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState<"form" | "preview">("form");
 
   const [operadora, setOperadora] = useState("");

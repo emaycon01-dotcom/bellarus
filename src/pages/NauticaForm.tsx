@@ -65,6 +65,7 @@ const formatCPF = (v: string) => {
 
 const NauticaForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const fotoRef = useRef<HTMLInputElement>(null);
   const assinaturaRef = useRef<HTMLInputElement>(null);
 

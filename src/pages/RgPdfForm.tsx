@@ -24,6 +24,7 @@ const formatCPF = (v: string) => {
 
 const RgPdfForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const fotoRef = useRef<HTMLInputElement>(null);
   const assinaturaRef = useRef<HTMLInputElement>(null);
 

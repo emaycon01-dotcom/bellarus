@@ -64,6 +64,7 @@ function formatDateLong(dateStr: string): string {
 
 const AtestadoForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const templateImgRef = useRef<HTMLImageElement | null>(null);
 
