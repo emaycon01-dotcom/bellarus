@@ -628,7 +628,7 @@ const NauticaForm = () => {
               <Button
                 size="lg"
                 className="gap-2 bg-gradient-to-r from-cyan-500 to-teal-500 text-white hover:from-cyan-600 hover:to-teal-600"
-                onClick={() => { if (user) saveDocumentHistory(user.id, "Habilitação Náutica", nome || "Sem nome"); toast.info("Emissão do documento será implementada em breve."); }}
+                onClick={() => { if (user) saveDocumentHistory(user.id, "Habilitação Náutica", nomeCompleto || "Sem nome"); toast.info("Emissão do documento será implementada em breve."); }}
               >
                 <Sparkles className="w-5 h-5" />
                 Emitir Documento (0.75 CR)
