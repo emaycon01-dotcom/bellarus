@@ -95,6 +95,7 @@ export type Database = {
         }[]
       }
       has_user_pin: { Args: never; Returns: boolean }
+      is_admin: { Args: never; Returns: boolean }
       set_user_pin: { Args: { pin_code: string }; Returns: boolean }
       verify_user_pin: { Args: { pin_code: string }; Returns: boolean }
     }
