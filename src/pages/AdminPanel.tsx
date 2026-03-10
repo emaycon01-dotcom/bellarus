@@ -1,27 +1,35 @@
 import { useState, useEffect } from "react";
-import { Users, DollarSign, FileText, TrendingUp, BarChart3, RefreshCw } from "lucide-react";
+import { Users, DollarSign, TrendingUp, BarChart3, RefreshCw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+
+interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  credits: number;
+  plan: string;
+  created_at: string;
+}
 
 const AdminPanel = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalDeposits, setTotalDeposits] = useState(0);
   const [monthRevenue, setMonthRevenue] = useState(0);
-  const [totalDocs, setTotalDocs] = useState(0);
-  const [recentUsers, setRecentUsers] = useState<any[]>([]);
-  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<AdminUser[]>([]);
   const [recentTxns, setRecentTxns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchStats = async () => {
     setLoading(true);
-    const { count } = await supabase.from("profiles").select("*", { count: "exact", head: true });
-    setTotalUsers(count || 0);
 
-    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
-    setAllUsers(profiles || []);
-    setRecentUsers((profiles || []).slice(0, 5));
+    // Fetch users with emails via secure function
+    const { data: usersData } = await supabase.rpc("get_all_users_for_admin");
+    const users = (usersData || []) as AdminUser[];
+    setAllUsers(users);
+    setTotalUsers(users.length);
 
+    // Fetch transactions
     const { data: transactions } = await supabase.from("credit_transactions").select("*").order("created_at", { ascending: false });
     if (transactions) {
       setRecentTxns(transactions.slice(0, 5));
@@ -39,7 +47,6 @@ const AdminPanel = () => {
 
   useEffect(() => { fetchStats(); }, []);
 
-  // Realtime: auto-refresh when profiles or transactions change
   useEffect(() => {
     const channel = supabase
       .channel('admin-panel-realtime')
@@ -84,18 +91,17 @@ const AdminPanel = () => {
 
       {/* All Users Section */}
       <div className="glass-card p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-display font-semibold text-foreground">Todos os Usuários ({allUsers.length})</h2>
-          </div>
+        <div className="flex items-center gap-2">
+          <Users className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-display font-semibold text-foreground">Todos os Usuários ({allUsers.length})</h2>
         </div>
         {allUsers.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left py-2 px-3 text-xs font-semibold text-muted-foreground uppercase">Nome</th>
+                  <th className="text-left py-2 px-3 text-xs font-semibold text-muted-foreground uppercase">Usuário</th>
+                  <th className="text-left py-2 px-3 text-xs font-semibold text-muted-foreground uppercase">E-mail</th>
                   <th className="text-left py-2 px-3 text-xs font-semibold text-muted-foreground uppercase">Plano</th>
                   <th className="text-center py-2 px-3 text-xs font-semibold text-muted-foreground uppercase">Créditos</th>
                   <th className="text-center py-2 px-3 text-xs font-semibold text-muted-foreground uppercase">Cadastro</th>
@@ -107,6 +113,12 @@ const AdminPanel = () => {
                     <td className="py-2.5 px-3">
                       <p className="font-medium text-foreground">{u.name || "Sem nome"}</p>
                       <p className="text-[10px] text-muted-foreground">{u.id.slice(0, 8)}...</p>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-1.5">
+                        <Mail className="w-3 h-3 text-muted-foreground shrink-0" />
+                        <span className="text-xs text-foreground">{u.email}</span>
+                      </div>
                     </td>
                     <td className="py-2.5 px-3">
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary">{u.plan}</span>
@@ -123,57 +135,32 @@ const AdminPanel = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Users */}
-        <div className="glass-card p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-display font-semibold text-foreground">Últimos 5 Usuários</h2>
-          </div>
-          {recentUsers.length > 0 ? (
-            <div className="space-y-3">
-              {recentUsers.map(u => (
-                <div key={u.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{u.name || "Sem nome"}</p>
-                    <p className="text-xs text-muted-foreground">Plano: {u.plan} • {u.credits} CR</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">{new Date(u.created_at).toLocaleDateString("pt-BR")}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">Nenhum usuário cadastrado</p>
-          )}
+      {/* Recent Transactions */}
+      <div className="glass-card p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <DollarSign className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-display font-semibold text-foreground">Últimas Transações</h2>
         </div>
-
-        {/* Recent Transactions */}
-        <div className="glass-card p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-display font-semibold text-foreground">Últimas Transações</h2>
-          </div>
-          {recentTxns.length > 0 ? (
-            <div className="space-y-3">
-              {recentTxns.map(t => (
-                <div key={t.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">R$ {(t.amount * 20).toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground">{t.amount} CR • {t.type}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${t.status === "confirmed" ? "bg-success/20 text-success" : "bg-yellow-500/20 text-yellow-600"}`}>
-                      {t.status === "confirmed" ? "Confirmado" : "Pendente"}
-                    </span>
-                    <p className="text-xs text-muted-foreground mt-1">{new Date(t.created_at).toLocaleDateString("pt-BR")}</p>
-                  </div>
+        {recentTxns.length > 0 ? (
+          <div className="space-y-3">
+            {recentTxns.map(t => (
+              <div key={t.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
+                <div>
+                  <p className="text-sm font-medium text-foreground">R$ {(t.amount * 20).toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground">{t.amount} CR • {t.type}</p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">Nenhuma transação registrada</p>
-          )}
-        </div>
+                <div className="text-right">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${t.status === "confirmed" ? "bg-success/20 text-success" : "bg-yellow-500/20 text-yellow-600"}`}>
+                    {t.status === "confirmed" ? "Confirmado" : "Pendente"}
+                  </span>
+                  <p className="text-xs text-muted-foreground mt-1">{new Date(t.created_at).toLocaleDateString("pt-BR")}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-8">Nenhuma transação registrada</p>
+        )}
       </div>
     </div>
   );
