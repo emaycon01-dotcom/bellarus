@@ -520,10 +520,11 @@ const HistoricoEscolarForm = () => {
     if (!user) { toast.error("Faça login primeiro."); return; }
     setGenerating(true);
     try {
-      const { data: profile } = await supabase.from("profiles").select("credits").eq("id", user.id).single();
-      if (!profile || profile.credits < 1) { toast.error("Créditos insuficientes."); setGenerating(false); return; }
-
-      await supabase.from("profiles").update({ credits: profile.credits - 1 }).eq("id", user.id);
+      if (!isAdmin) {
+        const { data: profile } = await supabase.from("profiles").select("credits").eq("id", user.id).single();
+        if (!profile || profile.credits < 1) { toast.error("Créditos insuficientes."); setGenerating(false); return; }
+        await supabase.from("profiles").update({ credits: profile.credits - 1 }).eq("id", user.id);
+      }
 
       const canvas = await drawHistorico(false);
       const imgData = canvas.toDataURL("image/jpeg", 0.95);
