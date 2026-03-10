@@ -45,7 +45,7 @@ const formatCPF = (v: string) => {
 
 const CnhForm = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const fotoRef = useRef<HTMLInputElement>(null);
   const assinaturaRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -351,22 +351,24 @@ const CnhForm = () => {
     if (!user) { toast.error("Faça login para continuar."); return; }
     setConfirming(true);
     
-    const { data: profile } = await supabase.from("profiles").select("credits").eq("id", user.id).single();
-    if (!profile || profile.credits < 1) {
-      toast.error("Créditos insuficientes! Recarregue sua conta.");
-      setConfirming(false);
-      return;
-    }
+    if (!isAdmin) {
+      const { data: profile } = await supabase.from("profiles").select("credits").eq("id", user.id).single();
+      if (!profile || profile.credits < 1) {
+        toast.error("Créditos insuficientes! Recarregue sua conta.");
+        setConfirming(false);
+        return;
+      }
 
-    const { error } = await supabase.from("profiles").update({ credits: profile.credits - 1 }).eq("id", user.id);
-    if (error) { toast.error("Erro ao debitar crédito."); setConfirming(false); return; }
+      const { error } = await supabase.from("profiles").update({ credits: profile.credits - 1 }).eq("id", user.id);
+      if (error) { toast.error("Erro ao debitar crédito."); setConfirming(false); return; }
+    }
 
     const cleanImage = await drawOnTemplate(false);
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     pdf.addImage(cleanImage, "PNG", 0, 0, 210, 297);
     pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}.pdf`);
 
-    toast.success("PDF gerado com sucesso! 1 crédito debitado.");
+    toast.success(isAdmin ? "PDF gerado com sucesso! (Admin — sem débito)" : "PDF gerado com sucesso! 1 crédito debitado.");
     setConfirming(false);
   };
 

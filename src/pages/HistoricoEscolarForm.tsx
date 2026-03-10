@@ -52,7 +52,7 @@ const calcMedia = (n1: string, n2: string, n3: string, n4: string): string => {
 
 const HistoricoEscolarForm = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [step, setStep] = useState<"form" | "preview">("form");
   const [loading, setLoading] = useState(false);
   const [brasaoLoading, setBrasaoLoading] = useState(false);
@@ -520,10 +520,11 @@ const HistoricoEscolarForm = () => {
     if (!user) { toast.error("Faça login primeiro."); return; }
     setGenerating(true);
     try {
-      const { data: profile } = await supabase.from("profiles").select("credits").eq("id", user.id).single();
-      if (!profile || profile.credits < 1) { toast.error("Créditos insuficientes."); setGenerating(false); return; }
-
-      await supabase.from("profiles").update({ credits: profile.credits - 1 }).eq("id", user.id);
+      if (!isAdmin) {
+        const { data: profile } = await supabase.from("profiles").select("credits").eq("id", user.id).single();
+        if (!profile || profile.credits < 1) { toast.error("Créditos insuficientes."); setGenerating(false); return; }
+        await supabase.from("profiles").update({ credits: profile.credits - 1 }).eq("id", user.id);
+      }
 
       const canvas = await drawHistorico(false);
       const imgData = canvas.toDataURL("image/jpeg", 0.95);
@@ -531,7 +532,7 @@ const HistoricoEscolarForm = () => {
       pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
       pdf.save(`historico-escolar-${nomeAluno.replace(/\s+/g, "-").toLowerCase()}.pdf`);
 
-      toast.success("Histórico Escolar gerado com sucesso! 1 crédito debitado.");
+      toast.success(isAdmin ? "Histórico gerado com sucesso! (Admin — sem débito)" : "Histórico Escolar gerado com sucesso! 1 crédito debitado.");
     } catch (e) {
       console.error(e);
       toast.error("Erro ao gerar PDF.");
