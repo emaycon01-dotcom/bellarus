@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Minus, Users, RefreshCw, Ban } from "lucide-react";
+import { Search, Plus, Minus, Users, RefreshCw, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface UserProfile {
   id: string;
+  email: string;
   name: string;
   credits: number;
   plan: string;
@@ -28,22 +29,15 @@ const AdminUsers = () => {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
-    if (profiles) {
-      setUsers(profiles.map(p => ({
-        id: p.id,
-        name: p.name || "Sem nome",
-        credits: p.credits,
-        plan: p.plan,
-        created_at: p.created_at,
-      })));
+    const { data } = await supabase.rpc("get_all_users_for_admin");
+    if (data) {
+      setUsers(data as UserProfile[]);
     }
     setLoading(false);
   };
 
   useEffect(() => { fetchUsers(); }, []);
 
-  // Realtime: auto-refresh when profiles change
   useEffect(() => {
     const channel = supabase
       .channel('admin-users-realtime')
@@ -54,6 +48,7 @@ const AdminUsers = () => {
 
   const filtered = users.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
+    u.email.toLowerCase().includes(search.toLowerCase()) ||
     u.id.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -112,7 +107,7 @@ const AdminUsers = () => {
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Buscar por nome ou ID..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Input placeholder="Buscar por nome, e-mail ou ID..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
       <div className="glass-card overflow-hidden">
@@ -120,7 +115,8 @@ const AdminUsers = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nome</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Usuário</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">E-mail</th>
                 <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Cargo / Plano</th>
                 <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Créditos</th>
                 <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Cadastro</th>
@@ -132,11 +128,17 @@ const AdminUsers = () => {
                 <tr key={user.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                   <td className="py-3.5 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary shrink-0">{getInitials(user.name)}</div>
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary shrink-0">{getInitials(user.name || "??")}</div>
                       <div>
-                        <span className="font-medium text-foreground truncate max-w-[200px] block">{user.name}</span>
+                        <span className="font-medium text-foreground truncate max-w-[200px] block">{user.name || "Sem nome"}</span>
                         <span className="text-[10px] text-muted-foreground">{user.id.slice(0, 8)}...</span>
                       </div>
+                    </div>
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <div className="flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      <span className="text-xs text-foreground">{user.email}</span>
                     </div>
                   </td>
                   <td className="py-3.5 px-4">
@@ -161,7 +163,7 @@ const AdminUsers = () => {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={5} className="text-center py-12 text-muted-foreground">Nenhum usuário encontrado</td></tr>
+                <tr><td colSpan={6} className="text-center py-12 text-muted-foreground">Nenhum usuário encontrado</td></tr>
               )}
             </tbody>
           </table>
@@ -176,6 +178,7 @@ const AdminUsers = () => {
           <div className="space-y-4 pt-2">
             <div className="p-3 rounded-lg bg-muted/50 border border-border">
               <p className="text-sm font-medium text-foreground">{selectedUser?.name}</p>
+              <p className="text-xs text-muted-foreground">{selectedUser?.email}</p>
               <p className="text-xs text-muted-foreground mt-1">Saldo atual: <span className="font-bold text-foreground">{selectedUser?.credits} CR</span></p>
             </div>
             <div className="space-y-2">
