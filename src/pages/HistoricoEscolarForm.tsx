@@ -533,6 +533,7 @@ const HistoricoEscolarForm = () => {
       pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
       pdf.save(`historico-escolar-${nomeAluno.replace(/\s+/g, "-").toLowerCase()}.pdf`);
 
+      if (user) saveDocumentHistory(user.id, "Histórico Escolar", nomeAluno || "Sem nome");
       toast.success(isAdmin ? "Histórico gerado com sucesso! (Admin — sem débito)" : "Histórico Escolar gerado com sucesso! 1 crédito debitado.");
     } catch (e) {
       console.error(e);

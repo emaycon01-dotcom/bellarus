@@ -313,6 +313,7 @@ const AtestadoForm = () => {
       pdf.addImage(imgData, "JPEG", 0, 0, offscreen.width, offscreen.height);
       pdf.save(`atestado-${nomePaciente || "documento"}.pdf`);
 
+      if (user) saveDocumentHistory(user.id, "Atestado Médico", nomePaciente || "Sem nome");
       toast.success("PDF gerado com sucesso! 1 crédito debitado.");
     } catch (e) {
       toast.error("Erro ao gerar PDF.");
