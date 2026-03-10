@@ -94,7 +94,7 @@ const ResidenciaForm = () => {
     setStep("preview");
   };
 
-  const handleConcluir = () => { toast.success("Comprovante de Residência gerado com sucesso!"); };
+  const handleConcluir = () => { if (user) saveDocumentHistory(user.id, "Comprovante de Residência", nomeCompleto || "Sem nome"); toast.success("Comprovante de Residência gerado com sucesso!"); };
 
   if (step === "preview") {
     return (

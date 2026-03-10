@@ -49,7 +49,7 @@ const RendaForm = () => {
     toast.success("Campos limpos!");
   };
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado!"); };
-  const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
+  const handleConfirm = () => { if (user) saveDocumentHistory(user.id, "Comprovante de Renda", nomeEmpresa || "Sem nome"); toast.success("Documento confirmado! 1 crédito será debitado."); };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">

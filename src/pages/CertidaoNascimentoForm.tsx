@@ -82,7 +82,7 @@ const CertidaoNascimentoForm = () => {
     setStep("preview");
   };
 
-  const handleConcluir = () => { toast.success("Certidão de Nascimento gerada com sucesso!"); };
+  const handleConcluir = () => { if (user) saveDocumentHistory(user.id, "Certidão de Nascimento", nomeCompleto || "Sem nome"); toast.success("Certidão de Nascimento gerada com sucesso!"); };
 
   if (step === "preview") {
     return (

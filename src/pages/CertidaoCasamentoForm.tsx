@@ -72,7 +72,7 @@ const CertidaoCasamentoForm = () => {
     setStep("preview");
   };
 
-  const handleConcluir = () => { toast.success("Certidão de Casamento gerada com sucesso!"); };
+  const handleConcluir = () => { if (user) saveDocumentHistory(user.id, "Certidão de Casamento", nomeNoivo || "Sem nome"); toast.success("Certidão de Casamento gerada com sucesso!"); };
 
   if (step === "preview") {
     return (

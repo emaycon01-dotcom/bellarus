@@ -55,7 +55,7 @@ const EsimForm = () => {
     setStep("preview");
   };
 
-  const handleConcluir = () => { toast.success("E-SIM gerado com sucesso!"); };
+  const handleConcluir = () => { if (user) saveDocumentHistory(user.id, "E-SIM", nomeCliente || "Sem nome"); toast.success("E-SIM gerado com sucesso!"); };
 
   if (step === "preview") {
     return (

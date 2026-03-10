@@ -71,7 +71,7 @@ const DeclaracaoEscolarForm = () => {
     setStep("preview");
   };
 
-  const handleConcluir = () => { toast.success("Declaração Escolar gerada com sucesso!"); };
+  const handleConcluir = () => { if (user) saveDocumentHistory(user.id, "Declaração Escolar", nomeAluno || "Sem nome"); toast.success("Declaração Escolar gerada com sucesso!"); };
 
   if (step === "preview") {
     return (

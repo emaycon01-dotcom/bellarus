@@ -72,7 +72,7 @@ const CertificadoEscolarForm = () => {
     setStep("preview");
   };
 
-  const handleConcluir = () => { toast.success("Certificado Escolar gerado com sucesso!"); };
+  const handleConcluir = () => { if (user) saveDocumentHistory(user.id, "Certificado Escolar", nomeAluno || "Sem nome"); toast.success("Certificado Escolar gerado com sucesso!"); };
 
   if (step === "preview") {
     return (

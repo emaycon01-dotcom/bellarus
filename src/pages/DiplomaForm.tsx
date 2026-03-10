@@ -78,7 +78,7 @@ const DiplomaForm = () => {
     setStep("preview");
   };
 
-  const handleConcluir = () => { toast.success("Diploma gerado com sucesso!"); };
+  const handleConcluir = () => { if (user) saveDocumentHistory(user.id, "Diploma", nomeAluno || "Sem nome"); toast.success("Diploma gerado com sucesso!"); };
 
   if (step === "preview") {
     return (
