@@ -20,7 +20,8 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isAdmin = user?.email === "admin@orion.com";
+  const ADMIN_EMAILS = ["admin@orion.com", "souzagestao@gmail.com"];
+  const isAdmin = !!user?.email && ADMIN_EMAILS.includes(user.email);
 
   return { user, loading, isAdmin };
 }
