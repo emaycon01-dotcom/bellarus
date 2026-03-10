@@ -83,6 +83,17 @@ export type Database = {
         Args: { transaction_id: string }
         Returns: boolean
       }
+      get_all_users_for_admin: {
+        Args: never
+        Returns: {
+          created_at: string
+          credits: number
+          email: string
+          id: string
+          name: string
+          plan: string
+        }[]
+      }
       has_user_pin: { Args: never; Returns: boolean }
       set_user_pin: { Args: { pin_code: string }; Returns: boolean }
       verify_user_pin: { Args: { pin_code: string }; Returns: boolean }
