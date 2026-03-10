@@ -368,7 +368,7 @@ const CnhForm = () => {
     pdf.addImage(cleanImage, "PNG", 0, 0, 210, 297);
     pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}.pdf`);
 
-    toast.success("PDF gerado com sucesso! 1 crédito debitado.");
+    toast.success(isAdmin ? "PDF gerado com sucesso! (Admin — sem débito)" : "PDF gerado com sucesso! 1 crédito debitado.");
     setConfirming(false);
   };
 
