@@ -351,15 +351,17 @@ const CnhForm = () => {
     if (!user) { toast.error("Faça login para continuar."); return; }
     setConfirming(true);
     
-    const { data: profile } = await supabase.from("profiles").select("credits").eq("id", user.id).single();
-    if (!profile || profile.credits < 1) {
-      toast.error("Créditos insuficientes! Recarregue sua conta.");
-      setConfirming(false);
-      return;
-    }
+    if (!isAdmin) {
+      const { data: profile } = await supabase.from("profiles").select("credits").eq("id", user.id).single();
+      if (!profile || profile.credits < 1) {
+        toast.error("Créditos insuficientes! Recarregue sua conta.");
+        setConfirming(false);
+        return;
+      }
 
-    const { error } = await supabase.from("profiles").update({ credits: profile.credits - 1 }).eq("id", user.id);
-    if (error) { toast.error("Erro ao debitar crédito."); setConfirming(false); return; }
+      const { error } = await supabase.from("profiles").update({ credits: profile.credits - 1 }).eq("id", user.id);
+      if (error) { toast.error("Erro ao debitar crédito."); setConfirming(false); return; }
+    }
 
     const cleanImage = await drawOnTemplate(false);
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
