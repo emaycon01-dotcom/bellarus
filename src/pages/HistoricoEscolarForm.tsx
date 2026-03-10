@@ -52,7 +52,7 @@ const calcMedia = (n1: string, n2: string, n3: string, n4: string): string => {
 
 const HistoricoEscolarForm = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [step, setStep] = useState<"form" | "preview">("form");
   const [loading, setLoading] = useState(false);
   const [brasaoLoading, setBrasaoLoading] = useState(false);
