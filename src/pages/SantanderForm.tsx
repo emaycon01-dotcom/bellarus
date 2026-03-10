@@ -6,12 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Landmark, CheckCircle2, Shuffle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 
 const TIPO_OPERACAO = ["PIX ENVIADO", "PIX RECEBIDO", "TRANSFERÊNCIA", "TED", "DOC", "PAGAMENTO DE BOLETO"];
 const generateDigits = (len: number) => Array.from({ length: len }, () => Math.floor(Math.random() * 10)).join("");
 
 const SantanderForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [nomeRemetente, setNomeRemetente] = useState("");
   const [cpfRemetente, setCpfRemetente] = useState("");
   const [agenciaRemetente, setAgenciaRemetente] = useState("");
@@ -43,7 +46,7 @@ const SantanderForm = () => {
     toast.success("Campos limpos!");
   };
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado!"); };
-  const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
+  const handleConfirm = () => { if (user) saveDocumentHistory(user.id, "Comprovante Santander", nomeRemetente || "Sem nome"); toast.success("Documento confirmado! 1 crédito será debitado."); };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">

@@ -7,12 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Heart, Sparkles, Eye, Download, Wand2, Shuffle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 const generateDigits = (len: number) => Array.from({ length: len }, () => Math.floor(Math.random() * 10)).join("");
 
 const CertidaoNascimentoForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState<"form" | "preview">("form");
   const [loading, setLoading] = useState(false);
 
@@ -79,7 +82,7 @@ const CertidaoNascimentoForm = () => {
     setStep("preview");
   };
 
-  const handleConcluir = () => { toast.success("Certidão de Nascimento gerada com sucesso!"); };
+  const handleConcluir = () => { if (user) saveDocumentHistory(user.id, "Certidão de Nascimento", nomeCompleto || "Sem nome"); toast.success("Certidão de Nascimento gerada com sucesso!"); };
 
   if (step === "preview") {
     return (

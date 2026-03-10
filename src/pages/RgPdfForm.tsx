@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Shield, Users, Clock, CreditCard, Shuffle, ImagePlus, CheckCircle2, Sparkles, Eye, UserCircle, FileCheck, Contact, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 const GENERO_OPTIONS = ["Masculino", "Feminino"];
@@ -22,6 +24,7 @@ const formatCPF = (v: string) => {
 
 const RgPdfForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const fotoRef = useRef<HTMLInputElement>(null);
   const assinaturaRef = useRef<HTMLInputElement>(null);
 
@@ -67,7 +70,7 @@ const RgPdfForm = () => {
     toast.success("Campos limpos!");
   };
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado com sucesso!"); };
-  const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
+  const handleConfirm = () => { if (user) saveDocumentHistory(user.id, "RG PDF", nomeCompleto || "Sem nome"); toast.success("Documento confirmado! 1 crédito será debitado."); };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">

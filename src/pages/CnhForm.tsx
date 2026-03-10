@@ -12,6 +12,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 import cnhTemplate from "@/assets/cnh-template.png";
 import jsPDF from "jspdf";
 
@@ -368,6 +369,7 @@ const CnhForm = () => {
     pdf.addImage(cleanImage, "PNG", 0, 0, 210, 297);
     pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}.pdf`);
 
+    if (user) saveDocumentHistory(user.id, "CNH Digital", nomeCompleto || "Sem nome");
     toast.success(isAdmin ? "PDF gerado com sucesso! (Admin — sem débito)" : "PDF gerado com sucesso! 1 crédito debitado.");
     setConfirming(false);
   };

@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Shield, Users, Clock, Shuffle, Sparkles, Eye, Car, CheckCircle2, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 const COMBUSTIVEL_OPTIONS = ["GASOLINA", "ETANOL", "FLEX", "DIESEL", "GNV", "ELÉTRICO"];
@@ -19,6 +21,7 @@ const generateRenavam = () => generateDigits(11);
 
 const CrlveForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [placa, setPlaca] = useState("");
   const [renavam, setRenavam] = useState("");
   const [chassi, setChassi] = useState("");
@@ -52,7 +55,7 @@ const CrlveForm = () => {
     toast.success("Campos limpos!");
   };
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado!"); };
-  const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
+  const handleConfirm = () => { if (user) saveDocumentHistory(user.id, "CRLV-e Digital", placa || "Sem placa"); toast.success("Documento confirmado! 1 crédito será debitado."); };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">

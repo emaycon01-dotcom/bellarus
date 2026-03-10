@@ -6,12 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, TrendingUp, CheckCircle2, Shuffle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 
 const MESES = ["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
 const generateDigits = (len: number) => Array.from({ length: len }, () => Math.floor(Math.random() * 10)).join("");
 
 const RendaForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [nomeEmpresa, setNomeEmpresa] = useState("");
   const [cnpjEmpresa, setCnpjEmpresa] = useState("");
   const [nomeFuncionario, setNomeFuncionario] = useState("");
@@ -46,7 +49,7 @@ const RendaForm = () => {
     toast.success("Campos limpos!");
   };
   const handlePreview = () => { setShowPreview(true); toast.success("Preview gerado!"); };
-  const handleConfirm = () => { toast.success("Documento confirmado! 1 crédito será debitado."); };
+  const handleConfirm = () => { if (user) saveDocumentHistory(user.id, "Comprovante de Renda", nomeEmpresa || "Sem nome"); toast.success("Documento confirmado! 1 crédito será debitado."); };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">

@@ -6,12 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Smartphone, Sparkles, Eye, Download, Shuffle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 
 const generateDigits = (len: number) => Array.from({ length: len }, () => Math.floor(Math.random() * 10)).join("");
 const OPERADORAS = ["Claro", "Vivo", "TIM", "Oi"];
 
 const EsimForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState<"form" | "preview">("form");
 
   const [operadora, setOperadora] = useState("");
@@ -52,7 +55,7 @@ const EsimForm = () => {
     setStep("preview");
   };
 
-  const handleConcluir = () => { toast.success("E-SIM gerado com sucesso!"); };
+  const handleConcluir = () => { if (user) saveDocumentHistory(user.id, "E-SIM", nomeCliente || "Sem nome"); toast.success("E-SIM gerado com sucesso!"); };
 
   if (step === "preview") {
     return (

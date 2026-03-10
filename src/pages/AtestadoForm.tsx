@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Shield, Users, Clock, Sparkles, Eye, Stethoscope, CheckCircle2, Shuffle, Search, Wand2, MapPin, Building2, Loader2, Download, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 import atestadoTemplate from "@/assets/atestado-template.png";
 import jsPDF from "jspdf";
 
@@ -62,6 +64,7 @@ function formatDateLong(dateStr: string): string {
 
 const AtestadoForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const templateImgRef = useRef<HTMLImageElement | null>(null);
 
@@ -310,6 +313,7 @@ const AtestadoForm = () => {
       pdf.addImage(imgData, "JPEG", 0, 0, offscreen.width, offscreen.height);
       pdf.save(`atestado-${nomePaciente || "documento"}.pdf`);
 
+      if (user) saveDocumentHistory(user.id, "Atestado Médico", nomePaciente || "Sem nome");
       toast.success("PDF gerado com sucesso! 1 crédito debitado.");
     } catch (e) {
       toast.error("Erro ao gerar PDF.");

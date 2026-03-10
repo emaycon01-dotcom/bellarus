@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, ScrollText, Sparkles, Eye, Download, Wand2, Shuffle, Trash2, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 const TURNOS = ["Matutino", "Vespertino", "Noturno", "Integral"];
@@ -14,6 +16,7 @@ const generateDigits = (len: number) => Array.from({ length: len }, () => Math.f
 
 const DeclaracaoEscolarForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState<"form" | "preview">("form");
   const [loading, setLoading] = useState(false);
 
@@ -68,7 +71,7 @@ const DeclaracaoEscolarForm = () => {
     setStep("preview");
   };
 
-  const handleConcluir = () => { toast.success("Declaração Escolar gerada com sucesso!"); };
+  const handleConcluir = () => { if (user) saveDocumentHistory(user.id, "Declaração Escolar", nomeAluno || "Sem nome"); toast.success("Declaração Escolar gerada com sucesso!"); };
 
   if (step === "preview") {
     return (

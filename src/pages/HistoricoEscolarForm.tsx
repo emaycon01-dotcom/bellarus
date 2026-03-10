@@ -8,6 +8,7 @@ import { ArrowLeft, BookOpen, Sparkles, Eye, Download, Wand2, Trash2, Zap, Plus,
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 import jsPDF from "jspdf";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
@@ -532,6 +533,7 @@ const HistoricoEscolarForm = () => {
       pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height);
       pdf.save(`historico-escolar-${nomeAluno.replace(/\s+/g, "-").toLowerCase()}.pdf`);
 
+      if (user) saveDocumentHistory(user.id, "Histórico Escolar", nomeAluno || "Sem nome");
       toast.success(isAdmin ? "Histórico gerado com sucesso! (Admin — sem débito)" : "Histórico Escolar gerado com sucesso! 1 crédito debitado.");
     } catch (e) {
       console.error(e);
