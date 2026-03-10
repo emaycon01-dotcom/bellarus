@@ -53,8 +53,11 @@ const AdminUsers = () => {
   );
 
   const handleRoleChange = async (userId: string, newRole: string) => {
-    const { error } = await supabase.from("profiles").update({ plan: newRole }).eq("id", userId);
-    if (error) { toast.error("Erro ao atualizar cargo."); return; }
+    console.log("Updating role for", userId, "to", newRole);
+    const { error, data } = await supabase.from("profiles").update({ plan: newRole }).eq("id", userId).select();
+    console.log("Role update result:", { error, data });
+    if (error) { toast.error(`Erro ao atualizar cargo: ${error.message}`); return; }
+    if (!data || data.length === 0) { toast.error("Nenhum registro atualizado. Verifique permissões."); return; }
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, plan: newRole } : u));
     toast.success(`Cargo alterado para ${newRole}`);
   };
