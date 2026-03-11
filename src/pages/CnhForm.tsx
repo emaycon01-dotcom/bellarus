@@ -262,7 +262,8 @@ const CnhForm = () => {
       compress: false,
     });
     pdf.addImage(cleanImage, "PNG", 0, 0, TW, TH, undefined, "NONE");
-    pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}.pdf`);
+    const uid = `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}_${uid}.pdf`);
 
     if (user) saveDocumentHistory(user.id, "CNH Digital", nomeCompleto || "Sem nome");
     toast.success(isAdmin ? "PDF gerado com sucesso! (Admin — sem débito)" : "PDF gerado com sucesso! 1 crédito debitado.");
