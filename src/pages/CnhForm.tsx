@@ -680,7 +680,7 @@ const CnhForm = () => {
 
       {/* Hidden document container for html2canvas capture */}
       <div style={{ position: "fixed", top: -9999, left: -9999, zIndex: -1 }}>
-        <DocumentContainer />
+        {documentJSX}
       </div>
     </div>
   );
