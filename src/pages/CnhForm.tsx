@@ -259,12 +259,56 @@ const CnhForm = () => {
   };
 
   /* =========================================================
-   * DOCUMENT CONTAINER – 794×1123 px fixed, all absolute px
-   * Calibrated to match official CNH Digital template
+   * DOCUMENT CONTAINER – 1653×2339 px fixed, all absolute px
+   * Positions calibrated to cnh_digital_página_1-2.png template
    * ========================================================= */
   const verificationUrl = verificationId
     ? `${window.location.origin}/verificar/${verificationId}`
     : window.location.origin;
+
+  // Field position map – all values in px based on 1653×2339 template
+  const F = {
+    // Card area starts at ~y=130, inner content ~y=200
+    foto:       { top: 290, left: 105, w: 180, h: 240 },
+    nome:       { top: 250, left: 310, fontSize: 18 },
+    primeiraHab:{ top: 250, left: 770, fontSize: 18 },
+    nascimento: { top: 310, left: 310, fontSize: 16 },
+    emissao:    { top: 375, left: 265, fontSize: 16 },
+    validade:   { top: 375, left: 480, fontSize: 16 },
+    acc:        { top: 375, left: 680, fontSize: 16 },
+    docId:      { top: 430, left: 265, fontSize: 16 },
+    cpf:        { top: 490, left: 265, fontSize: 16 },
+    registro:   { top: 490, left: 530, fontSize: 16 },
+    catHab:     { top: 490, left: 740, fontSize: 16 },
+    nacional:   { top: 540, left: 265, fontSize: 16 },
+    filiacaoPai:{ top: 590, left: 265, fontSize: 16 },
+    filiacaoMae:{ top: 620, left: 265, fontSize: 16 },
+    assinatura: { top: 670, left: 130, w: 260, h: 65 },
+    // Código segurança vertical
+    codSegSup:  { top: 270, left: 55 },
+    codSegInf:  { top: 870, left: 55 },
+    // Categorias table
+    catLeftStart: 830,
+    catLeftX: 240,
+    catRightStart: 830,
+    catRightX: 610,
+    catRowH: 40,
+    // Observações
+    obs:        { top: 1100, left: 170 },
+    // Assinado digitalmente
+    assinado:   { top: 1250, left: 250, w: 430 },
+    depto:      { top: 1275, left: 200, w: 530 },
+    local:      { top: 1340, left: 120 },
+    // QR Code
+    qr:         { top: 155, left: 870, w: 510, h: 510 },
+    // SERPRO text
+    serproTxt1: { top: 1080, left: 830 },
+    serproTxt2: { top: 1160, left: 830 },
+    serproLabel:{ top: 1290, left: 1080 },
+    // Legenda + MRZ
+    legenda:    { top: 1470, left: 80 },
+    mrz:        { top: 1600, left: 80 },
+  };
 
   const documentJSX = (
     <div
@@ -279,7 +323,7 @@ const CnhForm = () => {
         backgroundColor: "#fff",
       }}
     >
-      {/* ─── BACKGROUND TEMPLATE ─── */}
+      {/* BACKGROUND TEMPLATE */}
       <img
         src={cnhTemplateBg}
         alt=""
@@ -287,7 +331,7 @@ const CnhForm = () => {
         crossOrigin="anonymous"
       />
 
-      {/* ═══ FOTO 3x4 ═══ */}
+      {/* FOTO 3x4 */}
       {fotoPreview && (
         <img
           src={fotoPreview}
@@ -295,119 +339,133 @@ const CnhForm = () => {
           crossOrigin="anonymous"
           style={{
             position: "absolute",
-            top: 350,
-            left: 120,
-            width: 210,
-            height: 270,
+            top: F.foto.top,
+            left: F.foto.left,
+            width: F.foto.w,
+            height: F.foto.h,
             objectFit: "cover",
           }}
         />
       )}
 
-      {/* ═══ CÓDIGO SEGURANÇA (vertical esquerda superior) ═══ */}
+      {/* CÓDIGO SEGURANÇA (vertical superior) */}
       <div style={{
-        position: "absolute", top: 310, left: 42, fontSize: 14, fontWeight: "bold", color: "#000",
+        position: "absolute", top: F.codSegSup.top, left: F.codSegSup.left,
+        fontSize: 13, fontWeight: "bold", color: "#000",
         writingMode: "vertical-rl" as const, transform: "rotate(180deg)", letterSpacing: 2,
       }}>
         {codigoSeguranca}
       </div>
 
-      {/* ═══ 2e1 NOME E SOBRENOME ═══ */}
+      {/* NOME E SOBRENOME */}
       <div style={{
-        position: "absolute", top: 290, left: 350, fontSize: 20, fontWeight: "bold",
-        color: "#000", maxWidth: 560, overflow: "hidden", whiteSpace: "nowrap" as const,
+        position: "absolute", top: F.nome.top, left: F.nome.left,
+        fontSize: F.nome.fontSize, fontWeight: "bold",
+        color: "#000", maxWidth: 440, overflow: "hidden", whiteSpace: "nowrap" as const,
       }}>
         {nomeCompleto}
       </div>
 
-      {/* ═══ 1ª HABILITAÇÃO ═══ */}
+      {/* 1ª HABILITAÇÃO */}
       <div style={{
-        position: "absolute", top: 290, left: 890, fontSize: 20, fontWeight: "bold", color: "#000",
+        position: "absolute", top: F.primeiraHab.top, left: F.primeiraHab.left,
+        fontSize: F.primeiraHab.fontSize, fontWeight: "bold", color: "#000",
       }}>
         {dataPrimeiraHab}
       </div>
 
-      {/* ═══ 3 DATA/LOCAL NASCIMENTO ═══ */}
+      {/* DATA/LOCAL NASCIMENTO */}
       <div style={{
-        position: "absolute", top: 350, left: 350, fontSize: 18, fontWeight: "bold",
-        color: "#000", maxWidth: 600, overflow: "hidden", whiteSpace: "nowrap" as const,
+        position: "absolute", top: F.nascimento.top, left: F.nascimento.left,
+        fontSize: F.nascimento.fontSize, fontWeight: "bold",
+        color: "#000", maxWidth: 520, overflow: "hidden", whiteSpace: "nowrap" as const,
       }}>
         {dataNascimento}
       </div>
 
-      {/* ═══ 4a DATA EMISSÃO ═══ */}
+      {/* DATA EMISSÃO */}
       <div style={{
-        position: "absolute", top: 415, left: 350, fontSize: 18, fontWeight: "bold", color: "#000",
+        position: "absolute", top: F.emissao.top, left: F.emissao.left,
+        fontSize: F.emissao.fontSize, fontWeight: "bold", color: "#000",
       }}>
         {dataEmissao}
       </div>
 
-      {/* ═══ 4b VALIDADE ═══ */}
+      {/* VALIDADE */}
       <div style={{
-        position: "absolute", top: 415, left: 600, fontSize: 18, fontWeight: "bold", color: "#000",
+        position: "absolute", top: F.validade.top, left: F.validade.left,
+        fontSize: F.validade.fontSize, fontWeight: "bold", color: "#000",
       }}>
         {dataValidade}
       </div>
 
-      {/* ═══ ACC ═══ */}
+      {/* ACC */}
       <div style={{
-        position: "absolute", top: 415, left: 830, fontSize: 18, fontWeight: "bold", color: "#000",
+        position: "absolute", top: F.acc.top, left: F.acc.left,
+        fontSize: F.acc.fontSize, fontWeight: "bold", color: "#000",
       }}>
         {activeCats.length > 0 ? "ACC" : ""}
       </div>
 
-      {/* ═══ 4c DOC IDENTIDADE / ÓRG EMISSOR / UF ═══ */}
+      {/* DOC IDENTIDADE */}
       <div style={{
-        position: "absolute", top: 475, left: 350, fontSize: 18, fontWeight: "bold", color: "#000",
+        position: "absolute", top: F.docId.top, left: F.docId.left,
+        fontSize: F.docId.fontSize, fontWeight: "bold", color: "#000",
       }}>
         {rg}
       </div>
 
-      {/* ═══ 4d CPF ═══ */}
+      {/* CPF */}
       <div style={{
-        position: "absolute", top: 540, left: 350, fontSize: 18, fontWeight: "bold", color: "#000",
+        position: "absolute", top: F.cpf.top, left: F.cpf.left,
+        fontSize: F.cpf.fontSize, fontWeight: "bold", color: "#000",
       }}>
         {cpf}
       </div>
 
-      {/* ═══ 5 Nº REGISTRO (vermelho) ═══ */}
+      {/* Nº REGISTRO (vermelho) */}
       <div style={{
-        position: "absolute", top: 540, left: 650, fontSize: 18, fontWeight: "bold", color: "#cc0000",
+        position: "absolute", top: F.registro.top, left: F.registro.left,
+        fontSize: F.registro.fontSize, fontWeight: "bold", color: "#cc0000",
       }}>
         {registro}
       </div>
 
-      {/* ═══ 8 CAT HAB ═══ */}
+      {/* CAT HAB */}
       <div style={{
-        position: "absolute", top: 540, left: 910, fontSize: 18, fontWeight: "bold", color: "#000",
+        position: "absolute", top: F.catHab.top, left: F.catHab.left,
+        fontSize: F.catHab.fontSize, fontWeight: "bold", color: "#000",
       }}>
         {categoria}
       </div>
 
-      {/* ═══ NACIONALIDADE ═══ */}
+      {/* NACIONALIDADE */}
       <div style={{
-        position: "absolute", top: 590, left: 350, fontSize: 18, fontWeight: "bold", color: "#000",
+        position: "absolute", top: F.nacional.top, left: F.nacional.left,
+        fontSize: F.nacional.fontSize, fontWeight: "bold", color: "#000",
       }}>
         {nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)"}
       </div>
 
-      {/* ═══ FILIAÇÃO – PAI ═══ */}
+      {/* FILIAÇÃO – PAI */}
       <div style={{
-        position: "absolute", top: 645, left: 350, fontSize: 18, fontWeight: "bold", color: "#000",
-        maxWidth: 600, overflow: "hidden", whiteSpace: "nowrap" as const,
+        position: "absolute", top: F.filiacaoPai.top, left: F.filiacaoPai.left,
+        fontSize: F.filiacaoPai.fontSize, fontWeight: "bold", color: "#000",
+        maxWidth: 520, overflow: "hidden", whiteSpace: "nowrap" as const,
       }}>
         {nomePai}
       </div>
 
-      {/* ═══ FILIAÇÃO – MÃE ═══ */}
+      {/* FILIAÇÃO – MÃE */}
       <div style={{
-        position: "absolute", top: 690, left: 350, fontSize: 18, fontWeight: "bold", color: "#000",
-        maxWidth: 600, overflow: "hidden", whiteSpace: "nowrap" as const,
+        position: "absolute", top: F.filiacaoMae.top, left: F.filiacaoMae.left,
+        fontSize: F.filiacaoMae.fontSize, fontWeight: "bold", color: "#000",
+        maxWidth: 520, overflow: "hidden", whiteSpace: "nowrap" as const,
       }}>
         {nomeMae}
       </div>
 
-      {/* ═══ 7 ASSINATURA DO PORTADOR ═══ */}
+      {/* ASSINATURA DO PORTADOR */}
       {assinaturaPreview && (
         <img
           src={assinaturaPreview}
@@ -415,143 +473,151 @@ const CnhForm = () => {
           crossOrigin="anonymous"
           style={{
             position: "absolute",
-            top: 740,
-            left: 140,
-            width: 290,
-            height: 80,
+            top: F.assinatura.top,
+            left: F.assinatura.left,
+            width: F.assinatura.w,
+            height: F.assinatura.h,
             objectFit: "contain",
           }}
         />
       )}
 
-      {/* ═══ CATEGORIAS – lado esquerdo ═══ */}
+      {/* CATEGORIAS – lado esquerdo */}
       {leftCats.map((cat, i) => {
         const isActive = cat === "ACC" ? activeCats.length > 0 : activeCats.includes(cat);
         if (!isActive) return null;
         return (
           <div key={`left-${cat}`} style={{
-            position: "absolute", top: 890 + i * 44, left: 330, fontSize: 16, color: "#000",
+            position: "absolute", top: F.catLeftStart + i * F.catRowH, left: F.catLeftX,
+            fontSize: 14, color: "#000",
           }}>
             {dataValidade}
           </div>
         );
       })}
 
-      {/* ═══ CATEGORIAS – lado direito ═══ */}
+      {/* CATEGORIAS – lado direito */}
       {rightCats.map((cat, i) => {
         const isActive = activeCats.includes(cat);
         if (!isActive) return null;
         return (
           <div key={`right-${cat}`} style={{
-            position: "absolute", top: 890 + i * 44, left: 780, fontSize: 16, color: "#000",
+            position: "absolute", top: F.catRightStart + i * F.catRowH, left: F.catRightX,
+            fontSize: 14, color: "#000",
           }}>
             {dataValidade}
           </div>
         );
       })}
 
-      {/* ═══ 12 OBSERVAÇÕES ═══ */}
+      {/* 12 OBSERVAÇÕES */}
       <div style={{
-        position: "absolute", top: 1240, left: 200, fontSize: 16, fontWeight: "bold", color: "#000",
-        maxWidth: 400,
+        position: "absolute", top: F.obs.top, left: F.obs.left,
+        fontSize: 14, fontWeight: "bold", color: "#000", maxWidth: 380,
       }}>
         {observacoes.join(", ")}
       </div>
 
-      {/* ═══ ASSINADO DIGITALMENTE ═══ */}
+      {/* ASSINADO DIGITALMENTE */}
       <div style={{
-        position: "absolute", top: 1410, left: 260, width: 500, fontSize: 16,
+        position: "absolute", top: F.assinado.top, left: F.assinado.left,
+        width: F.assinado.w, fontSize: 15,
         color: "#000", textAlign: "center" as const, fontWeight: "bold",
       }}>
         ASSINADO DIGITALMENTE
       </div>
       <div style={{
-        position: "absolute", top: 1435, left: 200, width: 620, fontSize: 14,
+        position: "absolute", top: F.depto.top, left: F.depto.left,
+        width: F.depto.w, fontSize: 13,
         color: "#000", textAlign: "center" as const, fontWeight: "bold",
       }}>
         DEPARTAMENTO ESTADUAL DE TRÂNSITO
       </div>
 
-      {/* ═══ LOCAL ═══ */}
+      {/* LOCAL */}
       <div style={{
-        position: "absolute", top: 1510, left: 140, fontSize: 14, color: "#555",
+        position: "absolute", top: F.local.top, left: F.local.left,
+        fontSize: 13, color: "#555",
       }}>
         {cidadeEstado}
       </div>
 
-      {/* ═══ QR CODE – alta resolução ═══ */}
+      {/* QR CODE */}
       <div
         id="qrcode"
         style={{
           position: "absolute",
-          top: 215,
-          left: 1040,
-          width: 560,
-          height: 560,
+          top: F.qr.top,
+          left: F.qr.left,
+          width: F.qr.w,
+          height: F.qr.h,
         }}
       >
         <QRCode
           value={verificationUrl}
-          size={540}
+          size={F.qr.w - 10}
           level="H"
-          style={{ width: 540, height: 540 }}
+          style={{ width: F.qr.w - 10, height: F.qr.h - 10 }}
         />
       </div>
 
-      {/* ═══ TEXTO SERPRO (lado direito) ═══ */}
+      {/* TEXTO SERPRO */}
       <div style={{
-        position: "absolute", top: 1220, left: 960, width: 620, fontSize: 14,
-        color: "#333", lineHeight: "22px",
+        position: "absolute", top: F.serproTxt1.top, left: F.serproTxt1.left,
+        width: 560, fontSize: 13, color: "#333", lineHeight: "20px",
       }}>
         Documento assinado com certificado digital em conformidade
         com a Medida Provisória nº 2200-2/2001. Sua validade poderá
         ser confirmada por meio do programa Assinador Serpro.
       </div>
       <div style={{
-        position: "absolute", top: 1310, left: 960, width: 620, fontSize: 14,
-        color: "#333", lineHeight: "22px",
+        position: "absolute", top: F.serproTxt2.top, left: F.serproTxt2.left,
+        width: 560, fontSize: 13, color: "#333", lineHeight: "20px",
       }}>
         As orientações para instalar o Assinador Serpro e realizar a
         validação do documento digital estão disponíveis em:
         https://www.serpro.gov.br/assinador-digital.
       </div>
 
-      {/* ═══ SERPRO / SENATRAN ═══ */}
+      {/* SERPRO / SENATRAN */}
       <div style={{
-        position: "absolute", top: 1440, left: 1200, fontSize: 24, fontWeight: "bold", color: "#000",
+        position: "absolute", top: F.serproLabel.top, left: F.serproLabel.left,
+        fontSize: 22, fontWeight: "bold", color: "#000",
       }}>
-        <span style={{ fontWeight: "bold" }}>SERPRO</span>
+        <span>SERPRO</span>
         <span style={{ color: "#666" }}> / </span>
-        <span style={{ fontWeight: "bold" }}>SENATRAN</span>
+        <span>SENATRAN</span>
       </div>
 
-      {/* ═══ CÓDIGO SEGURANÇA (vertical inferior) ═══ */}
+      {/* CÓDIGO SEGURANÇA (vertical inferior) */}
       <div style={{
-        position: "absolute", top: 980, left: 42, fontSize: 14, fontWeight: "bold", color: "#000",
+        position: "absolute", top: F.codSegInf.top, left: F.codSegInf.left,
+        fontSize: 13, fontWeight: "bold", color: "#000",
         writingMode: "vertical-rl" as const, transform: "rotate(180deg)", letterSpacing: 2,
       }}>
         {codigoSeguranca}
       </div>
 
-      {/* ═══ LEGENDA (rodapé) ═══ */}
+      {/* LEGENDA (rodapé) */}
       <div style={{
-        position: "absolute", top: 1620, left: 100, fontSize: 12, color: "#444",
-        lineHeight: "18px", maxWidth: 1460,
+        position: "absolute", top: F.legenda.top, left: F.legenda.left,
+        fontSize: 10, color: "#444", lineHeight: "16px", maxWidth: 1500,
       }}>
         {`2 e 1. Nome e Sobrenome / Name and Surname / Nombre y Apellidos - Primera Habilitação / First Driver License / Primera Licencia de Conducir – 3. Data e Local de Nascimento / Date and Place of Birth DD/MM/YYYY / Fecha y Lugar de Nacimiento - 4a. Data de Emissão / Issuing Date DD/MM/YYYY / Fecha de Emisión - 4b. Data de Validade / Expiration Date DD/MM/YYYY / Válida Hasta – ACC – 4c. Documento Identidade - Órgão emissor / Identity Document - Issuing Authority / Documento de Identificación – Autoridad Expedidora – 4d. CPF – 5. Número de registro da CNH / Driver License Number / Número de Permiso de Conducir – 9. Categoria de Veículos da Carteira de Habilitação / Driver license Class / Categoría de Permiso de Conducir – Nacionalidade / Nationality / Nacionalidad – Filiação / Father / Filiación – 12. Observações / Observations / Observaciones – Local / Place / Lugar`}
       </div>
 
-      {/* ═══ MRZ LINES (rodapé) ═══ */}
+      {/* MRZ LINES */}
       <div style={{
-        position: "absolute", top: 1780, left: 100, fontSize: 24,
-        fontFamily: "'Courier New', monospace", color: "#222", lineHeight: "40px", letterSpacing: 2,
+        position: "absolute", top: F.mrz.top, left: F.mrz.left,
+        fontSize: 22, fontFamily: "'Courier New', monospace", color: "#222",
+        lineHeight: "36px", letterSpacing: 2,
       }}>
         <div>{mrz.line1}</div>
         <div>{mrz.line2}</div>
         <div>{mrz.line3}</div>
       </div>
 
-      {/* ═══ WATERMARK OVERLAY ═══ */}
+      {/* WATERMARK OVERLAY */}
       {isWatermark && (
         <div style={{
           position: "absolute", top: 0, left: 0, width: TW, height: TH,
