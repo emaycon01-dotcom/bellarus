@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Shield, CheckCircle2, XCircle, FileText, User, Calendar, MapPin, CreditCard, Car } from "lucide-react";
-import bellarusLogo from "@/assets/bellarus-logo.png";
+
 
 interface VerificationData {
   id: string;
@@ -63,7 +63,7 @@ const DocumentVerification = () => {
       <div className="max-w-md w-full space-y-4">
         {/* Header */}
         <div className="bg-[hsl(230,30%,16%)] rounded-3xl p-6 border border-[hsl(230,30%,24%)] shadow-2xl text-center">
-          <img src={bellarusLogo} alt="Bellarus" className="h-10 mx-auto mb-4" />
+          <p className="text-xs text-[hsl(210,20%,65%)] tracking-widest uppercase mb-4">carteira-digital-transito-vio.info</p>
           <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${isValid ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
             {isValid ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
             {isValid ? "DOCUMENTO VÁLIDO" : "DOCUMENTO INVÁLIDO"}
