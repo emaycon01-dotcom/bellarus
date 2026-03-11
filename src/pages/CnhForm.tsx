@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { getTestPhoto, getTestSignature } from "@/lib/loadTestImages";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
