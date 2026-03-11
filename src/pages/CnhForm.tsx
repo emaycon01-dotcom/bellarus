@@ -178,10 +178,6 @@ const CnhForm = () => {
       ctx.font = `bold ${w * 0.014}px Arial`;
       ctx.fillText(categoria || "", cardX + cardW * 0.87, cardY + cardH * 0.395);
 
-      // --- NOME (label near CPF) ---
-      ctx.font = `${w * 0.01}px Arial`;
-      ctx.fillText("JOÃO ANTONIO", cardX + cardW * 0.28, cardY + cardH * 0.36); // placeholder label area
-      // Actually let's skip label placeholders, user just wants data
 
       // --- NACIONALIDADE ---
       ctx.font = `bold ${w * 0.013}px Arial`;
