@@ -248,8 +248,10 @@ const CnhForm = () => {
     }
 
     const cleanImage = await captureDocument(false);
+    // A4 in mm = 210x297
     const pdf = new jsPDF("p", "mm", "a4");
-    pdf.addImage(cleanImage, "PNG", 0, 0, 210, 297);
+    pdf.addImage(cleanImage, "PNG", 0, 0, 210, 297, undefined, "NONE");
+    pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}.pdf`);
     pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}.pdf`);
 
     if (user) saveDocumentHistory(user.id, "CNH Digital", nomeCompleto || "Sem nome");
