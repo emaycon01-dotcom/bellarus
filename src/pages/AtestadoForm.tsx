@@ -71,6 +71,7 @@ const AtestadoForm = () => {
 
   const [nomePaciente, setNomePaciente] = useState("");
   const [cnsPaciente, setCnsPaciente] = useState("");
+  const [dataNascimento, setDataNascimento] = useState("");
   const [cidSearch, setCidSearch] = useState("");
   const [cidSelecionado, setCidSelecionado] = useState<{ code: string; name: string } | null>(null);
   const [diasAfastamento, setDiasAfastamento] = useState("");
@@ -93,6 +94,7 @@ const AtestadoForm = () => {
   const [loadingMedico, setLoadingMedico] = useState(false);
   const [loadingUpa, setLoadingUpa] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
 
   // Load template image
   useEffect(() => {
