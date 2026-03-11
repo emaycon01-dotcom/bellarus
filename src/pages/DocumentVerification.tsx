@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, CheckCircle2, XCircle, FileText, User, Calendar, MapPin, CreditCard, Car } from "lucide-react";
-
+import { Shield, CheckCircle2, XCircle } from "lucide-react";
 
 interface VerificationData {
   id: string;
@@ -36,19 +35,19 @@ const DocumentVerification = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[hsl(230,35%,10%)] to-[hsl(230,35%,18%)] flex items-center justify-center">
-        <div className="animate-spin w-10 h-10 border-4 border-[hsl(265,60%,55%)] border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-[#f0f2f5] flex items-center justify-center">
+        <div className="animate-spin w-10 h-10 border-4 border-[#1a73e8] border-t-transparent rounded-full" />
       </div>
     );
   }
 
   if (notFound || !data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[hsl(230,35%,10%)] to-[hsl(230,35%,18%)] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-[hsl(230,30%,16%)] rounded-3xl p-8 text-center border border-[hsl(230,30%,24%)] shadow-2xl">
+      <div className="min-h-screen bg-[#f0f2f5] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl p-8 text-center shadow-lg">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-2">Documento Não Encontrado</h1>
-          <p className="text-[hsl(210,20%,65%)]">O documento solicitado não foi encontrado ou o link é inválido.</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Documento Não Encontrado</h1>
+          <p className="text-gray-500">O documento solicitado não foi encontrado ou o link é inválido.</p>
         </div>
       </div>
     );
@@ -59,90 +58,108 @@ const DocumentVerification = () => {
   const createdDate = new Date(data.created_at).toLocaleDateString("pt-BR");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[hsl(230,35%,10%)] to-[hsl(230,35%,18%)] flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-4">
-        {/* Header */}
-        <div className="bg-[hsl(230,30%,16%)] rounded-3xl p-6 border border-[hsl(230,30%,24%)] shadow-2xl text-center">
-          <p className="text-xs text-[hsl(210,20%,65%)] tracking-widest uppercase mb-4">carteira-digital-transito-vio.info</p>
-          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${isValid ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
-            {isValid ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-            {isValid ? "DOCUMENTO VÁLIDO" : "DOCUMENTO INVÁLIDO"}
+    <div className="min-h-screen bg-[#f0f2f5]">
+      {/* Top Header Bar */}
+      <div className="bg-[#1351b4] w-full">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+          <Shield className="w-6 h-6 text-white" />
+          <div>
+            <p className="text-white text-sm font-bold tracking-wide">carteira-digital-transito-vio.info</p>
+            <p className="text-blue-200 text-[10px]">Consulta de Autenticidade</p>
           </div>
         </div>
+      </div>
 
-        {/* Photo + Name */}
-        <div className="bg-[hsl(230,30%,16%)] rounded-3xl p-6 border border-[hsl(230,30%,24%)] shadow-2xl">
-          <div className="flex items-center gap-4">
+      {/* Green/Red Status Banner */}
+      <div className={`w-full ${isValid ? "bg-[#168821]" : "bg-[#e52207]"}`}>
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-center gap-2">
+          {isValid ? <CheckCircle2 className="w-5 h-5 text-white" /> : <XCircle className="w-5 h-5 text-white" />}
+          <span className="text-white font-bold text-sm tracking-wider">
+            {isValid ? "DOCUMENTO VÁLIDO" : "DOCUMENTO INVÁLIDO"}
+          </span>
+        </div>
+      </div>
+
+      <div className="max-w-lg mx-auto p-4 space-y-4">
+        {/* Photo + Name Card */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="bg-[#1351b4] px-4 py-2">
+            <p className="text-white text-xs font-semibold tracking-wider uppercase">Identificação do Titular</p>
+          </div>
+          <div className="p-4 flex items-start gap-4">
             {data.photo_url ? (
-              <img src={data.photo_url} alt="Foto" className="w-20 h-26 rounded-xl object-cover border-2 border-[hsl(265,60%,55%)]" style={{ aspectRatio: "3/4" }} />
+              <img
+                src={data.photo_url}
+                alt="Foto do Titular"
+                className="w-24 h-32 rounded-lg object-cover border-2 border-[#1351b4] shadow-sm"
+                style={{ aspectRatio: "3/4" }}
+              />
             ) : (
-              <div className="w-20 h-26 rounded-xl bg-[hsl(230,30%,24%)] flex items-center justify-center" style={{ aspectRatio: "3/4" }}>
-                <User className="w-8 h-8 text-[hsl(210,20%,65%)]" />
+              <div className="w-24 h-32 rounded-lg bg-gray-200 flex items-center justify-center border-2 border-gray-300" style={{ aspectRatio: "3/4" }}>
+                <span className="text-gray-400 text-xs">Sem foto</span>
               </div>
             )}
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-[hsl(210,20%,65%)] uppercase tracking-wider mb-1">Nome</p>
-              <p className="text-lg font-bold text-white truncate">{data.document_name}</p>
-              <p className="text-xs text-[hsl(265,60%,55%)] mt-1">{data.document_type}</p>
+            <div className="flex-1 min-w-0 space-y-1">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider">Nome Completo</p>
+              <p className="text-base font-bold text-gray-900 leading-tight">{data.document_name}</p>
+              <div className="mt-2 inline-flex items-center gap-1 bg-[#1351b4]/10 text-[#1351b4] text-[11px] font-semibold px-2 py-1 rounded-md">
+                <Shield className="w-3 h-3" />
+                {data.document_type}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Document Details */}
-        <div className="bg-[hsl(230,30%,16%)] rounded-3xl p-6 border border-[hsl(230,30%,24%)] shadow-2xl space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-[hsl(230,30%,24%)]">
-            <FileText className="w-5 h-5 text-[hsl(265,60%,55%)]" />
-            <h2 className="text-base font-bold text-white">Dados do Documento</h2>
+        {/* Document Data Card */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="bg-[#1351b4] px-4 py-2">
+            <p className="text-white text-xs font-semibold tracking-wider uppercase">Dados do Documento</p>
           </div>
+          <div className="divide-y divide-gray-100">
+            {d.cpf && <DataRow label="CPF" value={d.cpf} />}
+            {d.registro && <DataRow label="Nº Registro" value={d.registro} />}
+            {d.categoria && <DataRow label="Categoria" value={d.categoria} />}
+            {d.rg && <DataRow label="Identidade / RG" value={d.rg} />}
+            {d.nacionalidade && <DataRow label="Nacionalidade" value={d.nacionalidade} />}
+            {d.genero && <DataRow label="Sexo" value={d.genero === "Masculino" ? "M" : "F"} />}
+            {d.dataNascimento && <DataRow label="Data de Nascimento" value={d.dataNascimento} />}
+            {d.nomePai && <DataRow label="Filiação (Pai)" value={d.nomePai} />}
+            {d.nomeMae && <DataRow label="Filiação (Mãe)" value={d.nomeMae} />}
+          </div>
+        </div>
 
-          {d.cpf && (
-            <InfoRow icon={CreditCard} label="CPF" value={d.cpf} />
-          )}
-          {d.registro && (
-            <InfoRow icon={Shield} label="Nº Registro" value={d.registro} />
-          )}
-          {d.categoria && (
-            <InfoRow icon={Car} label="Categoria" value={d.categoria} />
-          )}
-          {d.dataNascimento && (
-            <InfoRow icon={Calendar} label="Nascimento" value={d.dataNascimento} />
-          )}
-          {d.dataEmissao && (
-            <InfoRow icon={Calendar} label="Emissão" value={d.dataEmissao} />
-          )}
-          {d.dataValidade && (
-            <InfoRow icon={Calendar} label="Validade" value={d.dataValidade} />
-          )}
-          {d.cidadeEstado && (
-            <InfoRow icon={MapPin} label="Local" value={d.cidadeEstado} />
-          )}
-          {d.rg && (
-            <InfoRow icon={CreditCard} label="RG" value={d.rg} />
-          )}
-          {d.nacionalidade && (
-            <InfoRow icon={User} label="Nacionalidade" value={d.nacionalidade} />
-          )}
+        {/* Validity Card */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="bg-[#1351b4] px-4 py-2">
+            <p className="text-white text-xs font-semibold tracking-wider uppercase">Validade e Emissão</p>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {d.dataEmissao && <DataRow label="Data de Emissão" value={d.dataEmissao} />}
+            {d.dataValidade && <DataRow label="Data de Validade" value={d.dataValidade} />}
+            {d.cidadeEstado && <DataRow label="Local de Emissão" value={d.cidadeEstado} />}
+            {d.renach && <DataRow label="Nº RENACH" value={d.renach} />}
+            {d.espelho && <DataRow label="Nº Espelho" value={d.espelho} />}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="bg-[hsl(230,30%,16%)] rounded-3xl p-4 border border-[hsl(230,30%,24%)] shadow-2xl text-center">
-          <p className="text-xs text-[hsl(210,20%,65%)]">Verificado em {createdDate}</p>
-          <p className="text-xs text-[hsl(210,20%,65%)] mt-1">ID: {data.id.slice(0, 8).toUpperCase()}</p>
+        <div className="bg-white rounded-xl shadow-md p-4 text-center space-y-1">
+          <p className="text-[10px] text-gray-400 uppercase tracking-wider">Verificação realizada em</p>
+          <p className="text-sm font-semibold text-gray-700">{createdDate}</p>
+          <p className="text-[10px] text-gray-400 mt-2">ID: {data.id.slice(0, 8).toUpperCase()}</p>
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <p className="text-[10px] text-gray-400">carteira-digital-transito-vio.info</p>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-const InfoRow = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
-  <div className="flex items-center gap-3">
-    <div className="w-8 h-8 rounded-lg bg-[hsl(265,60%,55%)]/10 flex items-center justify-center shrink-0">
-      <Icon className="w-4 h-4 text-[hsl(265,60%,55%)]" />
-    </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-xs text-[hsl(210,20%,65%)]">{label}</p>
-      <p className="text-sm font-semibold text-white truncate">{value}</p>
-    </div>
+const DataRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="px-4 py-3 flex justify-between items-center">
+    <span className="text-xs text-gray-500">{label}</span>
+    <span className="text-sm font-semibold text-gray-900 text-right">{value}</span>
   </div>
 );
 
