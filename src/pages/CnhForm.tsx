@@ -153,27 +153,65 @@ const CnhForm = () => {
   const rightCats = ["D", "D1", "BE", "CE", "C1E", "DE", "D1E"];
   const mrz = getMRZ();
 
-  // Template dimensions (full resolution)
+  // Template dimensions (fixed)
   const TW = 1653;
   const TH = 2339;
+  const TEMPLATE_WIDTH = 1653;
+  const TEMPLATE_HEIGHT = 2339;
+
+  const [templateNaturalSize, setTemplateNaturalSize] = useState({
+    width: TEMPLATE_WIDTH,
+    height: TEMPLATE_HEIGHT,
+  });
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = cnhTemplateBg;
+    img.onload = () => {
+      setTemplateNaturalSize({
+        width: img.naturalWidth || TEMPLATE_WIDTH,
+        height: img.naturalHeight || TEMPLATE_HEIGHT,
+      });
+    };
+  }, []);
+
+  type TemplateField = {
+    top: number;
+    left: number;
+    w?: number;
+    h?: number;
+    fontSize?: number;
+  };
+
+  const scaleX = TW / templateNaturalSize.width;
+  const scaleY = TH / templateNaturalSize.height;
+
+  const alignFieldToTemplate = <T extends TemplateField>(field: T): T => ({
+    ...field,
+    top: Math.round(field.top * scaleY),
+    left: Math.round(field.left * scaleX),
+    ...(field.w ? { w: Math.round(field.w * scaleX) } : {}),
+    ...(field.h ? { h: Math.round(field.h * scaleY) } : {}),
+    ...(field.fontSize ? { fontSize: Math.round(field.fontSize * scaleY) } : {}),
+  });
+
+  const alignNumberX = (value: number) => Math.round(value * scaleX);
+  const alignNumberY = (value: number) => Math.round(value * scaleY);
 
   const captureDocument = async (withWatermark: boolean): Promise<string> => {
     setIsWatermark(withWatermark);
-    await new Promise(r => setTimeout(r, 300));
-    
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    if ("fonts" in document) {
+      await (document as Document & { fonts: FontFaceSet }).fonts.ready;
+    }
+
     const el = documentRef.current;
     if (!el) throw new Error("Document container not found");
 
-    const wrapper = el.parentElement;
-    if (wrapper) {
-      wrapper.style.position = "absolute";
-      wrapper.style.top = "0";
-      wrapper.style.left = "-9999px";
-      wrapper.style.zIndex = "-1";
-    }
-
     const canvas = await html2canvas(el, {
-      scale: 2, // 1653*2 = 3306px → ~300 DPI for A4
+      scale: 1,
       useCORS: true,
       backgroundColor: null,
       width: TW,
@@ -182,13 +220,7 @@ const CnhForm = () => {
       windowHeight: TH,
     });
 
-    if (wrapper) {
-      wrapper.style.position = "fixed";
-      wrapper.style.top = "-9999px";
-      wrapper.style.left = "-9999px";
-    }
-
-    return canvas.toDataURL("image/png", 1.0);
+    return canvas.toDataURL("image/png", 1);
   };
 
   const handlePreview = async () => {
@@ -206,7 +238,7 @@ const CnhForm = () => {
   const handleConfirm = async () => {
     if (!user) { toast.error("Faça login para continuar."); return; }
     setConfirming(true);
-    
+
     if (!isAdmin) {
       const { data: profile } = await supabase.from("profiles").select("credits").eq("id", user.id).single();
       if (!profile || profile.credits < 1) {
@@ -248,9 +280,13 @@ const CnhForm = () => {
     }
 
     const cleanImage = await captureDocument(false);
-    // A4 in mm = 210x297
-    const pdf = new jsPDF("p", "mm", "a4");
-    pdf.addImage(cleanImage, "PNG", 0, 0, 210, 297, undefined, "NONE");
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "px",
+      format: [TW, TH],
+      compress: false,
+    });
+    pdf.addImage(cleanImage, "PNG", 0, 0, TW, TH, undefined, "NONE");
     pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}.pdf`);
 
     if (user) saveDocumentHistory(user.id, "CNH Digital", nomeCompleto || "Sem nome");
@@ -266,9 +302,7 @@ const CnhForm = () => {
     ? `${window.location.origin}/verificar/${verificationId}`
     : window.location.origin;
 
-  // Field position map – all values in px based on 1653×2339 template
-  const F = {
-    // Card area starts at ~y=130, inner content ~y=200
+  const baseF = {
     foto:       { top: 290, left: 105, w: 180, h: 240 },
     nome:       { top: 250, left: 310, fontSize: 18 },
     primeiraHab:{ top: 250, left: 770, fontSize: 18 },
@@ -284,31 +318,31 @@ const CnhForm = () => {
     filiacaoPai:{ top: 590, left: 265, fontSize: 16 },
     filiacaoMae:{ top: 620, left: 265, fontSize: 16 },
     assinatura: { top: 670, left: 130, w: 260, h: 65 },
-    // Código segurança vertical
     codSegSup:  { top: 270, left: 55 },
     codSegInf:  { top: 870, left: 55 },
-    // Categorias table
-    catLeftStart: 830,
-    catLeftX: 240,
-    catRightStart: 830,
-    catRightX: 610,
-    catRowH: 40,
-    // Observações
     obs:        { top: 1100, left: 170 },
-    // Assinado digitalmente
     assinado:   { top: 1250, left: 250, w: 430 },
     depto:      { top: 1275, left: 200, w: 530 },
     local:      { top: 1340, left: 120 },
-    // QR Code
     qr:         { top: 155, left: 870, w: 510, h: 510 },
-    // SERPRO text
     serproTxt1: { top: 1080, left: 830 },
     serproTxt2: { top: 1160, left: 830 },
     serproLabel:{ top: 1290, left: 1080 },
-    // Legenda + MRZ
     legenda:    { top: 1470, left: 80 },
     mrz:        { top: 1600, left: 80 },
   };
+
+  // Field position map dynamically aligned to detected template size
+  const F = {
+    ...Object.fromEntries(
+      Object.entries(baseF).map(([key, value]) => [key, alignFieldToTemplate(value)])
+    ),
+    catLeftStart: alignNumberY(830),
+    catLeftX: alignNumberX(240),
+    catRightStart: alignNumberY(830),
+    catRightX: alignNumberX(610),
+    catRowH: alignNumberY(40),
+  } as const;
 
   const documentJSX = (
     <div
