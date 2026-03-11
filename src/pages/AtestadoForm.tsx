@@ -159,35 +159,26 @@ const AtestadoForm = () => {
     if (!ctx || !templateImgRef.current) return;
 
     const img = templateImgRef.current;
-    // Use original image dimensions
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
-
-    // Draw template
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // Now overlay text at specific positions matching the template layout
     const W = canvas.width;
     const H = canvas.height;
-
-    // Scale factor (image is roughly 828px wide based on typical phone screenshot)
     const s = W / 828;
 
-    // --- Header: UPA name + address (top center area) ---
+    // --- Header: UPA name + address ---
     ctx.fillStyle = "#000";
-    ctx.font = `bold ${14 * s}px Arial`;
-    // Address area (right of UPA logo, top)
+    ctx.font = `${12 * s}px Arial`;
     const headerX = W * 0.45;
     const headerY = H * 0.055;
-    ctx.font = `${12 * s}px Arial`;
     ctx.fillText(enderecoUpa || "Av. Miguel Ignácio curi, 44 -", headerX, headerY);
     ctx.fillText(cepUpa ? `CEP: ${cepUpa}` : "CEP: 08295005", headerX, headerY + 16 * s);
 
     // --- "PARA:" name ---
     ctx.fillStyle = "#000";
     ctx.font = `bold ${16 * s}px Arial`;
-    const nameY = H * 0.175;
-    ctx.fillText(`PARA: ${nomePaciente || "NOME DO PACIENTE"}`, W * 0.06, nameY);
+    ctx.fillText(`PARA: ${nomePaciente || "NOME DO PACIENTE"}`, W * 0.06, H * 0.175);
 
     // --- Body text ---
     ctx.font = `${14 * s}px Arial`;
@@ -203,7 +194,6 @@ const AtestadoForm = () => {
 
     const bodyText = `Atesto para os devidos fins, que o(a), ${nomePaciente || "NOME DO PACIENTE"} CNS: ${cns} foi atendido(a) no(a), ${upaName} na data ${date} ás ${time} necessitando de ${days} (${daysWord}) dia de repouso por motivo de doença.`;
 
-    // Word-wrap body text
     const words = bodyText.split(" ");
     let line = "";
     let lineY = bodyY;
@@ -222,25 +212,56 @@ const AtestadoForm = () => {
 
     // --- CID ---
     ctx.font = `${16 * s}px Arial`;
-    const cidY = lineY + lineHeight * 2;
-    ctx.fillText(`CID: ${cidSelecionado?.code || "A90"}`, bodyX, cidY);
+    ctx.fillText(`CID: ${cidSelecionado?.code || "A90"}`, bodyX, lineY + lineHeight * 2);
 
-    // --- Location + date (center-right) ---
+    // --- Location + date ---
     ctx.font = `${14 * s}px Arial`;
-    const locY = H * 0.56;
-    const locText = `${upaName}, ${formatDateLong(date)}`;
-    ctx.fillText(locText, W * 0.42, locY);
+    ctx.fillText(`${upaName}, ${formatDateLong(date)}`, W * 0.42, H * 0.56);
 
     // --- Footer: emitted date ---
     ctx.font = `${10 * s}px Arial`;
     ctx.fillText(`Emitido em: ${date} ${time}`, W * 0.04, H * 0.87);
 
-    // --- Doctor info (bottom right) ---
+    // --- Doctor info ---
     ctx.font = `${12 * s}px Arial`;
     const docX = W * 0.7;
     const docY = H * 0.90;
     ctx.fillText(nomeMedico || "Dr. Nome do Médico", docX, docY);
     ctx.fillText(crm ? `CRM ${crm}` : "CRM 000000", docX, docY + 16 * s);
+
+    // --- QR Code ---
+    const qrUrl = verificationId
+      ? `${window.location.origin}/verificar/${verificationId}`
+      : window.location.origin;
+    const qrContainer = document.createElement("div");
+    qrContainer.style.position = "absolute";
+    qrContainer.style.left = "-9999px";
+    document.body.appendChild(qrContainer);
+    
+    // Use SVG-based QR rendering
+    const { createRoot } = require("react-dom/client");
+    const root = createRoot(qrContainer);
+    const React = require("react");
+    const QRCodeComp = require("react-qr-code").default;
+    root.render(React.createElement(QRCodeComp, { value: qrUrl, size: 256, level: "H" }));
+    
+    setTimeout(() => {
+      const svgEl = qrContainer.querySelector("svg");
+      if (svgEl) {
+        const svgData = new XMLSerializer().serializeToString(svgEl);
+        const qrImg = new Image();
+        qrImg.onload = () => {
+          const qrSize = 80 * s;
+          ctx.drawImage(qrImg, W * 0.04, H * 0.70, qrSize, qrSize);
+          ctx.font = `${8 * s}px Arial`;
+          ctx.fillStyle = "#555";
+          ctx.fillText("Validação Digital", W * 0.04, H * 0.70 + qrSize + 10 * s);
+        };
+        qrImg.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+      }
+      root.unmount();
+      document.body.removeChild(qrContainer);
+    }, 100);
 
     // --- Watermark ---
     if (withWatermark) {
@@ -252,7 +273,6 @@ const AtestadoForm = () => {
       ctx.rotate(-Math.PI / 4);
       const wmText = "BELLARUS NÃO COPIE";
       const wmWidth = ctx.measureText(wmText).width;
-      // Draw multiple watermark lines
       for (let row = -3; row <= 3; row++) {
         for (let col = -2; col <= 2; col++) {
           ctx.fillText(wmText, col * (wmWidth + 40 * s), row * 120 * s);
@@ -260,7 +280,7 @@ const AtestadoForm = () => {
       }
       ctx.restore();
     }
-  }, [nomePaciente, cnsPaciente, nomeUpa, enderecoUpa, cepUpa, dataAtestado, horaAtendimento, diasAfastamento, cidSelecionado, nomeMedico, crm]);
+  }, [nomePaciente, cnsPaciente, nomeUpa, enderecoUpa, cepUpa, dataAtestado, horaAtendimento, diasAfastamento, cidSelecionado, nomeMedico, crm, verificationId]);
 
   // Render preview on canvas when showPreview changes or data changes
   useEffect(() => {
