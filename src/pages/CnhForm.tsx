@@ -407,7 +407,7 @@ const CnhForm = () => {
       <div style={{
         position: "absolute", top: F.codSegSup.top, left: F.codSegSup.left,
         fontSize: 13, fontWeight: "bold", color: "#000",
-        writingMode: "vertical-rl" as const, transform: "rotate(180deg)", letterSpacing: 2,
+        writingMode: "vertical-rl" as const, textOrientation: "upright" as const, letterSpacing: 2,
       }}>
         {codigoSeguranca}
       </div>
