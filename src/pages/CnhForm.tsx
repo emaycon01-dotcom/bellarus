@@ -119,8 +119,8 @@ const CnhForm = () => {
 
   /* =====================================================================
    * drawOnTemplate – renders all form data onto the official CNH template
-   * All coordinates are proportional (0–1) relative to the template image
-   * dimensions so it works at any resolution.
+   * Coordinates calibrated to the reference PDF layout.
+   * The template has: header bar, left CNH card, right QR area, bottom MRZ.
    * =================================================================== */
   const drawOnTemplate = useCallback((withWatermark: boolean): Promise<string> => {
     return new Promise((resolve) => {
@@ -135,138 +135,162 @@ const CnhForm = () => {
         ctx.drawImage(bgImg, 0, 0, W, H);
 
         // ─── Helpers ───────────────────────────────────────────
-        const px = (frac: number) => frac * W;
-        const py = (frac: number) => frac * H;
-        const fontSize = (frac: number) => Math.round(frac * W);
+        const px = (frac: number) => Math.round(frac * W);
+        const py = (frac: number) => Math.round(frac * H);
+        const fs = (frac: number) => Math.round(frac * W);
 
         ctx.fillStyle = "#000";
         ctx.textAlign = "left";
+        ctx.textBaseline = "top";
 
-        // ─── CARD SECTION (upper-left block) ───────────────────
-        // The card area spans roughly x: 0.035–0.52, y: 0.055–0.38
+        // ================================================================
+        // CARD SECTION – upper-left block (the CNH card itself)
+        // Card area spans roughly x: 0.04–0.52, y: 0.06–0.44
+        // ================================================================
 
-        // 2e1 NOME COMPLETO
-        ctx.font = `bold ${fontSize(0.013)}px Arial`;
-        ctx.fillText(nomeCompleto || "", px(0.135), py(0.098));
+        // ─── 2e1 NOME / SOBRENOME ──────────────────────────────
+        ctx.font = `bold ${fs(0.012)}px Arial`;
+        ctx.fillText(nomeCompleto || "", px(0.095), py(0.095));
 
-        // 1ª HABILITAÇÃO (top-right of card)
-        ctx.font = `${fontSize(0.010)}px Arial`;
-        ctx.fillText(dataPrimeiraHab || "", px(0.40), py(0.098));
+        // ─── 7 PRIMEIRA HABILITAÇÃO ────────────────────────────
+        ctx.font = `${fs(0.009)}px Arial`;
+        ctx.fillText(dataPrimeiraHab || "", px(0.41), py(0.095));
 
-        // 3 DATA NASCIMENTO, LOCAL E UF
-        ctx.font = `bold ${fontSize(0.010)}px Arial`;
-        ctx.fillText(dataNascimento || "", px(0.135), py(0.124));
+        // ─── 3 DATA NASC / LOCAL / UF ──────────────────────────
+        ctx.font = `bold ${fs(0.009)}px Arial`;
+        ctx.fillText(dataNascimento || "", px(0.155), py(0.122));
 
-        // 4a DATA EMISSÃO
-        ctx.fillText(dataEmissao || "", px(0.135), py(0.150));
+        // ─── 4a DATA EMISSÃO ───────────────────────────────────
+        ctx.font = `bold ${fs(0.009)}px Arial`;
+        ctx.fillText(dataEmissao || "", px(0.115), py(0.148));
 
-        // 4b VALIDADE
-        ctx.fillText(dataValidade || "", px(0.245), py(0.150));
+        // ─── 4b VALIDADE ───────────────────────────────────────
+        ctx.fillText(dataValidade || "", px(0.235), py(0.148));
 
-        // ACC – large category letter
-        ctx.font = `bold ${fontSize(0.020)}px Arial`;
-        ctx.fillText(categoria || "", px(0.370), py(0.157));
+        // ─── ACC (category badge) ──────────────────────────────
+        ctx.font = `bold ${fs(0.018)}px Arial`;
+        ctx.fillText(categoria || "", px(0.375), py(0.142));
 
-        // 4c DOC IDENTIDADE / ORG EMISSOR / UF
-        ctx.font = `bold ${fontSize(0.010)}px Arial`;
-        ctx.fillText(rg || "", px(0.135), py(0.175));
+        // ─── 4c DOC IDENTIDADE / ORG EMISSOR / UF ─────────────
+        ctx.font = `bold ${fs(0.009)}px Arial`;
+        ctx.fillText(rg || "", px(0.115), py(0.175));
 
-        // 4d CPF
-        ctx.fillText(cpf || "", px(0.135), py(0.198));
+        // ─── 4d CPF ────────────────────────────────────────────
+        ctx.fillText(cpf || "", px(0.115), py(0.198));
 
-        // 5 Nº REGISTRO (red)
+        // ─── 5 Nº REGISTRO (red) ──────────────────────────────
         ctx.fillStyle = "#cc0000";
-        ctx.font = `bold ${fontSize(0.010)}px Arial`;
+        ctx.font = `bold ${fs(0.009)}px Arial`;
         ctx.fillText(registro || "", px(0.275), py(0.198));
         ctx.fillStyle = "#000";
 
-        // 9 CAT HAB
-        ctx.font = `bold ${fontSize(0.012)}px Arial`;
-        ctx.fillText(categoria || "", px(0.410), py(0.198));
+        // ─── 9 CAT HAB ────────────────────────────────────────
+        ctx.font = `bold ${fs(0.010)}px Arial`;
+        ctx.fillText(categoria || "", px(0.415), py(0.198));
 
-        // NACIONALIDADE
-        ctx.font = `bold ${fontSize(0.010)}px Arial`;
-        ctx.fillText(nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO", px(0.135), py(0.222));
+        // ─── NACIONALIDADE ─────────────────────────────────────
+        ctx.font = `bold ${fs(0.009)}px Arial`;
+        ctx.fillText(nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO", px(0.115), py(0.222));
 
-        // FILIAÇÃO - PAI
-        ctx.fillText(nomePai || "", px(0.135), py(0.245));
+        // ─── FILIAÇÃO - PAI ────────────────────────────────────
+        ctx.fillText(nomePai || "", px(0.115), py(0.248));
 
-        // FILIAÇÃO - MÃE
-        ctx.fillText(nomeMae || "", px(0.135), py(0.262));
+        // ─── FILIAÇÃO - MÃE ───────────────────────────────────
+        ctx.fillText(nomeMae || "", px(0.115), py(0.272));
+
+        // ─── 7 ASSINATURA DO PORTADOR label ────────────────────
+        // (already on the template)
 
         // ─── CÓDIGO SEGURANÇA (vertical, left margin) ──────────
         ctx.save();
-        ctx.translate(px(0.040), py(0.355));
+        ctx.translate(px(0.038), py(0.36));
         ctx.rotate(-Math.PI / 2);
-        ctx.font = `bold ${fontSize(0.010)}px Arial`;
+        ctx.font = `bold ${fs(0.009)}px Arial`;
         ctx.fillText(codigoSeguranca || "", 0, 0);
         ctx.restore();
 
-        // ─── CATEGORY TABLE ────────────────────────────────────
-        // Left side rows: ACC, A, A1, B, B1, C, C1
-        // Right side rows: D, D1, BE, CE, C1E, DE, D1E
+        // ================================================================
+        // CATEGORY TABLE – below the card
+        // Left columns: ACC, A, A1, B, B1, C, C1
+        // Right columns: D, D1, BE, CE, C1E, DE, D1E
+        // ================================================================
         const catMap: Record<string, string[]> = {
           "A": ["A"], "B": ["B"], "AB": ["A", "B"], "C": ["B", "C"],
           "D": ["B", "C", "D"], "E": ["B", "C", "D", "E"],
           "AC": ["A", "C"], "AD": ["A", "D"], "AE": ["A", "E"],
         };
         const activeCats = catMap[categoria] || [];
-        ctx.font = `${fontSize(0.008)}px Arial`;
+        ctx.font = `${fs(0.007)}px Arial`;
         ctx.fillStyle = "#000";
 
-        const tableY = py(0.310);
-        const rowH = py(0.0155);
+        const tableBaseY = py(0.375);
+        const rowH = py(0.022);
 
-        // Left columns: col 11 date at ~0.155, col 12 at ~0.215
+        // Left side dates (column ~11)
         const leftCats = ["ACC", "A", "A1", "B", "B1", "C", "C1"];
         leftCats.forEach((cat, i) => {
           const isActive = cat === "ACC" ? activeCats.length > 0 : activeCats.includes(cat);
           if (isActive) {
-            ctx.fillText(dataValidade || "", px(0.155), tableY + i * rowH);
+            ctx.fillText(dataValidade || "", px(0.155), tableBaseY + i * rowH);
           }
         });
 
-        // Right columns: col 11 date at ~0.385
+        // Right side dates (column ~11 right)
         const rightCats = ["D", "D1", "BE", "CE", "C1E", "DE", "D1E"];
         rightCats.forEach((cat, i) => {
           const isActive = activeCats.includes(cat);
           if (isActive) {
-            ctx.fillText(dataValidade || "", px(0.385), tableY + i * rowH);
+            ctx.fillText(dataValidade || "", px(0.39), tableBaseY + i * rowH);
           }
         });
 
         // ─── 12 OBSERVAÇÕES ────────────────────────────────────
-        ctx.font = `bold ${fontSize(0.009)}px Arial`;
-        ctx.fillText(observacoes.join(", "), px(0.065), py(0.435));
+        ctx.font = `bold ${fs(0.008)}px Arial`;
+        ctx.fillText(observacoes.join(", "), px(0.065), py(0.540));
 
-        // ─── ASSINADO DIGITALMENTE section ─────────────────────
-        ctx.font = `${fontSize(0.008)}px Arial`;
+        // ─── ASSINADO DIGITALMENTE ─────────────────────────────
+        ctx.font = `${fs(0.007)}px Arial`;
         ctx.textAlign = "center";
-        ctx.fillText("ASSINADO DIGITALMENTE", px(0.32), py(0.490));
-        ctx.fillText("DEPARTAMENTO ESTADUAL DE TRÂNSITO", px(0.32), py(0.502));
+        ctx.fillText("ASSINADO DIGITALMENTE", px(0.30), py(0.600));
+        ctx.fillText("DEPARTAMENTO ESTADUAL DE TRÂNSITO", px(0.30), py(0.612));
         ctx.textAlign = "left";
 
-        // LOCAL
-        ctx.font = `bold ${fontSize(0.009)}px Arial`;
-        ctx.fillText("LOCAL:", px(0.050), py(0.523));
-        ctx.fillText(cidadeEstado || "", px(0.050), py(0.538));
+        // ─── LOCAL ─────────────────────────────────────────────
+        ctx.font = `bold ${fs(0.008)}px Arial`;
+        ctx.fillText(cidadeEstado || "", px(0.065), py(0.645));
 
-        // ESPELHO
-        ctx.font = `${fontSize(0.008)}px Arial`;
-        ctx.fillText(espelho || "", px(0.32), py(0.516));
+        // ─── ESPELHO ───────────────────────────────────────────
+        ctx.font = `${fs(0.007)}px Arial`;
+        ctx.fillText(espelho || "", px(0.34), py(0.630));
 
-        // RENACH
-        ctx.fillText(renach || "", px(0.32), py(0.530));
+        // ─── RENACH ────────────────────────────────────────────
+        ctx.fillText(renach || "", px(0.34), py(0.645));
 
-        // ─── ESTADO POR EXTENSO (large) ────────────────────────
-        ctx.font = `bold ${fontSize(0.025)}px Arial`;
+        // ─── ESTADO POR EXTENSO (large, centered) ──────────────
+        ctx.font = `bold ${fs(0.022)}px Arial`;
         ctx.textAlign = "center";
-        ctx.fillText(estadoExtenso || "", px(0.23), py(0.580));
+        ctx.fillText(estadoExtenso || "", px(0.26), py(0.680));
         ctx.textAlign = "left";
 
-        // ─── MRZ LINES ────────────────────────────────────────
-        ctx.font = `${fontSize(0.012)}px "Courier New", monospace`;
+        // ─── CÓDIGO SEGURANÇA (vertical, bottom-left) ──────────
+        ctx.save();
+        ctx.translate(px(0.038), py(0.720));
+        ctx.rotate(-Math.PI / 2);
+        ctx.font = `bold ${fs(0.009)}px Arial`;
+        ctx.fillText(codigoSeguranca || "", 0, 0);
+        ctx.restore();
+
+        // ================================================================
+        // RIGHT SIDE – QR Code area text
+        // ================================================================
+        // "QR-CODE" label and legal text are already on the template
+
+        // ================================================================
+        // MRZ LINES (bottom of page)
+        // ================================================================
+        ctx.font = `${fs(0.012)}px "Courier New", monospace`;
         ctx.fillStyle = "#222";
+        ctx.textBaseline = "top";
         const regClean = (registro || "").replace(/\D/g, "");
         const nascParts = (dataNascimento || "").split(",")[0]?.split("/") || [];
         const nascYYMMDD = nascParts.length >= 3
@@ -279,21 +303,28 @@ const CnhForm = () => {
         const gChar = genero === "Feminino" ? "F" : "M";
         const nameMRZ = nomeCompleto.replace(/\s+/g, "<").toUpperCase();
 
-        const mrzY = py(0.835);
-        ctx.fillText(`I<BRA${regClean.padEnd(15, "<")}`, px(0.060), mrzY);
-        ctx.fillText(`${nascYYMMDD}${gChar}${valYYMMDD}BRA${"<".repeat(12)}4`, px(0.060), mrzY + py(0.022));
-        ctx.fillText(`${nameMRZ}${"<".repeat(Math.max(0, 30 - nameMRZ.length))}`, px(0.060), mrzY + py(0.044));
+        const mrzY = py(0.870);
+        const mrzLineH = py(0.025);
+        ctx.fillText(`I<BRA${regClean.padEnd(15, "<")}`, px(0.065), mrzY);
+        ctx.fillText(`${nascYYMMDD}${gChar}${valYYMMDD}BRA${"<".repeat(12)}4`, px(0.065), mrzY + mrzLineH);
+        ctx.fillText(`${nameMRZ}${"<".repeat(Math.max(0, 30 - nameMRZ.length))}`, px(0.065), mrzY + mrzLineH * 2);
 
         ctx.fillStyle = "#000";
 
-        // ─── PHOTO (3x4) ──────────────────────────────────────
-        // Photo box is roughly at x: 0.045–0.115, y: 0.105–0.260
+        // ================================================================
+        // PHOTO (3x4) – left side of card
+        // Photo box: x ~0.055–0.12, y ~0.13–0.27
+        // ================================================================
         const drawPhoto = (): Promise<void> => {
           if (!fotoPreview) return Promise.resolve();
           return new Promise((res) => {
             const img = new Image();
             img.onload = () => {
-              ctx.drawImage(img, px(0.047), py(0.105), px(0.072), py(0.155));
+              const photoX = px(0.055);
+              const photoY = py(0.135);
+              const photoW = px(0.068);
+              const photoH = py(0.140);
+              ctx.drawImage(img, photoX, photoY, photoW, photoH);
               res();
             };
             img.onerror = () => res();
@@ -301,14 +332,16 @@ const CnhForm = () => {
           });
         };
 
-        // ─── ASSINATURA ───────────────────────────────────────
-        // Signature box is roughly at x: 0.045–0.115, y: 0.268–0.310
+        // ================================================================
+        // SIGNATURE – below photo
+        // Signature box: x ~0.055–0.14, y ~0.29–0.33
+        // ================================================================
         const drawSignature = (): Promise<void> => {
           if (!assinaturaPreview) return Promise.resolve();
           return new Promise((res) => {
             const img = new Image();
             img.onload = () => {
-              ctx.drawImage(img, px(0.048), py(0.268), px(0.085), py(0.040));
+              ctx.drawImage(img, px(0.055), py(0.295), px(0.085), py(0.035));
               res();
             };
             img.onerror = () => res();
@@ -321,9 +354,10 @@ const CnhForm = () => {
             ctx.save();
             ctx.translate(W / 2, H / 2);
             ctx.rotate(-Math.PI / 4);
-            ctx.font = `bold ${fontSize(0.045)}px Arial`;
+            ctx.font = `bold ${fs(0.045)}px Arial`;
             ctx.fillStyle = "rgba(255, 0, 0, 0.18)";
             ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
             for (let i = -3; i <= 3; i++) {
               ctx.fillText("BELLARUS NÃO COPIE", 0, i * py(0.08));
             }
@@ -334,7 +368,7 @@ const CnhForm = () => {
       };
       bgImg.src = cnhTemplateBg;
     });
-  }, [nomeCompleto, cpf, rg, dataNascimento, nomePai, nomeMae, registro, dataValidade, dataPrimeiraHab, categoria, dataEmissao, cidadeEstado, observacoes, estadoExtenso, espelho, renach, codigoSeguranca, fotoPreview, assinaturaPreview, nacionalidade, genero, observacoes]);
+  }, [nomeCompleto, cpf, rg, dataNascimento, nomePai, nomeMae, registro, dataValidade, dataPrimeiraHab, categoria, dataEmissao, cidadeEstado, observacoes, estadoExtenso, espelho, renach, codigoSeguranca, fotoPreview, assinaturaPreview, nacionalidade, genero]);
 
   const handlePreview = async () => {
     const imageData = await drawOnTemplate(true);
