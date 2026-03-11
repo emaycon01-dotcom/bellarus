@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
+import cnhTemplateBg from "@/assets/cnh-template-bg.jpg";
 import jsPDF from "jspdf";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
@@ -43,79 +44,6 @@ const formatCPF = (v: string) => {
   if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 };
-
-/* ---- QR Code drawing on canvas (simple text-based pattern) ---- */
-function drawQRPlaceholder(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, data: string) {
-  const modules = 25;
-  const cellSize = size / modules;
-  // Generate a deterministic pattern from the data string
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    hash = ((hash << 5) - hash + data.charCodeAt(i)) | 0;
-  }
-  ctx.fillStyle = "#000";
-  // Draw finder patterns (3 corners)
-  const drawFinder = (fx: number, fy: number) => {
-    ctx.fillRect(fx, fy, cellSize * 7, cellSize * 7);
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(fx + cellSize, fy + cellSize, cellSize * 5, cellSize * 5);
-    ctx.fillStyle = "#000";
-    ctx.fillRect(fx + cellSize * 2, fy + cellSize * 2, cellSize * 3, cellSize * 3);
-  };
-  drawFinder(x, y);
-  drawFinder(x + (modules - 7) * cellSize, y);
-  drawFinder(x, y + (modules - 7) * cellSize);
-
-  // Fill data area with pseudo-random pattern
-  const seed = Math.abs(hash);
-  for (let row = 0; row < modules; row++) {
-    for (let col = 0; col < modules; col++) {
-      // Skip finder pattern areas
-      if ((row < 8 && col < 8) || (row < 8 && col >= modules - 8) || (row >= modules - 8 && col < 8)) continue;
-      const val = ((seed * (row * modules + col + 1)) >> 3) & 1;
-      if (val) {
-        ctx.fillStyle = "#000";
-        ctx.fillRect(x + col * cellSize, y + row * cellSize, cellSize, cellSize);
-      }
-    }
-  }
-}
-
-/* ---- Security pattern drawing ---- */
-function drawSecurityPattern(ctx: CanvasRenderingContext2D, w: number, h: number) {
-  // Subtle diagonal lines
-  ctx.strokeStyle = "rgba(255,255,255,0.03)";
-  ctx.lineWidth = 1;
-  for (let i = -h; i < w + h; i += 18) {
-    ctx.beginPath();
-    ctx.moveTo(i, 0);
-    ctx.lineTo(i + h, h);
-    ctx.stroke();
-  }
-  // Subtle circles
-  ctx.strokeStyle = "rgba(255,255,255,0.02)";
-  ctx.lineWidth = 0.5;
-  for (let i = 0; i < 8; i++) {
-    ctx.beginPath();
-    ctx.arc(w * 0.7, h * 0.5, 80 + i * 40, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-}
-
-/* ---- Rounded rect helper ---- */
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
 
 const CnhForm = () => {
   const navigate = useNavigate();
@@ -189,299 +117,224 @@ const CnhForm = () => {
     toast.success("Campos limpos!");
   };
 
+  /* =====================================================================
+   * drawOnTemplate – renders all form data onto the official CNH template
+   * All coordinates are proportional (0–1) relative to the template image
+   * dimensions so it works at any resolution.
+   * =================================================================== */
   const drawOnTemplate = useCallback((withWatermark: boolean): Promise<string> => {
     return new Promise((resolve) => {
-      // Modern horizontal card: 2400 x 1400 px (landscape)
-      const W = 2400;
-      const H = 1400;
-      const canvas = document.createElement("canvas");
-      canvas.width = W;
-      canvas.height = H;
-      const ctx = canvas.getContext("2d")!;
+      const bgImg = new Image();
+      bgImg.onload = () => {
+        const W = bgImg.naturalWidth;
+        const H = bgImg.naturalHeight;
+        const canvas = document.createElement("canvas");
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(bgImg, 0, 0, W, H);
 
-      // ===== BACKGROUND =====
-      // Main gradient: deep navy to dark teal
-      const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-      bgGrad.addColorStop(0, "#0a1628");
-      bgGrad.addColorStop(0.5, "#0d2137");
-      bgGrad.addColorStop(1, "#0a2a3c");
-      ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, W, H);
+        // ─── Helpers ───────────────────────────────────────────
+        const px = (frac: number) => frac * W;
+        const py = (frac: number) => frac * H;
+        const fontSize = (frac: number) => Math.round(frac * W);
 
-      // Security pattern overlay
-      drawSecurityPattern(ctx, W, H);
-
-      // Accent stripe at top
-      const topGrad = ctx.createLinearGradient(0, 0, W, 0);
-      topGrad.addColorStop(0, "#1a73e8");
-      topGrad.addColorStop(0.5, "#00bcd4");
-      topGrad.addColorStop(1, "#1a73e8");
-      ctx.fillStyle = topGrad;
-      ctx.fillRect(0, 0, W, 8);
-
-      // Accent stripe at bottom
-      ctx.fillStyle = topGrad;
-      ctx.fillRect(0, H - 8, W, 8);
-
-      // Subtle right-side glow
-      const glowGrad = ctx.createRadialGradient(W * 0.85, H * 0.3, 0, W * 0.85, H * 0.3, 500);
-      glowGrad.addColorStop(0, "rgba(26,115,232,0.08)");
-      glowGrad.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = glowGrad;
-      ctx.fillRect(0, 0, W, H);
-
-      // ===== HEADER BAR =====
-      ctx.fillStyle = "rgba(255,255,255,0.05)";
-      ctx.fillRect(0, 20, W, 90);
-
-      // System name
-      ctx.font = "bold 38px 'Segoe UI', Arial, sans-serif";
-      ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "left";
-      ctx.fillText("REPÚBLICA FEDERATIVA DO BRASIL", 40, 65);
-
-      ctx.font = "300 22px 'Segoe UI', Arial, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.6)";
-      ctx.fillText("CARTEIRA NACIONAL DE HABILITAÇÃO  •  DRIVER LICENSE", 40, 95);
-
-      // Category badge (top right)
-      if (categoria) {
-        ctx.font = "bold 64px 'Segoe UI', Arial, sans-serif";
-        ctx.fillStyle = "#00bcd4";
-        ctx.textAlign = "right";
-        ctx.fillText(categoria, W - 50, 85);
-        ctx.font = "300 18px 'Segoe UI', Arial, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.5)";
-        ctx.fillText("CATEGORIA", W - 50, 105);
+        ctx.fillStyle = "#000";
         ctx.textAlign = "left";
-      }
 
-      // ===== PHOTO AREA (left side) =====
-      const photoX = 50;
-      const photoY = 145;
-      const photoW = 420;
-      const photoH = 540;
+        // ─── CARD SECTION (upper-left block) ───────────────────
+        // The card area spans roughly x: 0.035–0.52, y: 0.055–0.38
 
-      // Photo frame with gradient border
-      const framePad = 4;
-      ctx.strokeStyle = "#00bcd4";
-      ctx.lineWidth = 3;
-      roundRect(ctx, photoX - framePad, photoY - framePad, photoW + framePad * 2, photoH + framePad * 2, 16);
-      ctx.stroke();
+        // 2e1 NOME COMPLETO
+        ctx.font = `bold ${fontSize(0.013)}px Arial`;
+        ctx.fillText(nomeCompleto || "", px(0.135), py(0.098));
 
-      // Photo placeholder bg
-      ctx.fillStyle = "#162a42";
-      roundRect(ctx, photoX, photoY, photoW, photoH, 12);
-      ctx.fill();
+        // 1ª HABILITAÇÃO (top-right of card)
+        ctx.font = `${fontSize(0.010)}px Arial`;
+        ctx.fillText(dataPrimeiraHab || "", px(0.40), py(0.098));
 
-      // ===== SIGNATURE AREA (below photo) =====
-      const sigX = photoX;
-      const sigY = photoY + photoH + 30;
-      const sigW = photoW;
-      const sigH = 120;
+        // 3 DATA NASCIMENTO, LOCAL E UF
+        ctx.font = `bold ${fontSize(0.010)}px Arial`;
+        ctx.fillText(dataNascimento || "", px(0.135), py(0.124));
 
-      ctx.font = "300 16px 'Segoe UI', Arial, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.4)";
-      ctx.fillText("ASSINATURA DO PORTADOR", sigX, sigY - 8);
+        // 4a DATA EMISSÃO
+        ctx.fillText(dataEmissao || "", px(0.135), py(0.150));
 
-      // Signature box
-      ctx.strokeStyle = "rgba(255,255,255,0.15)";
-      ctx.lineWidth = 1;
-      roundRect(ctx, sigX, sigY, sigW, sigH, 8);
-      ctx.stroke();
-      ctx.fillStyle = "rgba(255,255,255,0.03)";
-      roundRect(ctx, sigX, sigY, sigW, sigH, 8);
-      ctx.fill();
+        // 4b VALIDADE
+        ctx.fillText(dataValidade || "", px(0.245), py(0.150));
 
-      // ===== DATA FIELDS (right side) =====
-      const dataX = photoX + photoW + 60;
-      const dataW = W - dataX - 50;
-      let currentY = 155;
-      const lineH = 75;
+        // ACC – large category letter
+        ctx.font = `bold ${fontSize(0.020)}px Arial`;
+        ctx.fillText(categoria || "", px(0.370), py(0.157));
 
-      const drawField = (label: string, value: string, x: number, y: number, fieldW?: number) => {
-        ctx.font = "300 16px 'Segoe UI', Arial, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.45)";
-        ctx.textAlign = "left";
-        ctx.fillText(label, x, y);
-        ctx.font = "600 28px 'Segoe UI', Arial, sans-serif";
-        ctx.fillStyle = "#ffffff";
-        ctx.fillText(value || "—", x, y + 34);
-        // Underline
-        ctx.strokeStyle = "rgba(255,255,255,0.08)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(x, y + 44);
-        ctx.lineTo(x + (fieldW || dataW), y + 44);
-        ctx.stroke();
-      };
+        // 4c DOC IDENTIDADE / ORG EMISSOR / UF
+        ctx.font = `bold ${fontSize(0.010)}px Arial`;
+        ctx.fillText(rg || "", px(0.135), py(0.175));
 
-      // Row 1: Nome completo (full width)
-      drawField("NOME COMPLETO", nomeCompleto, dataX, currentY, dataW);
-      currentY += lineH;
+        // 4d CPF
+        ctx.fillText(cpf || "", px(0.135), py(0.198));
 
-      // Row 2: CPF | RG (split)
-      const halfW = (dataW - 40) / 2;
-      drawField("CPF", cpf, dataX, currentY, halfW);
-      drawField("DOC. IDENTIDADE", rg, dataX + halfW + 40, currentY, halfW);
-      currentY += lineH;
+        // 5 Nº REGISTRO (red)
+        ctx.fillStyle = "#cc0000";
+        ctx.font = `bold ${fontSize(0.010)}px Arial`;
+        ctx.fillText(registro || "", px(0.275), py(0.198));
+        ctx.fillStyle = "#000";
 
-      // Row 3: Nascimento | Nacionalidade
-      drawField("NASCIMENTO", dataNascimento, dataX, currentY, halfW);
-      drawField("NACIONALIDADE", nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)", dataX + halfW + 40, currentY, halfW);
-      currentY += lineH;
+        // 9 CAT HAB
+        ctx.font = `bold ${fontSize(0.012)}px Arial`;
+        ctx.fillText(categoria || "", px(0.410), py(0.198));
 
-      // Row 4: Emissão | Validade
-      drawField("DATA EMISSÃO", dataEmissao, dataX, currentY, halfW);
-      drawField("VALIDADE", dataValidade, dataX + halfW + 40, currentY, halfW);
-      currentY += lineH;
+        // NACIONALIDADE
+        ctx.font = `bold ${fontSize(0.010)}px Arial`;
+        ctx.fillText(nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO", px(0.135), py(0.222));
 
-      // Row 5: 1ª Hab | Registro
-      drawField("1ª HABILITAÇÃO", dataPrimeiraHab, dataX, currentY, halfW);
-      // Registro in accent color
-      ctx.font = "300 16px 'Segoe UI', Arial, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.45)";
-      ctx.fillText("Nº REGISTRO", dataX + halfW + 40, currentY);
-      ctx.font = "bold 28px 'Segoe UI', Arial, sans-serif";
-      ctx.fillStyle = "#00bcd4";
-      ctx.fillText(registro || "—", dataX + halfW + 40, currentY + 34);
-      ctx.strokeStyle = "rgba(255,255,255,0.08)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(dataX + halfW + 40, currentY + 44);
-      ctx.lineTo(dataX + halfW + 40 + halfW, currentY + 44);
-      ctx.stroke();
-      currentY += lineH;
+        // FILIAÇÃO - PAI
+        ctx.fillText(nomePai || "", px(0.135), py(0.245));
 
-      // Row 6: Filiação (PAI | MÃE)
-      drawField("FILIAÇÃO (PAI)", nomePai, dataX, currentY, halfW);
-      drawField("FILIAÇÃO (MÃE)", nomeMae, dataX + halfW + 40, currentY, halfW);
-      currentY += lineH;
+        // FILIAÇÃO - MÃE
+        ctx.fillText(nomeMae || "", px(0.135), py(0.262));
 
-      // Row 7: Cidade/Estado | UF
-      drawField("LOCAL", cidadeEstado, dataX, currentY, halfW);
-      drawField("UF", estadoExtenso, dataX + halfW + 40, currentY, halfW);
-      currentY += lineH;
+        // ─── CÓDIGO SEGURANÇA (vertical, left margin) ──────────
+        ctx.save();
+        ctx.translate(px(0.040), py(0.355));
+        ctx.rotate(-Math.PI / 2);
+        ctx.font = `bold ${fontSize(0.010)}px Arial`;
+        ctx.fillText(codigoSeguranca || "", 0, 0);
+        ctx.restore();
 
-      // ===== BOTTOM BAR =====
-      const bottomBarY = H - 200;
+        // ─── CATEGORY TABLE ────────────────────────────────────
+        // Left side rows: ACC, A, A1, B, B1, C, C1
+        // Right side rows: D, D1, BE, CE, C1E, DE, D1E
+        const catMap: Record<string, string[]> = {
+          "A": ["A"], "B": ["B"], "AB": ["A", "B"], "C": ["B", "C"],
+          "D": ["B", "C", "D"], "E": ["B", "C", "D", "E"],
+          "AC": ["A", "C"], "AD": ["A", "D"], "AE": ["A", "E"],
+        };
+        const activeCats = catMap[categoria] || [];
+        ctx.font = `${fontSize(0.008)}px Arial`;
+        ctx.fillStyle = "#000";
 
-      // Separator line
-      ctx.strokeStyle = "rgba(255,255,255,0.1)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(40, bottomBarY);
-      ctx.lineTo(W - 40, bottomBarY);
-      ctx.stroke();
+        const tableY = py(0.310);
+        const rowH = py(0.0155);
 
-      // Bottom info row
-      const bottomY = bottomBarY + 35;
-      const colW = (W - 100) / 5;
-
-      const drawBottomField = (label: string, value: string, x: number) => {
-        ctx.font = "300 14px 'Segoe UI', Arial, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.35)";
-        ctx.textAlign = "left";
-        ctx.fillText(label, x, bottomY);
-        ctx.font = "500 20px 'Segoe UI', Arial, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.8)";
-        ctx.fillText(value || "—", x, bottomY + 28);
-      };
-
-      drawBottomField("RENACH", renach, 50);
-      drawBottomField("ESPELHO", espelho, 50 + colW);
-      drawBottomField("CÓD. SEGURANÇA", codigoSeguranca, 50 + colW * 2);
-      drawBottomField("OBSERVAÇÕES", observacoes.join(", ") || "—", 50 + colW * 3);
-
-      // QR Code area (bottom right)
-      const qrSize = 150;
-      const qrX = W - qrSize - 50;
-      const qrY = bottomBarY + 15;
-
-      // QR background
-      ctx.fillStyle = "#ffffff";
-      roundRect(ctx, qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 8);
-      ctx.fill();
-      drawQRPlaceholder(ctx, qrX, qrY, qrSize, `${registro}-${cpf}-${nomeCompleto}`);
-
-      // ===== MRZ ZONE =====
-      const mrzY = H - 55;
-      ctx.font = "16px 'Courier New', monospace";
-      ctx.fillStyle = "rgba(255,255,255,0.25)";
-      ctx.textAlign = "left";
-      const regClean = (registro || "").replace(/\D/g, "");
-      const nameMRZ = nomeCompleto.replace(/\s+/g, "<").toUpperCase();
-      ctx.fillText(`I<BRA${regClean.padEnd(15, "<")}<<<<<<`, 50, mrzY);
-      ctx.fillText(`${nameMRZ}${"<".repeat(Math.max(0, 44 - nameMRZ.length))}`, 50, mrzY + 22);
-
-      // ===== DRAW PHOTO =====
-      const drawPhoto = (): Promise<void> => {
-        if (!fotoPreview) return Promise.resolve();
-        return new Promise((res) => {
-          const img = new Image();
-          img.onload = () => {
-            // Clip to rounded rect
-            ctx.save();
-            roundRect(ctx, photoX, photoY, photoW, photoH, 12);
-            ctx.clip();
-            // Cover-fit the photo
-            const imgRatio = img.width / img.height;
-            const boxRatio = photoW / photoH;
-            let sx = 0, sy = 0, sw = img.width, sh = img.height;
-            if (imgRatio > boxRatio) {
-              sw = img.height * boxRatio;
-              sx = (img.width - sw) / 2;
-            } else {
-              sh = img.width / boxRatio;
-              sy = (img.height - sh) / 2;
-            }
-            ctx.drawImage(img, sx, sy, sw, sh, photoX, photoY, photoW, photoH);
-            ctx.restore();
-            res();
-          };
-          img.onerror = () => res();
-          img.src = fotoPreview;
-        });
-      };
-
-      // ===== DRAW SIGNATURE =====
-      const drawSig = (): Promise<void> => {
-        if (!assinaturaPreview) return Promise.resolve();
-        return new Promise((res) => {
-          const img = new Image();
-          img.onload = () => {
-            // Fit signature inside box
-            const imgRatio = img.width / img.height;
-            let dw = sigW - 20;
-            let dh = dw / imgRatio;
-            if (dh > sigH - 10) { dh = sigH - 10; dw = dh * imgRatio; }
-            const dx = sigX + (sigW - dw) / 2;
-            const dy = sigY + (sigH - dh) / 2;
-            ctx.drawImage(img, dx, dy, dw, dh);
-            res();
-          };
-          img.onerror = () => res();
-          img.src = assinaturaPreview;
-        });
-      };
-
-      drawPhoto().then(() => drawSig()).then(() => {
-        if (withWatermark) {
-          ctx.save();
-          ctx.translate(W / 2, H / 2);
-          ctx.rotate(-Math.PI / 6);
-          ctx.font = `bold ${W * 0.04}px Arial`;
-          ctx.fillStyle = "rgba(255, 80, 80, 0.15)";
-          ctx.textAlign = "center";
-          for (let i = -3; i <= 3; i++) {
-            ctx.fillText("BELLARUS NÃO COPIE", 0, i * H * 0.12);
+        // Left columns: col 11 date at ~0.155, col 12 at ~0.215
+        const leftCats = ["ACC", "A", "A1", "B", "B1", "C", "C1"];
+        leftCats.forEach((cat, i) => {
+          const isActive = cat === "ACC" ? activeCats.length > 0 : activeCats.includes(cat);
+          if (isActive) {
+            ctx.fillText(dataValidade || "", px(0.155), tableY + i * rowH);
           }
-          ctx.restore();
-        }
-        resolve(canvas.toDataURL("image/png"));
-      });
+        });
+
+        // Right columns: col 11 date at ~0.385
+        const rightCats = ["D", "D1", "BE", "CE", "C1E", "DE", "D1E"];
+        rightCats.forEach((cat, i) => {
+          const isActive = activeCats.includes(cat);
+          if (isActive) {
+            ctx.fillText(dataValidade || "", px(0.385), tableY + i * rowH);
+          }
+        });
+
+        // ─── 12 OBSERVAÇÕES ────────────────────────────────────
+        ctx.font = `bold ${fontSize(0.009)}px Arial`;
+        ctx.fillText(observacoes.join(", "), px(0.065), py(0.435));
+
+        // ─── ASSINADO DIGITALMENTE section ─────────────────────
+        ctx.font = `${fontSize(0.008)}px Arial`;
+        ctx.textAlign = "center";
+        ctx.fillText("ASSINADO DIGITALMENTE", px(0.32), py(0.490));
+        ctx.fillText("DEPARTAMENTO ESTADUAL DE TRÂNSITO", px(0.32), py(0.502));
+        ctx.textAlign = "left";
+
+        // LOCAL
+        ctx.font = `bold ${fontSize(0.009)}px Arial`;
+        ctx.fillText("LOCAL:", px(0.050), py(0.523));
+        ctx.fillText(cidadeEstado || "", px(0.050), py(0.538));
+
+        // ESPELHO
+        ctx.font = `${fontSize(0.008)}px Arial`;
+        ctx.fillText(espelho || "", px(0.32), py(0.516));
+
+        // RENACH
+        ctx.fillText(renach || "", px(0.32), py(0.530));
+
+        // ─── ESTADO POR EXTENSO (large) ────────────────────────
+        ctx.font = `bold ${fontSize(0.025)}px Arial`;
+        ctx.textAlign = "center";
+        ctx.fillText(estadoExtenso || "", px(0.23), py(0.580));
+        ctx.textAlign = "left";
+
+        // ─── MRZ LINES ────────────────────────────────────────
+        ctx.font = `${fontSize(0.012)}px "Courier New", monospace`;
+        ctx.fillStyle = "#222";
+        const regClean = (registro || "").replace(/\D/g, "");
+        const nascParts = (dataNascimento || "").split(",")[0]?.split("/") || [];
+        const nascYYMMDD = nascParts.length >= 3
+          ? `${nascParts[2]?.slice(-2) || "00"}${nascParts[1] || "00"}${nascParts[0] || "00"}`
+          : "000000";
+        const valParts = (dataValidade || "").split("/") || [];
+        const valYYMMDD = valParts.length >= 3
+          ? `${valParts[2]?.slice(-2) || "00"}${valParts[1] || "00"}${valParts[0] || "00"}`
+          : "000000";
+        const gChar = genero === "Feminino" ? "F" : "M";
+        const nameMRZ = nomeCompleto.replace(/\s+/g, "<").toUpperCase();
+
+        const mrzY = py(0.835);
+        ctx.fillText(`I<BRA${regClean.padEnd(15, "<")}`, px(0.060), mrzY);
+        ctx.fillText(`${nascYYMMDD}${gChar}${valYYMMDD}BRA${"<".repeat(12)}4`, px(0.060), mrzY + py(0.022));
+        ctx.fillText(`${nameMRZ}${"<".repeat(Math.max(0, 30 - nameMRZ.length))}`, px(0.060), mrzY + py(0.044));
+
+        ctx.fillStyle = "#000";
+
+        // ─── PHOTO (3x4) ──────────────────────────────────────
+        // Photo box is roughly at x: 0.045–0.115, y: 0.105–0.260
+        const drawPhoto = (): Promise<void> => {
+          if (!fotoPreview) return Promise.resolve();
+          return new Promise((res) => {
+            const img = new Image();
+            img.onload = () => {
+              ctx.drawImage(img, px(0.047), py(0.105), px(0.072), py(0.155));
+              res();
+            };
+            img.onerror = () => res();
+            img.src = fotoPreview;
+          });
+        };
+
+        // ─── ASSINATURA ───────────────────────────────────────
+        // Signature box is roughly at x: 0.045–0.115, y: 0.268–0.310
+        const drawSignature = (): Promise<void> => {
+          if (!assinaturaPreview) return Promise.resolve();
+          return new Promise((res) => {
+            const img = new Image();
+            img.onload = () => {
+              ctx.drawImage(img, px(0.048), py(0.268), px(0.085), py(0.040));
+              res();
+            };
+            img.onerror = () => res();
+            img.src = assinaturaPreview;
+          });
+        };
+
+        drawPhoto().then(() => drawSignature()).then(() => {
+          if (withWatermark) {
+            ctx.save();
+            ctx.translate(W / 2, H / 2);
+            ctx.rotate(-Math.PI / 4);
+            ctx.font = `bold ${fontSize(0.045)}px Arial`;
+            ctx.fillStyle = "rgba(255, 0, 0, 0.18)";
+            ctx.textAlign = "center";
+            for (let i = -3; i <= 3; i++) {
+              ctx.fillText("BELLARUS NÃO COPIE", 0, i * py(0.08));
+            }
+            ctx.restore();
+          }
+          resolve(canvas.toDataURL("image/png"));
+        });
+      };
+      bgImg.src = cnhTemplateBg;
     });
-  }, [nomeCompleto, cpf, rg, dataNascimento, nomePai, nomeMae, registro, dataValidade, dataPrimeiraHab, categoria, dataEmissao, cidadeEstado, observacoes, estadoExtenso, espelho, renach, codigoSeguranca, fotoPreview, assinaturaPreview, nacionalidade, genero]);
+  }, [nomeCompleto, cpf, rg, dataNascimento, nomePai, nomeMae, registro, dataValidade, dataPrimeiraHab, categoria, dataEmissao, cidadeEstado, observacoes, estadoExtenso, espelho, renach, codigoSeguranca, fotoPreview, assinaturaPreview, nacionalidade, genero, observacoes]);
 
   const handlePreview = async () => {
     const imageData = await drawOnTemplate(true);
@@ -506,9 +359,8 @@ const CnhForm = () => {
     }
 
     const cleanImage = await drawOnTemplate(false);
-    // Landscape PDF matching card aspect ratio
-    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: [120, 70] });
-    pdf.addImage(cleanImage, "PNG", 0, 0, 120, 70);
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    pdf.addImage(cleanImage, "PNG", 0, 0, 210, 297);
     pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}.pdf`);
 
     if (user) saveDocumentHistory(user.id, "CNH Digital", nomeCompleto || "Sem nome");
