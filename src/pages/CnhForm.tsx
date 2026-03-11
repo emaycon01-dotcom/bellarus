@@ -162,7 +162,7 @@ const CnhForm = () => {
 
   const captureDocument = async (withWatermark: boolean): Promise<string> => {
     setIsWatermark(withWatermark);
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await new Promise((resolve) => setTimeout(resolve, 120));
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
     if ("fonts" in document) {
@@ -172,6 +172,8 @@ const CnhForm = () => {
     const el = documentRef.current;
     if (!el) throw new Error("Document container not found");
 
+    // Force fresh render — no cache
+    const cacheBuster = `cb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const canvas = await html2canvas(el, {
       scale: RENDER_SCALE,
       useCORS: true,
@@ -180,6 +182,17 @@ const CnhForm = () => {
       height: TH,
       windowWidth: TW,
       windowHeight: TH,
+      logging: false,
+      imageTimeout: 0,
+      onclone: (clonedDoc) => {
+        // Bust image cache in cloned DOM
+        clonedDoc.querySelectorAll("img").forEach((img) => {
+          const src = img.getAttribute("src");
+          if (src && !src.startsWith("data:")) {
+            img.setAttribute("src", `${src}${src.includes("?") ? "&" : "?"}${cacheBuster}`);
+          }
+        });
+      },
     });
 
     return canvas.toDataURL("image/png", 1);
@@ -249,7 +262,8 @@ const CnhForm = () => {
       compress: false,
     });
     pdf.addImage(cleanImage, "PNG", 0, 0, TW, TH, undefined, "NONE");
-    pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}.pdf`);
+    const uid = `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}_${uid}.pdf`);
 
     if (user) saveDocumentHistory(user.id, "CNH Digital", nomeCompleto || "Sem nome");
     toast.success(isAdmin ? "PDF gerado com sucesso! (Admin — sem débito)" : "PDF gerado com sucesso! 1 crédito debitado.");
