@@ -192,32 +192,8 @@ const CnhForm = () => {
   const handlePreview = async () => {
     if (!user) { toast.error("Faça login para continuar."); return; }
 
-    // Save document data to DB and get verification ID
-    try {
-      const docData = {
-        cpf, registro, categoria, dataNascimento, dataEmissao, dataValidade,
-        cidadeEstado, rg, nacionalidade, nomePai, nomeMae, genero, renach, espelho,
-      };
-      const { data: inserted, error } = await supabase
-        .from("document_verifications")
-        .insert({
-          user_id: user.id,
-          document_type: "CNH Digital",
-          document_name: nomeCompleto || "Sem nome",
-          document_data: docData,
-          photo_url: fotoPreview,
-          status: "valid",
-        } as any)
-        .select("id")
-        .single();
-      if (error) throw error;
-      setVerificationId(inserted.id);
-    } catch (err) {
-      console.error("Erro ao salvar verificação:", err);
-      toast.error("Erro ao gerar verificação do documento.");
-      return;
-    }
-
+    // Preview does NOT create verification — QR code will be non-functional
+    setVerificationId(null);
     setShowPreview(true);
     await new Promise(r => setTimeout(r, 400));
     const imageData = await captureDocument(true);
@@ -238,6 +214,35 @@ const CnhForm = () => {
       }
       const { error } = await supabase.from("profiles").update({ credits: profile.credits - 1 }).eq("id", user.id);
       if (error) { toast.error("Erro ao debitar crédito."); setConfirming(false); return; }
+    }
+
+    // Create verification record ONLY on paid confirm
+    try {
+      const docData = {
+        cpf, registro, categoria, dataNascimento, dataEmissao, dataValidade,
+        cidadeEstado, rg, nacionalidade, nomePai, nomeMae, genero, renach, espelho,
+      };
+      const { data: inserted, error: vErr } = await supabase
+        .from("document_verifications")
+        .insert({
+          user_id: user.id,
+          document_type: "CNH Digital",
+          document_name: nomeCompleto || "Sem nome",
+          document_data: docData,
+          photo_url: fotoPreview,
+          status: "valid",
+        } as any)
+        .select("id")
+        .single();
+      if (vErr) throw vErr;
+      setVerificationId(inserted.id);
+      // Wait for state update and re-render QR code
+      await new Promise(r => setTimeout(r, 500));
+    } catch (err) {
+      console.error("Erro ao salvar verificação:", err);
+      toast.error("Erro ao gerar verificação do documento.");
+      setConfirming(false);
+      return;
     }
 
     const cleanImage = await captureDocument(false);
