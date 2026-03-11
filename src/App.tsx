@@ -36,6 +36,7 @@ import DiplomaForm from "./pages/DiplomaForm";
 import CertificadoEscolarForm from "./pages/CertificadoEscolarForm";
 import DeclaracaoEscolarForm from "./pages/DeclaracaoEscolarForm";
 import HistoricoEscolarForm from "./pages/HistoricoEscolarForm";
+import DocumentVerification from "./pages/DocumentVerification";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
