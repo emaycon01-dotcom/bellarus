@@ -841,8 +841,12 @@ const CnhForm = () => {
           </div>
 
           {previewImage && (
-            <div className="rounded-2xl border-2 border-accent/30 overflow-hidden shadow-lg">
-              <img src={previewImage} alt="Preview CNH" className="w-full" />
+            <div className="rounded-2xl border-2 border-accent/30 overflow-auto shadow-lg">
+              <img
+                src={previewImage}
+                alt="Preview CNH"
+                style={{ width: TW, height: TH, maxWidth: "none", display: "block" }}
+              />
             </div>
           )}
 
