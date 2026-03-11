@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
-import cnhTemplateBg from "@/assets/cnh-template-bg.jpg";
+import cnhTemplateBg from "@/assets/cnh-template-bg.png";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import QRCode from "react-qr-code";
