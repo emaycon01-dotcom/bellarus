@@ -154,11 +154,19 @@ const CnhForm = () => {
 
   const captureDocument = async (withWatermark: boolean): Promise<string> => {
     setIsWatermark(withWatermark);
-    // Wait for React to render the document
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 300));
     
     const el = documentRef.current;
     if (!el) throw new Error("Document container not found");
+
+    // Temporarily make visible for html2canvas (off-screen but rendered)
+    const wrapper = el.parentElement;
+    if (wrapper) {
+      wrapper.style.position = "absolute";
+      wrapper.style.top = "0";
+      wrapper.style.left = "-9999px";
+      wrapper.style.zIndex = "-1";
+    }
 
     const canvas = await html2canvas(el, {
       scale: 4,
@@ -169,6 +177,14 @@ const CnhForm = () => {
       windowWidth: 794,
       windowHeight: 1123,
     });
+
+    // Hide again
+    if (wrapper) {
+      wrapper.style.position = "fixed";
+      wrapper.style.top = "-9999px";
+      wrapper.style.left = "-9999px";
+    }
+
     return canvas.toDataURL("image/png");
   };
 
