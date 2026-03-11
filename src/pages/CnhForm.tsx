@@ -207,12 +207,13 @@ const CnhForm = () => {
   };
 
   /* =========================================================
-   * DOCUMENT CONTAINER – HTML/CSS with absolute positioning
+   * DOCUMENT CONTAINER – inline JSX (NOT a nested component)
    * All coordinates are fixed px values calibrated to 794x1123
    * ========================================================= */
-  const DocumentContainer = () => (
+  const documentJSX = (
     <div
       ref={documentRef}
+      id="cnh-documento"
       style={{
         position: "relative",
         width: 794,
