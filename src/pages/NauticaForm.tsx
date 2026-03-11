@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { getTestPhoto, getTestSignature } from "@/lib/loadTestImages";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,7 +98,7 @@ const NauticaForm = () => {
   // Preview mode
   const [showPreview, setShowPreview] = useState(false);
 
-  const fillTest = () => {
+  const fillTest = async () => {
     setCpf("901.234.567-89"); setNomeCompleto("RICARDO MENDES COSTA"); setUf("RJ"); setGenero("Masculino");
     setNacionalidade("BRASILEIRA"); setDataNascimento("20/11/1985"); setNaturalidade("RIO DE JANEIRO");
     setRegistro(generateRegistro()); setCategoria("Arrais-Amador");
@@ -105,6 +106,9 @@ const NauticaForm = () => {
     setProtocolo(generateProtocolo()); setCapitania("CAPITANIA DOS PORTOS DO RIO DE JANEIRO");
     setEstadoExtenso("RIO DE JANEIRO"); setNomePai("MARCOS MENDES COSTA");
     setNomeMae("REGINA MENDES COSTA"); setRg(`${generateDigits(7)} SSP RJ`);
+    const [photo, sig] = await Promise.all([getTestPhoto(), getTestSignature()]);
+    if (photo) setFotoPreview(photo);
+    if (sig) setAssinaturaPreview(sig);
     toast.success("Campos preenchidos com dados de teste!");
   };
   const clearAll = () => {

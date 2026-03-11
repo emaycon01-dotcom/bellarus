@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { getTestPhoto, getTestSignature } from "@/lib/loadTestImages";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -96,7 +97,7 @@ const CnhForm = () => {
   };
   const toggleObs = (obs: string) => setObservacoes(prev => prev.includes(obs) ? prev.filter(o => o !== obs) : [...prev, obs]);
 
-  const fillTest = () => {
+  const fillTest = async () => {
     setCpf("345.678.901-23"); setNomeCompleto("PEDRO HENRIQUE ALMEIDA"); setUf("SP"); setGenero("Masculino");
     setNacionalidade("BRASILEIRA"); setDataNascimento("15/06/1990"); setRegistro(generateDigits(11));
     setCategoria("AB"); setCnhDefinitiva("Sim"); setDataPrimeiraHab("20/03/2010");
@@ -104,6 +105,9 @@ const CnhForm = () => {
     setEstadoExtenso("SÃO PAULO"); setRg(`${generateDigits(7)} SSP SP`); setCodigoSeguranca(generateDigits(11));
     setRenach(generateRenach()); setEspelho(generateDigits(10)); setNomePai("CARLOS ALMEIDA SILVA");
     setNomeMae("ANA PAULA ALMEIDA");
+    const [photo, sig] = await Promise.all([getTestPhoto(), getTestSignature()]);
+    if (photo) setFotoPreview(photo);
+    if (sig) setAssinaturaPreview(sig);
     toast.success("Campos preenchidos com dados de teste!");
   };
   const clearAll = () => {

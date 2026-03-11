@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { getTestPhoto } from "@/lib/loadTestImages";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,11 +45,13 @@ const EstudanteForm = () => {
     reader.readAsDataURL(file);
   };
 
-  const fillTest = () => {
+  const fillTest = async () => {
     setNomeCompleto("FERNANDA OLIVEIRA SANTOS"); setCpf("890.123.456-78"); setRg(generateDigits(9));
     setDataNascimento("10/05/2000"); setInstituicao("UNIVERSIDADE DE SÃO PAULO - USP");
     setCurso("ENGENHARIA DE COMPUTAÇÃO"); setTipoCurso("GRADUAÇÃO"); setPeriodo("INTEGRAL");
     setMatricula(generateMatricula()); setUf("SP"); setDataValidade("31/12/2026"); setSemestre("6º SEMESTRE");
+    const photo = await getTestPhoto();
+    if (photo) setFotoPreview(photo);
     toast.success("Campos preenchidos com dados de teste!");
   };
   const clearAll = () => {

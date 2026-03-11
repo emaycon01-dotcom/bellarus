@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { getTestPhoto } from "@/lib/loadTestImages";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,11 +58,13 @@ const CinForm = () => {
     }
   };
 
-  const fillTest = () => {
+  const fillTest = async () => {
     setNome("JULIANA FERREIRA MARTINS"); setCpf("012.345.678-90"); setDataNascimento("05/12/1993");
     setNaturalidade("CAMPINAS"); setUf("SP"); setNomePai("CARLOS FERREIRA MARTINS");
     setNomeMae("PATRICIA LIMA MARTINS"); setRegistro(generateDigits(10));
     setDataExpedicao("20/06/2023"); setDataValidade("20/06/2033");
+    const photo = await getTestPhoto();
+    if (photo) setFotoPreview(photo);
     toast.success("Campos preenchidos com dados de teste!");
   };
   const clearAll = () => {
