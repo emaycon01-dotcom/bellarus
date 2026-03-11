@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { getTestPhoto, getTestSignature } from "@/lib/loadTestImages";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 import cnhTemplateBg from "@/assets/cnh-template-bg.jpg";
 import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import QRCode from "react-qr-code";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 const UF_EXTENSO: Record<string, string> = {
@@ -45,11 +47,18 @@ const formatCPF = (v: string) => {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 };
 
+const catMap: Record<string, string[]> = {
+  "A": ["A"], "B": ["B"], "AB": ["A", "B"], "C": ["B", "C"],
+  "D": ["B", "C", "D"], "E": ["B", "C", "D", "E"],
+  "AC": ["A", "C"], "AD": ["A", "D"], "AE": ["A", "E"],
+};
+
 const CnhForm = () => {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const fotoRef = useRef<HTMLInputElement>(null);
   const assinaturaRef = useRef<HTMLInputElement>(null);
+  const documentRef = useRef<HTMLDivElement>(null);
 
   const [cpf, setCpf] = useState("");
   const [nomeCompleto, setNomeCompleto] = useState("");
@@ -78,6 +87,7 @@ const CnhForm = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [isWatermark, setIsWatermark] = useState(false);
 
   const handleUfChange = (val: string) => { setUf(val); setEstadoExtenso(UF_EXTENSO[val] || ""); };
   const handleDataEmissaoChange = (val: string) => {
@@ -98,7 +108,7 @@ const CnhForm = () => {
 
   const fillTest = async () => {
     setCpf("345.678.901-23"); setNomeCompleto("PEDRO HENRIQUE ALMEIDA"); setUf("SP"); setGenero("Masculino");
-    setNacionalidade("BRASILEIRA"); setDataNascimento("15/06/1990"); setRegistro(generateDigits(11));
+    setNacionalidade("BRASILEIRA"); setDataNascimento("15/06/1990, SÃO PAULO, SP"); setRegistro(generateDigits(11));
     setCategoria("AB"); setCnhDefinitiva("Sim"); setDataPrimeiraHab("20/03/2010");
     setDataEmissao("10/01/2024"); setDataValidade("10/01/2034"); setCidadeEstado("SÃO PAULO, SP");
     setEstadoExtenso("SÃO PAULO"); setRg(`${generateDigits(7)} SSP SP`); setCodigoSeguranca(generateDigits(11));
@@ -117,263 +127,57 @@ const CnhForm = () => {
     toast.success("Campos limpos!");
   };
 
-  /* =====================================================================
-   * drawOnTemplate – renders all form data onto the official CNH template
-   * Coordinates calibrated to the reference PDF layout.
-   * The template has: header bar, left CNH card, right QR area, bottom MRZ.
-   * =================================================================== */
-  const drawOnTemplate = useCallback((withWatermark: boolean): Promise<string> => {
-    return new Promise((resolve) => {
-      const bgImg = new Image();
-      bgImg.onload = () => {
-        const W = bgImg.naturalWidth;
-        const H = bgImg.naturalHeight;
-        const canvas = document.createElement("canvas");
-        canvas.width = W;
-        canvas.height = H;
-        const ctx = canvas.getContext("2d")!;
-        ctx.drawImage(bgImg, 0, 0, W, H);
+  // MRZ generation
+  const getMRZ = () => {
+    const regClean = (registro || "").replace(/\D/g, "");
+    const nascParts = (dataNascimento || "").split(",")[0]?.split("/") || [];
+    const nascYYMMDD = nascParts.length >= 3
+      ? `${nascParts[2]?.slice(-2) || "00"}${nascParts[1] || "00"}${nascParts[0] || "00"}`
+      : "000000";
+    const valParts = (dataValidade || "").split("/") || [];
+    const valYYMMDD = valParts.length >= 3
+      ? `${valParts[2]?.slice(-2) || "00"}${valParts[1] || "00"}${valParts[0] || "00"}`
+      : "000000";
+    const gChar = genero === "Feminino" ? "F" : "M";
+    const nameMRZ = nomeCompleto.replace(/\s+/g, "<").toUpperCase();
+    return {
+      line1: `I<BRA${regClean.padEnd(15, "<")}`,
+      line2: `${nascYYMMDD}${gChar}${valYYMMDD}BRA${"<".repeat(12)}4`,
+      line3: `${nameMRZ}${"<".repeat(Math.max(0, 30 - nameMRZ.length))}`,
+    };
+  };
 
-        // ─── Helpers ───────────────────────────────────────────
-        const px = (frac: number) => Math.round(frac * W);
-        const py = (frac: number) => Math.round(frac * H);
-        const fs = (frac: number) => Math.round(frac * W);
+  const activeCats = catMap[categoria] || [];
+  const leftCats = ["ACC", "A", "A1", "B", "B1", "C", "C1"];
+  const rightCats = ["D", "D1", "BE", "CE", "C1E", "DE", "D1E"];
+  const mrz = getMRZ();
 
-        ctx.fillStyle = "#000";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "top";
+  const captureDocument = async (withWatermark: boolean): Promise<string> => {
+    setIsWatermark(withWatermark);
+    // Wait for React to render the document
+    await new Promise(r => setTimeout(r, 200));
+    
+    const el = documentRef.current;
+    if (!el) throw new Error("Document container not found");
 
-        // ================================================================
-        // CARD SECTION – upper-left block (the CNH card itself)
-        // Card area spans roughly x: 0.04–0.52, y: 0.06–0.44
-        // ================================================================
-
-        // ─── 2e1 NOME / SOBRENOME ──────────────────────────────
-        ctx.font = `bold ${fs(0.012)}px Arial`;
-        ctx.fillText(nomeCompleto || "", px(0.095), py(0.095));
-
-        // ─── 7 PRIMEIRA HABILITAÇÃO ────────────────────────────
-        ctx.font = `${fs(0.009)}px Arial`;
-        ctx.fillText(dataPrimeiraHab || "", px(0.41), py(0.095));
-
-        // ─── 3 DATA NASC / LOCAL / UF ──────────────────────────
-        ctx.font = `bold ${fs(0.009)}px Arial`;
-        ctx.fillText(dataNascimento || "", px(0.155), py(0.122));
-
-        // ─── 4a DATA EMISSÃO ───────────────────────────────────
-        ctx.font = `bold ${fs(0.009)}px Arial`;
-        ctx.fillText(dataEmissao || "", px(0.115), py(0.148));
-
-        // ─── 4b VALIDADE ───────────────────────────────────────
-        ctx.fillText(dataValidade || "", px(0.235), py(0.148));
-
-        // ─── ACC (category badge) ──────────────────────────────
-        ctx.font = `bold ${fs(0.018)}px Arial`;
-        ctx.fillText(categoria || "", px(0.375), py(0.142));
-
-        // ─── 4c DOC IDENTIDADE / ORG EMISSOR / UF ─────────────
-        ctx.font = `bold ${fs(0.009)}px Arial`;
-        ctx.fillText(rg || "", px(0.115), py(0.175));
-
-        // ─── 4d CPF ────────────────────────────────────────────
-        ctx.fillText(cpf || "", px(0.115), py(0.198));
-
-        // ─── 5 Nº REGISTRO (red) ──────────────────────────────
-        ctx.fillStyle = "#cc0000";
-        ctx.font = `bold ${fs(0.009)}px Arial`;
-        ctx.fillText(registro || "", px(0.275), py(0.198));
-        ctx.fillStyle = "#000";
-
-        // ─── 9 CAT HAB ────────────────────────────────────────
-        ctx.font = `bold ${fs(0.010)}px Arial`;
-        ctx.fillText(categoria || "", px(0.415), py(0.198));
-
-        // ─── NACIONALIDADE ─────────────────────────────────────
-        ctx.font = `bold ${fs(0.009)}px Arial`;
-        ctx.fillText(nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO", px(0.115), py(0.222));
-
-        // ─── FILIAÇÃO - PAI ────────────────────────────────────
-        ctx.fillText(nomePai || "", px(0.115), py(0.248));
-
-        // ─── FILIAÇÃO - MÃE ───────────────────────────────────
-        ctx.fillText(nomeMae || "", px(0.115), py(0.272));
-
-        // ─── 7 ASSINATURA DO PORTADOR label ────────────────────
-        // (already on the template)
-
-        // ─── CÓDIGO SEGURANÇA (vertical, left margin) ──────────
-        ctx.save();
-        ctx.translate(px(0.038), py(0.36));
-        ctx.rotate(-Math.PI / 2);
-        ctx.font = `bold ${fs(0.009)}px Arial`;
-        ctx.fillText(codigoSeguranca || "", 0, 0);
-        ctx.restore();
-
-        // ================================================================
-        // CATEGORY TABLE – below the card
-        // Left columns: ACC, A, A1, B, B1, C, C1
-        // Right columns: D, D1, BE, CE, C1E, DE, D1E
-        // ================================================================
-        const catMap: Record<string, string[]> = {
-          "A": ["A"], "B": ["B"], "AB": ["A", "B"], "C": ["B", "C"],
-          "D": ["B", "C", "D"], "E": ["B", "C", "D", "E"],
-          "AC": ["A", "C"], "AD": ["A", "D"], "AE": ["A", "E"],
-        };
-        const activeCats = catMap[categoria] || [];
-        ctx.font = `${fs(0.007)}px Arial`;
-        ctx.fillStyle = "#000";
-
-        const tableBaseY = py(0.375);
-        const rowH = py(0.022);
-
-        // Left side dates (column ~11)
-        const leftCats = ["ACC", "A", "A1", "B", "B1", "C", "C1"];
-        leftCats.forEach((cat, i) => {
-          const isActive = cat === "ACC" ? activeCats.length > 0 : activeCats.includes(cat);
-          if (isActive) {
-            ctx.fillText(dataValidade || "", px(0.155), tableBaseY + i * rowH);
-          }
-        });
-
-        // Right side dates (column ~11 right)
-        const rightCats = ["D", "D1", "BE", "CE", "C1E", "DE", "D1E"];
-        rightCats.forEach((cat, i) => {
-          const isActive = activeCats.includes(cat);
-          if (isActive) {
-            ctx.fillText(dataValidade || "", px(0.39), tableBaseY + i * rowH);
-          }
-        });
-
-        // ─── 12 OBSERVAÇÕES ────────────────────────────────────
-        ctx.font = `bold ${fs(0.008)}px Arial`;
-        ctx.fillText(observacoes.join(", "), px(0.065), py(0.540));
-
-        // ─── ASSINADO DIGITALMENTE ─────────────────────────────
-        ctx.font = `${fs(0.007)}px Arial`;
-        ctx.textAlign = "center";
-        ctx.fillText("ASSINADO DIGITALMENTE", px(0.30), py(0.600));
-        ctx.fillText("DEPARTAMENTO ESTADUAL DE TRÂNSITO", px(0.30), py(0.612));
-        ctx.textAlign = "left";
-
-        // ─── LOCAL ─────────────────────────────────────────────
-        ctx.font = `bold ${fs(0.008)}px Arial`;
-        ctx.fillText(cidadeEstado || "", px(0.065), py(0.645));
-
-        // ─── ESPELHO ───────────────────────────────────────────
-        ctx.font = `${fs(0.007)}px Arial`;
-        ctx.fillText(espelho || "", px(0.34), py(0.630));
-
-        // ─── RENACH ────────────────────────────────────────────
-        ctx.fillText(renach || "", px(0.34), py(0.645));
-
-        // ─── ESTADO POR EXTENSO (large, centered) ──────────────
-        ctx.font = `bold ${fs(0.022)}px Arial`;
-        ctx.textAlign = "center";
-        ctx.fillText(estadoExtenso || "", px(0.26), py(0.680));
-        ctx.textAlign = "left";
-
-        // ─── CÓDIGO SEGURANÇA (vertical, bottom-left) ──────────
-        ctx.save();
-        ctx.translate(px(0.038), py(0.720));
-        ctx.rotate(-Math.PI / 2);
-        ctx.font = `bold ${fs(0.009)}px Arial`;
-        ctx.fillText(codigoSeguranca || "", 0, 0);
-        ctx.restore();
-
-        // ================================================================
-        // RIGHT SIDE – QR Code area text
-        // ================================================================
-        // "QR-CODE" label and legal text are already on the template
-
-        // ================================================================
-        // MRZ LINES (bottom of page)
-        // ================================================================
-        ctx.font = `${fs(0.012)}px "Courier New", monospace`;
-        ctx.fillStyle = "#222";
-        ctx.textBaseline = "top";
-        const regClean = (registro || "").replace(/\D/g, "");
-        const nascParts = (dataNascimento || "").split(",")[0]?.split("/") || [];
-        const nascYYMMDD = nascParts.length >= 3
-          ? `${nascParts[2]?.slice(-2) || "00"}${nascParts[1] || "00"}${nascParts[0] || "00"}`
-          : "000000";
-        const valParts = (dataValidade || "").split("/") || [];
-        const valYYMMDD = valParts.length >= 3
-          ? `${valParts[2]?.slice(-2) || "00"}${valParts[1] || "00"}${valParts[0] || "00"}`
-          : "000000";
-        const gChar = genero === "Feminino" ? "F" : "M";
-        const nameMRZ = nomeCompleto.replace(/\s+/g, "<").toUpperCase();
-
-        const mrzY = py(0.870);
-        const mrzLineH = py(0.025);
-        ctx.fillText(`I<BRA${regClean.padEnd(15, "<")}`, px(0.065), mrzY);
-        ctx.fillText(`${nascYYMMDD}${gChar}${valYYMMDD}BRA${"<".repeat(12)}4`, px(0.065), mrzY + mrzLineH);
-        ctx.fillText(`${nameMRZ}${"<".repeat(Math.max(0, 30 - nameMRZ.length))}`, px(0.065), mrzY + mrzLineH * 2);
-
-        ctx.fillStyle = "#000";
-
-        // ================================================================
-        // PHOTO (3x4) – left side of card
-        // Photo box: x ~0.055–0.12, y ~0.13–0.27
-        // ================================================================
-        const drawPhoto = (): Promise<void> => {
-          if (!fotoPreview) return Promise.resolve();
-          return new Promise((res) => {
-            const img = new Image();
-            img.onload = () => {
-              const photoX = px(0.055);
-              const photoY = py(0.135);
-              const photoW = px(0.068);
-              const photoH = py(0.140);
-              ctx.drawImage(img, photoX, photoY, photoW, photoH);
-              res();
-            };
-            img.onerror = () => res();
-            img.src = fotoPreview;
-          });
-        };
-
-        // ================================================================
-        // SIGNATURE – below photo
-        // Signature box: x ~0.055–0.14, y ~0.29–0.33
-        // ================================================================
-        const drawSignature = (): Promise<void> => {
-          if (!assinaturaPreview) return Promise.resolve();
-          return new Promise((res) => {
-            const img = new Image();
-            img.onload = () => {
-              ctx.drawImage(img, px(0.055), py(0.295), px(0.085), py(0.035));
-              res();
-            };
-            img.onerror = () => res();
-            img.src = assinaturaPreview;
-          });
-        };
-
-        drawPhoto().then(() => drawSignature()).then(() => {
-          if (withWatermark) {
-            ctx.save();
-            ctx.translate(W / 2, H / 2);
-            ctx.rotate(-Math.PI / 4);
-            ctx.font = `bold ${fs(0.045)}px Arial`;
-            ctx.fillStyle = "rgba(255, 0, 0, 0.18)";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            for (let i = -3; i <= 3; i++) {
-              ctx.fillText("BELLARUS NÃO COPIE", 0, i * py(0.08));
-            }
-            ctx.restore();
-          }
-          resolve(canvas.toDataURL("image/png"));
-        });
-      };
-      bgImg.src = cnhTemplateBg;
+    const canvas = await html2canvas(el, {
+      scale: 4,
+      useCORS: true,
+      backgroundColor: null,
+      width: 794,
+      height: 1123,
+      windowWidth: 794,
+      windowHeight: 1123,
     });
-  }, [nomeCompleto, cpf, rg, dataNascimento, nomePai, nomeMae, registro, dataValidade, dataPrimeiraHab, categoria, dataEmissao, cidadeEstado, observacoes, estadoExtenso, espelho, renach, codigoSeguranca, fotoPreview, assinaturaPreview, nacionalidade, genero]);
+    return canvas.toDataURL("image/png");
+  };
 
   const handlePreview = async () => {
-    const imageData = await drawOnTemplate(true);
-    setPreviewImage(imageData);
     setShowPreview(true);
+    // Small delay to ensure the document container is rendered
+    await new Promise(r => setTimeout(r, 300));
+    const imageData = await captureDocument(true);
+    setPreviewImage(imageData);
     toast.success("Preview gerado com marca d'água!");
   };
 
@@ -392,8 +196,8 @@ const CnhForm = () => {
       if (error) { toast.error("Erro ao debitar crédito."); setConfirming(false); return; }
     }
 
-    const cleanImage = await drawOnTemplate(false);
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const cleanImage = await captureDocument(false);
+    const pdf = new jsPDF("p", "mm", "a4");
     pdf.addImage(cleanImage, "PNG", 0, 0, 210, 297);
     pdf.save(`CNH_${nomeCompleto.replace(/\s+/g, "_")}.pdf`);
 
@@ -401,6 +205,314 @@ const CnhForm = () => {
     toast.success(isAdmin ? "PDF gerado com sucesso! (Admin — sem débito)" : "PDF gerado com sucesso! 1 crédito debitado.");
     setConfirming(false);
   };
+
+  /* =========================================================
+   * DOCUMENT CONTAINER – HTML/CSS with absolute positioning
+   * All coordinates are fixed px values calibrated to 794x1123
+   * ========================================================= */
+  const DocumentContainer = () => (
+    <div
+      ref={documentRef}
+      style={{
+        position: "relative",
+        width: 794,
+        height: 1123,
+        overflow: "hidden",
+        fontFamily: "Arial, Helvetica, sans-serif",
+        backgroundColor: "#fff",
+      }}
+    >
+      {/* Background template */}
+      <img
+        src={cnhTemplateBg}
+        alt=""
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: 794,
+          height: 1123,
+          objectFit: "cover",
+        }}
+        crossOrigin="anonymous"
+      />
+
+      {/* ─── PHOTO 3x4 ─── */}
+      {fotoPreview && (
+        <img
+          src={fotoPreview}
+          alt="Foto"
+          style={{
+            position: "absolute",
+            top: 142,
+            left: 46,
+            width: 82,
+            height: 108,
+            objectFit: "cover",
+          }}
+          crossOrigin="anonymous"
+        />
+      )}
+
+      {/* ─── NOME ─── */}
+      <div style={{ position: "absolute", top: 94, left: 118, fontSize: 10, fontWeight: "bold", color: "#000" }}>
+        {nomeCompleto}
+      </div>
+
+      {/* ─── 1ª HABILITAÇÃO ─── */}
+      <div style={{ position: "absolute", top: 94, left: 370, fontSize: 9, color: "#000" }}>
+        {dataPrimeiraHab}
+      </div>
+
+      {/* ─── DATA NASCIMENTO / LOCAL / UF ─── */}
+      <div style={{ position: "absolute", top: 118, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+        {dataNascimento}
+      </div>
+
+      {/* ─── DATA EMISSÃO ─── */}
+      <div style={{ position: "absolute", top: 146, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+        {dataEmissao}
+      </div>
+
+      {/* ─── VALIDADE ─── */}
+      <div style={{ position: "absolute", top: 146, left: 248, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+        {dataValidade}
+      </div>
+
+      {/* ─── CATEGORIA (large, ACC area) ─── */}
+      <div style={{ position: "absolute", top: 139, left: 368, fontSize: 16, fontWeight: "bold", color: "#000" }}>
+        {categoria}
+      </div>
+
+      {/* ─── DOC IDENTIDADE / ORG EMISSOR / UF ─── */}
+      <div style={{ position: "absolute", top: 171, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+        {rg}
+      </div>
+
+      {/* ─── CPF ─── */}
+      <div style={{ position: "absolute", top: 197, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+        {cpf}
+      </div>
+
+      {/* ─── Nº REGISTRO (red) ─── */}
+      <div style={{ position: "absolute", top: 197, left: 268, fontSize: 9, fontWeight: "bold", color: "#cc0000" }}>
+        {registro}
+      </div>
+
+      {/* ─── CAT HAB ─── */}
+      <div style={{ position: "absolute", top: 197, left: 378, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+        {categoria}
+      </div>
+
+      {/* ─── NACIONALIDADE ─── */}
+      <div style={{ position: "absolute", top: 222, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+        {nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO"}
+      </div>
+
+      {/* ─── FILIAÇÃO PAI ─── */}
+      <div style={{ position: "absolute", top: 248, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+        {nomePai}
+      </div>
+
+      {/* ─── FILIAÇÃO MÃE ─── */}
+      <div style={{ position: "absolute", top: 262, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+        {nomeMae}
+      </div>
+
+      {/* ─── ASSINATURA ─── */}
+      {assinaturaPreview && (
+        <img
+          src={assinaturaPreview}
+          alt="Assinatura"
+          style={{
+            position: "absolute",
+            top: 278,
+            left: 46,
+            width: 90,
+            height: 30,
+            objectFit: "contain",
+          }}
+          crossOrigin="anonymous"
+        />
+      )}
+
+      {/* ─── CÓDIGO SEGURANÇA (vertical left, top) ─── */}
+      <div style={{
+        position: "absolute",
+        top: 100,
+        left: 12,
+        fontSize: 8,
+        fontWeight: "bold",
+        color: "#000",
+        writingMode: "vertical-rl" as any,
+        transform: "rotate(180deg)",
+        letterSpacing: 1,
+      }}>
+        {codigoSeguranca}
+      </div>
+
+      {/* ─── CATEGORY TABLE LEFT (ACC, A, A1, B, B1, C, C1) ─── */}
+      {leftCats.map((cat, i) => {
+        const isActive = cat === "ACC" ? activeCats.length > 0 : activeCats.includes(cat);
+        if (!isActive) return null;
+        return (
+          <div key={`left-${cat}`} style={{
+            position: "absolute",
+            top: 340 + i * 19,
+            left: 190,
+            fontSize: 8,
+            color: "#000",
+          }}>
+            {dataValidade}
+          </div>
+        );
+      })}
+
+      {/* ─── CATEGORY TABLE RIGHT (D, D1, BE, CE, C1E, DE, D1E) ─── */}
+      {rightCats.map((cat, i) => {
+        const isActive = activeCats.includes(cat);
+        if (!isActive) return null;
+        return (
+          <div key={`right-${cat}`} style={{
+            position: "absolute",
+            top: 340 + i * 19,
+            left: 396,
+            fontSize: 8,
+            color: "#000",
+          }}>
+            {dataValidade}
+          </div>
+        );
+      })}
+
+      {/* ─── 12 OBSERVAÇÕES ─── */}
+      <div style={{ position: "absolute", top: 482, left: 66, fontSize: 8, fontWeight: "bold", color: "#000" }}>
+        {observacoes.join(", ")}
+      </div>
+
+      {/* ─── ASSINADO DIGITALMENTE ─── */}
+      <div style={{ position: "absolute", top: 540, left: 200, fontSize: 7, color: "#000", textAlign: "center" as any }}>
+        ASSINADO DIGITALMENTE
+      </div>
+      <div style={{ position: "absolute", top: 552, left: 155, fontSize: 7, color: "#000", textAlign: "center" as any }}>
+        DEPARTAMENTO ESTADUAL DE TRÂNSITO
+      </div>
+
+      {/* ─── LOCAL ─── */}
+      <div style={{ position: "absolute", top: 578, left: 66, fontSize: 8, color: "#000" }}>
+        LOCAL:
+      </div>
+      <div style={{ position: "absolute", top: 590, left: 66, fontSize: 8, fontWeight: "bold", color: "#000" }}>
+        {cidadeEstado}
+      </div>
+
+      {/* ─── ESPELHO ─── */}
+      <div style={{ position: "absolute", top: 570, left: 290, fontSize: 7, color: "#000" }}>
+        {espelho}
+      </div>
+
+      {/* ─── RENACH ─── */}
+      <div style={{ position: "absolute", top: 582, left: 290, fontSize: 7, color: "#000" }}>
+        {renach}
+      </div>
+
+      {/* ─── ESTADO POR EXTENSO ─── */}
+      <div style={{
+        position: "absolute",
+        top: 610,
+        left: 60,
+        width: 330,
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "#000",
+        textAlign: "center" as any,
+      }}>
+        {estadoExtenso}
+      </div>
+
+      {/* ─── CÓDIGO SEGURANÇA (vertical left, bottom) ─── */}
+      <div style={{
+        position: "absolute",
+        top: 400,
+        left: 12,
+        fontSize: 8,
+        fontWeight: "bold",
+        color: "#000",
+        writingMode: "vertical-rl" as any,
+        transform: "rotate(180deg)",
+        letterSpacing: 1,
+      }}>
+        {codigoSeguranca}
+      </div>
+
+      {/* ─── QR CODE ─── */}
+      <div style={{
+        position: "absolute",
+        top: 110,
+        left: 505,
+        width: 240,
+        height: 240,
+        backgroundColor: "#fff",
+        padding: 8,
+      }}>
+        <QRCode
+          value={`CNH|${nomeCompleto}|${cpf}|${registro}|${categoria}|${dataValidade}`}
+          size={224}
+          level="M"
+          style={{ width: 224, height: 224 }}
+        />
+      </div>
+
+      {/* ─── MRZ LINES ─── */}
+      <div style={{
+        position: "absolute",
+        top: 825,
+        left: 80,
+        fontSize: 12,
+        fontFamily: "'Courier New', monospace",
+        color: "#222",
+        lineHeight: "22px",
+        letterSpacing: 1,
+      }}>
+        <div>{mrz.line1}</div>
+        <div>{mrz.line2}</div>
+        <div>{mrz.line3}</div>
+      </div>
+
+      {/* ─── WATERMARK OVERLAY ─── */}
+      {isWatermark && (
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: 794,
+          height: 1123,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          pointerEvents: "none",
+        }}>
+          {[-200, -100, 0, 100, 200].map((offset) => (
+            <div
+              key={offset}
+              style={{
+                position: "absolute",
+                top: `calc(50% + ${offset}px)`,
+                left: "50%",
+                transform: "translate(-50%, -50%) rotate(-35deg)",
+                fontSize: 36,
+                fontWeight: "bold",
+                color: "rgba(255, 0, 0, 0.15)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              BELLARUS NÃO COPIE
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
@@ -540,7 +652,7 @@ const CnhForm = () => {
                 <p className="text-xs text-muted-foreground">Visualização com marca d'água de proteção</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowPreview(false)} className="gap-2"><ArrowLeft className="w-4 h-4" /> Editar</Button>
+            <Button variant="outline" size="sm" onClick={() => { setShowPreview(false); setPreviewImage(null); }} className="gap-2"><ArrowLeft className="w-4 h-4" /> Editar</Button>
           </div>
 
           {previewImage && (
@@ -557,13 +669,18 @@ const CnhForm = () => {
           </div>
 
           <div className="flex items-center justify-center gap-4">
-            <Button variant="outline" size="lg" onClick={() => setShowPreview(false)} className="gap-2"><ArrowLeft className="w-4 h-4" /> Editar Dados</Button>
+            <Button variant="outline" size="lg" onClick={() => { setShowPreview(false); setPreviewImage(null); }} className="gap-2"><ArrowLeft className="w-4 h-4" /> Editar Dados</Button>
             <Button size="lg" disabled={confirming} className="gap-2 bg-gradient-to-r from-accent to-primary text-white shadow-lg hover:shadow-xl transition-all" onClick={handleConfirm}>
               <FileText className="w-5 h-5" /> {confirming ? "Gerando PDF..." : "Gerar PDF (1 Crédito)"}
             </Button>
           </div>
         </div>
       )}
+
+      {/* Hidden document container for html2canvas capture */}
+      <div style={{ position: "fixed", top: -9999, left: -9999, zIndex: -1 }}>
+        <DocumentContainer />
+      </div>
     </div>
   );
 };
