@@ -18,7 +18,7 @@ import Support from "./pages/Support";
 import AdminPanel from "./pages/AdminPanel";
 import AdminUsers from "./pages/AdminUsers";
 import AdminFinance from "./pages/AdminFinance";
-import CnhForm from "./pages/CnhForm";
+
 import NauticaForm from "./pages/NauticaForm";
 import RgPdfForm from "./pages/RgPdfForm";
 import CrlveForm from "./pages/CrlveForm";
@@ -53,7 +53,7 @@ const App = () => (
           <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="documents" element={<Documents />} />
-            <Route path="documents/cnh" element={<CnhForm />} />
+            
             <Route path="documents/nautica" element={<NauticaForm />} />
             <Route path="documents/rg-pdf" element={<RgPdfForm />} />
             <Route path="documents/crlve" element={<CrlveForm />} />

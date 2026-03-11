@@ -14,7 +14,7 @@ interface DocModule {
 
 const modules: DocModule[] = [
   // DOCUMENTOS DIGITAIS
-  { name: "CNH Digital (2024)", desc: "CNH Digital com login, APK e QR Code", available: true, example: true, icon: <FileText className="w-5 h-5" />, iconColor: "from-primary to-accent", category: "DOCUMENTOS DIGITAIS" },
+  
   { name: "CIN (RG Digital)", desc: "Carteira de Identidade Nacional", available: true, example: true, icon: <CreditCard className="w-5 h-5" />, iconColor: "from-accent to-primary", category: "DOCUMENTOS DIGITAIS" },
   { name: "Arrais Náutica", desc: "Habilitação Náutica Digital", available: true, icon: <Anchor className="w-5 h-5" />, iconColor: "from-success to-accent", category: "DOCUMENTOS DIGITAIS" },
 
@@ -49,7 +49,7 @@ const Documents = () => {
   const navigate = useNavigate();
 
   const routeMap: Record<string, string> = {
-    "CNH Digital (2024)": "/dashboard/documents/cnh",
+    
     "CIN (RG Digital)": "/dashboard/documents/cin",
     "Náutica PDF": "/dashboard/documents/nautica",
     "Arrais Náutica": "/dashboard/documents/nautica",
