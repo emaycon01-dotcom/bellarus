@@ -153,6 +153,10 @@ const CnhForm = () => {
   const rightCats = ["D", "D1", "BE", "CE", "C1E", "DE", "D1E"];
   const mrz = getMRZ();
 
+  // Template dimensions (full resolution)
+  const TW = 1653;
+  const TH = 2339;
+
   const captureDocument = async (withWatermark: boolean): Promise<string> => {
     setIsWatermark(withWatermark);
     await new Promise(r => setTimeout(r, 300));
@@ -160,7 +164,6 @@ const CnhForm = () => {
     const el = documentRef.current;
     if (!el) throw new Error("Document container not found");
 
-    // Temporarily make visible for html2canvas (off-screen but rendered)
     const wrapper = el.parentElement;
     if (wrapper) {
       wrapper.style.position = "absolute";
@@ -170,23 +173,22 @@ const CnhForm = () => {
     }
 
     const canvas = await html2canvas(el, {
-      scale: 4,
+      scale: 2, // 1653*2 = 3306px → ~300 DPI for A4
       useCORS: true,
       backgroundColor: null,
-      width: 794,
-      height: 1123,
-      windowWidth: 794,
-      windowHeight: 1123,
+      width: TW,
+      height: TH,
+      windowWidth: TW,
+      windowHeight: TH,
     });
 
-    // Hide again
     if (wrapper) {
       wrapper.style.position = "fixed";
       wrapper.style.top = "-9999px";
       wrapper.style.left = "-9999px";
     }
 
-    return canvas.toDataURL("image/png");
+    return canvas.toDataURL("image/png", 1.0);
   };
 
   const handlePreview = async () => {
