@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Shield, CheckCircle2, XCircle, FileText, User, Calendar, MapPin, CreditCard, Car } from "lucide-react";
-import bellarusLogo from "@/assets/bellarus-logo.png";
+
 
 interface VerificationData {
   id: string;
