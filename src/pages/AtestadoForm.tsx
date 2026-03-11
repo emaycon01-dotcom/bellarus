@@ -230,24 +230,9 @@ const AtestadoForm = () => {
     ctx.fillText(nomeMedico || "Dr. Nome do Médico", docX, docY);
     ctx.fillText(crm ? `CRM ${crm}` : "CRM 000000", docX, docY + 16 * s);
 
-    // --- QR Code ---
-    const qrUrl = verificationId
-      ? `${window.location.origin}/verificar/${verificationId}`
-      : window.location.origin;
-    const qrContainer = document.createElement("div");
-    qrContainer.style.position = "absolute";
-    qrContainer.style.left = "-9999px";
-    document.body.appendChild(qrContainer);
-    
-    // Use SVG-based QR rendering
-    const { createRoot } = require("react-dom/client");
-    const root = createRoot(qrContainer);
-    const React = require("react");
-    const QRCodeComp = require("react-qr-code").default;
-    root.render(React.createElement(QRCodeComp, { value: qrUrl, size: 256, level: "H" }));
-    
-    setTimeout(() => {
-      const svgEl = qrContainer.querySelector("svg");
+    // --- QR Code (draw from hidden SVG ref) ---
+    if (qrRef.current) {
+      const svgEl = qrRef.current.querySelector("svg");
       if (svgEl) {
         const svgData = new XMLSerializer().serializeToString(svgEl);
         const qrImg = new Image();
@@ -260,9 +245,7 @@ const AtestadoForm = () => {
         };
         qrImg.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
       }
-      root.unmount();
-      document.body.removeChild(qrContainer);
-    }, 100);
+    }
 
     // --- Watermark ---
     if (withWatermark) {
