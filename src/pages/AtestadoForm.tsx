@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 import atestadoTemplate from "@/assets/atestado-template.png";
 import jsPDF from "jspdf";
+import QRCode from "react-qr-code";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
