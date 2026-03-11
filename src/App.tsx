@@ -80,6 +80,7 @@ const App = () => (
             <Route path="admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
             <Route path="admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
           </Route>
+          <Route path="/verificar/:id" element={<DocumentVerification />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
