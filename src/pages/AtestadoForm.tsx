@@ -155,7 +155,7 @@ const AtestadoForm = () => {
     } catch { toast.error("Erro ao gerar UPA com IA"); } finally { setLoadingUpa(false); }
   };
 
-  const drawAtestado = useCallback((canvas: HTMLCanvasElement, withWatermark: boolean) => {
+  const drawAtestado = useCallback(async (canvas: HTMLCanvasElement, withWatermark: boolean) => {
     const ctx = canvas.getContext("2d");
     if (!ctx || !templateImgRef.current) return;
 
@@ -168,7 +168,6 @@ const AtestadoForm = () => {
     const H = canvas.height;
     const s = W / 828;
 
-    // --- Header: UPA name + address ---
     ctx.fillStyle = "#000";
     ctx.font = `${12 * s}px Arial`;
     const headerX = W * 0.45;
@@ -176,12 +175,10 @@ const AtestadoForm = () => {
     ctx.fillText(enderecoUpa || "Av. Miguel Ignácio curi, 44 -", headerX, headerY);
     ctx.fillText(cepUpa ? `CEP: ${cepUpa}` : "CEP: 08295005", headerX, headerY + 16 * s);
 
-    // --- "PARA:" name ---
     ctx.fillStyle = "#000";
     ctx.font = `bold ${16 * s}px Arial`;
     ctx.fillText(`PARA: ${nomePaciente || "NOME DO PACIENTE"}`, W * 0.06, H * 0.175);
 
-    // --- Body text ---
     ctx.font = `${14 * s}px Arial`;
     const bodyY = H * 0.225;
     const bodyX = W * 0.06;
@@ -211,19 +208,15 @@ const AtestadoForm = () => {
     }
     ctx.fillText(line, bodyX, lineY);
 
-    // --- CID ---
     ctx.font = `${16 * s}px Arial`;
     ctx.fillText(`CID: ${cidSelecionado?.code || "A90"}`, bodyX, lineY + lineHeight * 2);
 
-    // --- Location + date ---
     ctx.font = `${14 * s}px Arial`;
     ctx.fillText(`${upaName}, ${formatDateLong(date)}`, W * 0.42, H * 0.56);
 
-    // --- Footer: emitted date ---
     ctx.font = `${10 * s}px Arial`;
     ctx.fillText(`Emitido em: ${date} ${time}`, W * 0.04, H * 0.87);
 
-    // --- Doctor info ---
     ctx.font = `${12 * s}px Arial`;
     const docX = W * 0.7;
     const docY = H * 0.90;
@@ -235,15 +228,19 @@ const AtestadoForm = () => {
       const svgEl = qrRef.current.querySelector("svg");
       if (svgEl) {
         const svgData = new XMLSerializer().serializeToString(svgEl);
-        const qrImg = new Image();
-        qrImg.onload = () => {
-          const qrSize = 80 * s;
-          ctx.drawImage(qrImg, W * 0.04, H * 0.70, qrSize, qrSize);
-          ctx.font = `${8 * s}px Arial`;
-          ctx.fillStyle = "#555";
-          ctx.fillText("Validação Digital", W * 0.04, H * 0.70 + qrSize + 10 * s);
-        };
-        qrImg.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        await new Promise<void>((resolve) => {
+          const qrImg = new Image();
+          qrImg.onload = () => {
+            const qrSize = 80 * s;
+            ctx.drawImage(qrImg, W * 0.04, H * 0.70, qrSize, qrSize);
+            ctx.font = `${8 * s}px Arial`;
+            ctx.fillStyle = "#555";
+            ctx.fillText("Validação Digital", W * 0.04, H * 0.70 + qrSize + 10 * s);
+            resolve();
+          };
+          qrImg.onerror = () => resolve();
+          qrImg.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+        });
       }
     }
 
