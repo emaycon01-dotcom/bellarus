@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { getTestPhoto, getTestSignature } from "@/lib/loadTestImages";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -156,47 +156,9 @@ const CnhForm = () => {
   // Template dimensions (fixed)
   const TW = 1653;
   const TH = 2339;
-  const TEMPLATE_WIDTH = 1653;
-  const TEMPLATE_HEIGHT = 2339;
-
-  const [templateNaturalSize, setTemplateNaturalSize] = useState({
-    width: TEMPLATE_WIDTH,
-    height: TEMPLATE_HEIGHT,
-  });
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = cnhTemplateBg;
-    img.onload = () => {
-      setTemplateNaturalSize({
-        width: img.naturalWidth || TEMPLATE_WIDTH,
-        height: img.naturalHeight || TEMPLATE_HEIGHT,
-      });
-    };
-  }, []);
-
-  type TemplateField = {
-    top: number;
-    left: number;
-    w?: number;
-    h?: number;
-    fontSize?: number;
-  };
-
-  const scaleX = TW / templateNaturalSize.width;
-  const scaleY = TH / templateNaturalSize.height;
-
-  const alignFieldToTemplate = <T extends TemplateField>(field: T): T => ({
-    ...field,
-    top: Math.round(field.top * scaleY),
-    left: Math.round(field.left * scaleX),
-    ...(field.w ? { w: Math.round(field.w * scaleX) } : {}),
-    ...(field.h ? { h: Math.round(field.h * scaleY) } : {}),
-    ...(field.fontSize ? { fontSize: Math.round(field.fontSize * scaleY) } : {}),
-  });
-
-  const alignNumberX = (value: number) => Math.round(value * scaleX);
-  const alignNumberY = (value: number) => Math.round(value * scaleY);
+  const EXPORT_DPI = 300;
+  const CSS_DPI = 96;
+  const RENDER_SCALE = EXPORT_DPI / CSS_DPI;
 
   const captureDocument = async (withWatermark: boolean): Promise<string> => {
     setIsWatermark(withWatermark);
@@ -211,7 +173,7 @@ const CnhForm = () => {
     if (!el) throw new Error("Document container not found");
 
     const canvas = await html2canvas(el, {
-      scale: 1,
+      scale: RENDER_SCALE,
       useCORS: true,
       backgroundColor: null,
       width: TW,
@@ -303,70 +265,67 @@ const CnhForm = () => {
     : window.location.origin;
 
   const baseF = {
-    foto:       { top: 290, left: 105, w: 180, h: 240 },
-    nome:       { top: 250, left: 310, fontSize: 18 },
-    primeiraHab:{ top: 250, left: 770, fontSize: 18 },
-    nascimento: { top: 310, left: 310, fontSize: 16 },
-    emissao:    { top: 375, left: 265, fontSize: 16 },
-    validade:   { top: 375, left: 480, fontSize: 16 },
-    acc:        { top: 375, left: 680, fontSize: 16 },
-    docId:      { top: 430, left: 265, fontSize: 16 },
-    cpf:        { top: 490, left: 265, fontSize: 16 },
-    registro:   { top: 490, left: 530, fontSize: 16 },
-    catHab:     { top: 490, left: 740, fontSize: 16 },
-    nacional:   { top: 540, left: 265, fontSize: 16 },
-    filiacaoPai:{ top: 590, left: 265, fontSize: 16 },
-    filiacaoMae:{ top: 620, left: 265, fontSize: 16 },
-    assinatura: { top: 670, left: 130, w: 260, h: 65 },
-    codSegSup:  { top: 270, left: 55 },
-    codSegInf:  { top: 870, left: 55 },
-    obs:        { top: 1100, left: 170 },
-    assinado:   { top: 1250, left: 250, w: 430 },
-    depto:      { top: 1275, left: 200, w: 530 },
-    local:      { top: 1340, left: 120 },
-    qr:         { top: 155, left: 870, w: 510, h: 510 },
-    serproTxt1: { top: 1080, left: 830 },
-    serproTxt2: { top: 1160, left: 830 },
-    serproLabel:{ top: 1290, left: 1080 },
-    legenda:    { top: 1470, left: 80 },
-    mrz:        { top: 1600, left: 80 },
+    foto:        { top: 290, left: 105, w: 180, h: 240 },
+    nome:        { top: 250, left: 310, w: 440, h: 22, fontSize: 18 },
+    primeiraHab: { top: 250, left: 770, w: 210, h: 22, fontSize: 18 },
+    nascimento:  { top: 310, left: 310, w: 560, h: 22, fontSize: 16 },
+    emissao:     { top: 375, left: 265, w: 180, h: 22, fontSize: 16 },
+    validade:    { top: 375, left: 480, w: 180, h: 22, fontSize: 16 },
+    acc:         { top: 375, left: 680, w: 60, h: 22, fontSize: 16 },
+    docId:       { top: 430, left: 265, w: 250, h: 22, fontSize: 16 },
+    cpf:         { top: 490, left: 265, w: 220, h: 22, fontSize: 16 },
+    registro:    { top: 490, left: 530, w: 190, h: 22, fontSize: 16 },
+    catHab:      { top: 490, left: 740, w: 80, h: 22, fontSize: 16 },
+    nacional:    { top: 540, left: 265, w: 240, h: 22, fontSize: 16 },
+    filiacaoPai: { top: 590, left: 265, w: 560, h: 22, fontSize: 16 },
+    filiacaoMae: { top: 620, left: 265, w: 560, h: 22, fontSize: 16 },
+    assinatura:  { top: 670, left: 130, w: 260, h: 65 },
+    codSegSup:   { top: 270, left: 55, w: 26, h: 420, fontSize: 13 },
+    codSegInf:   { top: 870, left: 55, w: 26, h: 420, fontSize: 13 },
+    obs:         { top: 1100, left: 170, w: 420, h: 22, fontSize: 14 },
+    assinado:    { top: 1250, left: 250, w: 430, h: 24, fontSize: 15 },
+    depto:       { top: 1275, left: 200, w: 530, h: 22, fontSize: 13 },
+    local:       { top: 1340, left: 120, w: 360, h: 20, fontSize: 13 },
+    qr:          { top: 155, left: 870, w: 510, h: 510 },
+    serproTxt1:  { top: 1080, left: 830, w: 560, h: 62, fontSize: 13 },
+    serproTxt2:  { top: 1160, left: 830, w: 560, h: 62, fontSize: 13 },
+    serproLabel: { top: 1290, left: 1080, w: 260, h: 24, fontSize: 22 },
+    legenda:     { top: 1470, left: 80, w: 1500, h: 120, fontSize: 10 },
+    mrz:         { top: 1600, left: 80, w: 1450, h: 122, fontSize: 22 },
+  } as const;
+
+  const F = {
+    ...baseF,
+    catLeftStart: 830,
+    catLeftX: 240,
+    catRightStart: 830,
+    catRightX: 610,
+    catRowH: 40,
+    catValidadeW: 150,
+    catValidadeH: 18,
+  } as const;
+
+  const fixedTextBase = {
+    fontFamily: "Arial, Helvetica, sans-serif",
+    lineHeight: 1,
+    letterSpacing: 0,
+    whiteSpace: "nowrap" as const,
+    overflow: "hidden" as const,
   };
 
-  // Field position map dynamically aligned to detected template size
-  const F = {
-    foto: alignFieldToTemplate(baseF.foto),
-    nome: alignFieldToTemplate(baseF.nome),
-    primeiraHab: alignFieldToTemplate(baseF.primeiraHab),
-    nascimento: alignFieldToTemplate(baseF.nascimento),
-    emissao: alignFieldToTemplate(baseF.emissao),
-    validade: alignFieldToTemplate(baseF.validade),
-    acc: alignFieldToTemplate(baseF.acc),
-    docId: alignFieldToTemplate(baseF.docId),
-    cpf: alignFieldToTemplate(baseF.cpf),
-    registro: alignFieldToTemplate(baseF.registro),
-    catHab: alignFieldToTemplate(baseF.catHab),
-    nacional: alignFieldToTemplate(baseF.nacional),
-    filiacaoPai: alignFieldToTemplate(baseF.filiacaoPai),
-    filiacaoMae: alignFieldToTemplate(baseF.filiacaoMae),
-    assinatura: alignFieldToTemplate(baseF.assinatura),
-    codSegSup: alignFieldToTemplate(baseF.codSegSup),
-    codSegInf: alignFieldToTemplate(baseF.codSegInf),
-    obs: alignFieldToTemplate(baseF.obs),
-    assinado: alignFieldToTemplate(baseF.assinado),
-    depto: alignFieldToTemplate(baseF.depto),
-    local: alignFieldToTemplate(baseF.local),
-    qr: alignFieldToTemplate(baseF.qr),
-    serproTxt1: alignFieldToTemplate(baseF.serproTxt1),
-    serproTxt2: alignFieldToTemplate(baseF.serproTxt2),
-    serproLabel: alignFieldToTemplate(baseF.serproLabel),
-    legenda: alignFieldToTemplate(baseF.legenda),
-    mrz: alignFieldToTemplate(baseF.mrz),
-    catLeftStart: alignNumberY(830),
-    catLeftX: alignNumberX(240),
-    catRightStart: alignNumberY(830),
-    catRightX: alignNumberX(610),
-    catRowH: alignNumberY(40),
-  } as const;
+  const fixedTextStyle = (
+    field: { top: number; left: number; w: number; h: number; fontSize: number },
+    extra: Record<string, unknown> = {},
+  ) => ({
+    position: "absolute" as const,
+    top: field.top,
+    left: field.left,
+    width: field.w,
+    height: field.h,
+    fontSize: field.fontSize,
+    ...fixedTextBase,
+    ...extra,
+  });
 
   const documentJSX = (
     <div
@@ -404,119 +363,80 @@ const CnhForm = () => {
       )}
 
       {/* CÓDIGO SEGURANÇA (vertical superior) */}
-      <div style={{
-        position: "absolute", top: F.codSegSup.top, left: F.codSegSup.left,
-        fontSize: 13, fontWeight: "bold", color: "#000",
-        writingMode: "vertical-rl" as const, textOrientation: "upright" as const, letterSpacing: 2,
-      }}>
+      <div
+        style={fixedTextStyle(F.codSegSup, {
+          fontWeight: "bold",
+          color: "#000",
+          writingMode: "vertical-rl",
+          textOrientation: "upright",
+          textAlign: "center",
+        })}
+      >
         {codigoSeguranca}
       </div>
 
       {/* NOME E SOBRENOME */}
-      <div style={{
-        position: "absolute", top: F.nome.top, left: F.nome.left,
-        fontSize: F.nome.fontSize, fontWeight: "bold",
-        color: "#000", maxWidth: 440, overflow: "hidden", whiteSpace: "nowrap" as const,
-      }}>
+      <div style={fixedTextStyle(F.nome, { fontWeight: "bold", color: "#000" })}>
         {nomeCompleto}
       </div>
 
       {/* 1ª HABILITAÇÃO */}
-      <div style={{
-        position: "absolute", top: F.primeiraHab.top, left: F.primeiraHab.left,
-        fontSize: F.primeiraHab.fontSize, fontWeight: "bold", color: "#000",
-      }}>
+      <div style={fixedTextStyle(F.primeiraHab, { fontWeight: "bold", color: "#000" })}>
         {dataPrimeiraHab}
       </div>
 
       {/* DATA/LOCAL NASCIMENTO */}
-      <div style={{
-        position: "absolute", top: F.nascimento.top, left: F.nascimento.left,
-        fontSize: F.nascimento.fontSize, fontWeight: "bold",
-        color: "#000", maxWidth: 520, overflow: "hidden", whiteSpace: "nowrap" as const,
-      }}>
+      <div style={fixedTextStyle(F.nascimento, { fontWeight: "bold", color: "#000" })}>
         {dataNascimento}
       </div>
 
       {/* DATA EMISSÃO */}
-      <div style={{
-        position: "absolute", top: F.emissao.top, left: F.emissao.left,
-        fontSize: F.emissao.fontSize, fontWeight: "bold", color: "#000",
-      }}>
+      <div style={fixedTextStyle(F.emissao, { fontWeight: "bold", color: "#000" })}>
         {dataEmissao}
       </div>
 
       {/* VALIDADE */}
-      <div style={{
-        position: "absolute", top: F.validade.top, left: F.validade.left,
-        fontSize: F.validade.fontSize, fontWeight: "bold", color: "#000",
-      }}>
+      <div style={fixedTextStyle(F.validade, { fontWeight: "bold", color: "#000" })}>
         {dataValidade}
       </div>
 
       {/* ACC */}
-      <div style={{
-        position: "absolute", top: F.acc.top, left: F.acc.left,
-        fontSize: F.acc.fontSize, fontWeight: "bold", color: "#000",
-      }}>
+      <div style={fixedTextStyle(F.acc, { fontWeight: "bold", color: "#000" })}>
         {activeCats.length > 0 ? "ACC" : ""}
       </div>
 
       {/* DOC IDENTIDADE */}
-      <div style={{
-        position: "absolute", top: F.docId.top, left: F.docId.left,
-        fontSize: F.docId.fontSize, fontWeight: "bold", color: "#000",
-      }}>
+      <div style={fixedTextStyle(F.docId, { fontWeight: "bold", color: "#000" })}>
         {rg}
       </div>
 
       {/* CPF */}
-      <div style={{
-        position: "absolute", top: F.cpf.top, left: F.cpf.left,
-        fontSize: F.cpf.fontSize, fontWeight: "bold", color: "#000",
-      }}>
+      <div style={fixedTextStyle(F.cpf, { fontWeight: "bold", color: "#000" })}>
         {cpf}
       </div>
 
       {/* Nº REGISTRO (vermelho) */}
-      <div style={{
-        position: "absolute", top: F.registro.top, left: F.registro.left,
-        fontSize: F.registro.fontSize, fontWeight: "bold", color: "#cc0000",
-      }}>
+      <div style={fixedTextStyle(F.registro, { fontWeight: "bold", color: "#cc0000" })}>
         {registro}
       </div>
 
       {/* CAT HAB */}
-      <div style={{
-        position: "absolute", top: F.catHab.top, left: F.catHab.left,
-        fontSize: F.catHab.fontSize, fontWeight: "bold", color: "#000",
-      }}>
+      <div style={fixedTextStyle(F.catHab, { fontWeight: "bold", color: "#000" })}>
         {categoria}
       </div>
 
       {/* NACIONALIDADE */}
-      <div style={{
-        position: "absolute", top: F.nacional.top, left: F.nacional.left,
-        fontSize: F.nacional.fontSize, fontWeight: "bold", color: "#000",
-      }}>
+      <div style={fixedTextStyle(F.nacional, { fontWeight: "bold", color: "#000" })}>
         {nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)"}
       </div>
 
       {/* FILIAÇÃO – PAI */}
-      <div style={{
-        position: "absolute", top: F.filiacaoPai.top, left: F.filiacaoPai.left,
-        fontSize: F.filiacaoPai.fontSize, fontWeight: "bold", color: "#000",
-        maxWidth: 520, overflow: "hidden", whiteSpace: "nowrap" as const,
-      }}>
+      <div style={fixedTextStyle(F.filiacaoPai, { fontWeight: "bold", color: "#000" })}>
         {nomePai}
       </div>
 
       {/* FILIAÇÃO – MÃE */}
-      <div style={{
-        position: "absolute", top: F.filiacaoMae.top, left: F.filiacaoMae.left,
-        fontSize: F.filiacaoMae.fontSize, fontWeight: "bold", color: "#000",
-        maxWidth: 520, overflow: "hidden", whiteSpace: "nowrap" as const,
-      }}>
+      <div style={fixedTextStyle(F.filiacaoMae, { fontWeight: "bold", color: "#000" })}>
         {nomeMae}
       </div>
 
@@ -542,10 +462,19 @@ const CnhForm = () => {
         const isActive = cat === "ACC" ? activeCats.length > 0 : activeCats.includes(cat);
         if (!isActive) return null;
         return (
-          <div key={`left-${cat}`} style={{
-            position: "absolute", top: F.catLeftStart + i * F.catRowH, left: F.catLeftX,
-            fontSize: 14, color: "#000",
-          }}>
+          <div
+            key={`left-${cat}`}
+            style={fixedTextStyle(
+              {
+                top: F.catLeftStart + i * F.catRowH,
+                left: F.catLeftX,
+                w: F.catValidadeW,
+                h: F.catValidadeH,
+                fontSize: 14,
+              },
+              { color: "#000", fontWeight: "bold" },
+            )}
+          >
             {dataValidade}
           </div>
         );
@@ -556,44 +485,51 @@ const CnhForm = () => {
         const isActive = activeCats.includes(cat);
         if (!isActive) return null;
         return (
-          <div key={`right-${cat}`} style={{
-            position: "absolute", top: F.catRightStart + i * F.catRowH, left: F.catRightX,
-            fontSize: 14, color: "#000",
-          }}>
+          <div
+            key={`right-${cat}`}
+            style={fixedTextStyle(
+              {
+                top: F.catRightStart + i * F.catRowH,
+                left: F.catRightX,
+                w: F.catValidadeW,
+                h: F.catValidadeH,
+                fontSize: 14,
+              },
+              { color: "#000", fontWeight: "bold" },
+            )}
+          >
             {dataValidade}
           </div>
         );
       })}
 
       {/* 12 OBSERVAÇÕES */}
-      <div style={{
-        position: "absolute", top: F.obs.top, left: F.obs.left,
-        fontSize: 14, fontWeight: "bold", color: "#000", maxWidth: 380,
-      }}>
+      <div style={fixedTextStyle(F.obs, { fontWeight: "bold", color: "#000" })}>
         {observacoes.join(", ")}
       </div>
 
       {/* ASSINADO DIGITALMENTE */}
-      <div style={{
-        position: "absolute", top: F.assinado.top, left: F.assinado.left,
-        width: F.assinado.w, fontSize: 15,
-        color: "#000", textAlign: "center" as const, fontWeight: "bold",
-      }}>
+      <div
+        style={fixedTextStyle(F.assinado, {
+          color: "#000",
+          textAlign: "center",
+          fontWeight: "bold",
+        })}
+      >
         ASSINADO DIGITALMENTE
       </div>
-      <div style={{
-        position: "absolute", top: F.depto.top, left: F.depto.left,
-        width: F.depto.w, fontSize: 13,
-        color: "#000", textAlign: "center" as const, fontWeight: "bold",
-      }}>
+      <div
+        style={fixedTextStyle(F.depto, {
+          color: "#000",
+          textAlign: "center",
+          fontWeight: "bold",
+        })}
+      >
         DEPARTAMENTO ESTADUAL DE TRÂNSITO
       </div>
 
       {/* LOCAL */}
-      <div style={{
-        position: "absolute", top: F.local.top, left: F.local.left,
-        fontSize: 13, color: "#555",
-      }}>
+      <div style={fixedTextStyle(F.local, { color: "#555" })}>
         {cidadeEstado}
       </div>
 
@@ -618,16 +554,34 @@ const CnhForm = () => {
 
       {/* TEXTO SERPRO */}
       <div style={{
-        position: "absolute", top: F.serproTxt1.top, left: F.serproTxt1.left,
-        width: 560, fontSize: 13, color: "#333", lineHeight: "20px",
+        position: "absolute",
+        top: F.serproTxt1.top,
+        left: F.serproTxt1.left,
+        width: F.serproTxt1.w,
+        height: F.serproTxt1.h,
+        fontSize: F.serproTxt1.fontSize,
+        color: "#333",
+        fontFamily: "Arial, Helvetica, sans-serif",
+        lineHeight: 1,
+        letterSpacing: 0,
+        overflow: "hidden",
       }}>
         Documento assinado com certificado digital em conformidade
         com a Medida Provisória nº 2200-2/2001. Sua validade poderá
         ser confirmada por meio do programa Assinador Serpro.
       </div>
       <div style={{
-        position: "absolute", top: F.serproTxt2.top, left: F.serproTxt2.left,
-        width: 560, fontSize: 13, color: "#333", lineHeight: "20px",
+        position: "absolute",
+        top: F.serproTxt2.top,
+        left: F.serproTxt2.left,
+        width: F.serproTxt2.w,
+        height: F.serproTxt2.h,
+        fontSize: F.serproTxt2.fontSize,
+        color: "#333",
+        fontFamily: "Arial, Helvetica, sans-serif",
+        lineHeight: 1,
+        letterSpacing: 0,
+        overflow: "hidden",
       }}>
         As orientações para instalar o Assinador Serpro e realizar a
         validação do documento digital estão disponíveis em:
@@ -635,37 +589,55 @@ const CnhForm = () => {
       </div>
 
       {/* SERPRO / SENATRAN */}
-      <div style={{
-        position: "absolute", top: F.serproLabel.top, left: F.serproLabel.left,
-        fontSize: 22, fontWeight: "bold", color: "#000",
-      }}>
+      <div style={fixedTextStyle(F.serproLabel, { fontWeight: "bold", color: "#000" })}>
         <span>SERPRO</span>
         <span style={{ color: "#666" }}> / </span>
         <span>SENATRAN</span>
       </div>
 
       {/* CÓDIGO SEGURANÇA (vertical inferior) */}
-      <div style={{
-        position: "absolute", top: F.codSegInf.top, left: F.codSegInf.left,
-        fontSize: 13, fontWeight: "bold", color: "#000",
-        writingMode: "vertical-rl" as const, textOrientation: "upright" as const, letterSpacing: 2,
-      }}>
+      <div
+        style={fixedTextStyle(F.codSegInf, {
+          fontWeight: "bold",
+          color: "#000",
+          writingMode: "vertical-rl",
+          textOrientation: "upright",
+          textAlign: "center",
+        })}
+      >
         {codigoSeguranca}
       </div>
 
       {/* LEGENDA (rodapé) */}
       <div style={{
-        position: "absolute", top: F.legenda.top, left: F.legenda.left,
-        fontSize: 10, color: "#444", lineHeight: "16px", maxWidth: 1500,
+        position: "absolute",
+        top: F.legenda.top,
+        left: F.legenda.left,
+        width: F.legenda.w,
+        height: F.legenda.h,
+        fontSize: F.legenda.fontSize,
+        color: "#444",
+        fontFamily: "Arial, Helvetica, sans-serif",
+        lineHeight: 1,
+        letterSpacing: 0,
+        overflow: "hidden",
       }}>
         {`2 e 1. Nome e Sobrenome / Name and Surname / Nombre y Apellidos - Primera Habilitação / First Driver License / Primera Licencia de Conducir – 3. Data e Local de Nascimento / Date and Place of Birth DD/MM/YYYY / Fecha y Lugar de Nacimiento - 4a. Data de Emissão / Issuing Date DD/MM/YYYY / Fecha de Emisión - 4b. Data de Validade / Expiration Date DD/MM/YYYY / Válida Hasta – ACC – 4c. Documento Identidade - Órgão emissor / Identity Document - Issuing Authority / Documento de Identificación – Autoridad Expedidora – 4d. CPF – 5. Número de registro da CNH / Driver License Number / Número de Permiso de Conducir – 9. Categoria de Veículos da Carteira de Habilitação / Driver license Class / Categoría de Permiso de Conducir – Nacionalidade / Nationality / Nacionalidad – Filiação / Father / Filiación – 12. Observações / Observations / Observaciones – Local / Place / Lugar`}
       </div>
 
       {/* MRZ LINES */}
       <div style={{
-        position: "absolute", top: F.mrz.top, left: F.mrz.left,
-        fontSize: 22, fontFamily: "'Courier New', monospace", color: "#222",
-        lineHeight: "36px", letterSpacing: 2,
+        position: "absolute",
+        top: F.mrz.top,
+        left: F.mrz.left,
+        width: F.mrz.w,
+        height: F.mrz.h,
+        fontSize: F.mrz.fontSize,
+        fontFamily: "Arial, Helvetica, sans-serif",
+        color: "#222",
+        lineHeight: 1,
+        letterSpacing: 0,
+        overflow: "hidden",
       }}>
         <div>{mrz.line1}</div>
         <div>{mrz.line2}</div>
