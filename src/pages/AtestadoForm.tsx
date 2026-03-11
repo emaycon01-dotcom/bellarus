@@ -413,6 +413,7 @@ const AtestadoForm = () => {
             </div>
             <div className="space-y-4">
               <div><Label className="text-sm font-semibold text-primary">Nome Completo <span className="text-destructive">*</span></Label><Input placeholder="Ex: DAIANI MANSANARI DOS SANTOS" value={nomePaciente} onChange={(e) => setNomePaciente(e.target.value.toUpperCase())} className="mt-1.5 bg-secondary/50" /></div>
+              <div><Label className="text-sm font-semibold text-primary">Data de Nascimento</Label><Input placeholder="DD/MM/AAAA" value={dataNascimento} onChange={(e) => setDataNascimento(e.target.value)} className="mt-1.5 bg-secondary/50" /></div>
               <div><Label className="text-sm font-semibold text-primary">CNS (Cartão Nacional de Saúde)</Label>
                 <div className="flex gap-2 mt-1.5">
                   <Input placeholder="00000000000" value={cnsPaciente} onChange={(e) => setCnsPaciente(e.target.value)} className="bg-secondary/50" />
