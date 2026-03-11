@@ -316,6 +316,8 @@ const CnhForm = () => {
         }
         resolve(canvas.toDataURL("image/png"));
       });
+      };
+      bgImg.src = cnhTemplateBg;
     });
   }, [nomeCompleto, cpf, rg, dataNascimento, nomePai, nomeMae, registro, dataValidade, dataPrimeiraHab, categoria, dataEmissao, cidadeEstado, observacoes, estadoExtenso, espelho, renach, codigoSeguranca, fotoPreview, assinaturaPreview, nacionalidade, genero]);
 
