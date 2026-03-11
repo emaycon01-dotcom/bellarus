@@ -57,11 +57,14 @@ const RgPdfForm = () => {
     reader.readAsDataURL(file);
   };
 
-  const fillTest = () => {
+  const fillTest = async () => {
     setCpf("456.789.012-34"); setNomeCompleto("ANA BEATRIZ FERREIRA LIMA"); setRg(generateDigits(9));
     setUf("SP"); setGenero("Feminino"); setNacionalidade("BRASILEIRA"); setDataNascimento("22/08/1995");
     setNaturalidade("SÃO PAULO"); setDataEmissao("15/03/2023"); setOrgaoEmissor("SSP/SP");
     setNomePai("JOSÉ FERREIRA LIMA"); setNomeMae("MARIA APARECIDA FERREIRA");
+    const [photo, sig] = await Promise.all([getTestPhoto(), getTestSignature()]);
+    if (photo) setFotoPreview(photo);
+    if (sig) setAssinaturaPreview(sig);
     toast.success("Campos preenchidos com dados de teste!");
   };
   const clearAll = () => {
