@@ -561,6 +561,11 @@ const CnhForm = () => {
         {cidadeEstado}
       </div>
 
+      {/* ESTADO POR EXTENSO */}
+      <div style={fixedTextStyle(F.estadoExtenso, { fontWeight: "bold", color: "#000" })}>
+        {estadoExtenso}
+      </div>
+
       {/* QR CODE */}
       <div
         id="qrcode"
