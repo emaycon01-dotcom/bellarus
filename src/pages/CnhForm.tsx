@@ -216,6 +216,35 @@ const CnhForm = () => {
       if (error) { toast.error("Erro ao debitar crédito."); setConfirming(false); return; }
     }
 
+    // Create verification record ONLY on paid confirm
+    try {
+      const docData = {
+        cpf, registro, categoria, dataNascimento, dataEmissao, dataValidade,
+        cidadeEstado, rg, nacionalidade, nomePai, nomeMae, genero, renach, espelho,
+      };
+      const { data: inserted, error: vErr } = await supabase
+        .from("document_verifications")
+        .insert({
+          user_id: user.id,
+          document_type: "CNH Digital",
+          document_name: nomeCompleto || "Sem nome",
+          document_data: docData,
+          photo_url: fotoPreview,
+          status: "valid",
+        } as any)
+        .select("id")
+        .single();
+      if (vErr) throw vErr;
+      setVerificationId(inserted.id);
+      // Wait for state update and re-render QR code
+      await new Promise(r => setTimeout(r, 500));
+    } catch (err) {
+      console.error("Erro ao salvar verificação:", err);
+      toast.error("Erro ao gerar verificação do documento.");
+      setConfirming(false);
+      return;
+    }
+
     const cleanImage = await captureDocument(false);
     const pdf = new jsPDF("p", "mm", "a4");
     pdf.addImage(cleanImage, "PNG", 0, 0, 210, 297);
