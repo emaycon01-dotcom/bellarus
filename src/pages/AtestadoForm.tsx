@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 import atestadoTemplate from "@/assets/atestado-template.png";
 import jsPDF from "jspdf";
+import QRCode from "react-qr-code";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
@@ -70,6 +71,7 @@ const AtestadoForm = () => {
 
   const [nomePaciente, setNomePaciente] = useState("");
   const [cnsPaciente, setCnsPaciente] = useState("");
+  const [dataNascimento, setDataNascimento] = useState("");
   const [cidSearch, setCidSearch] = useState("");
   const [cidSelecionado, setCidSelecionado] = useState<{ code: string; name: string } | null>(null);
   const [diasAfastamento, setDiasAfastamento] = useState("");
@@ -92,6 +94,7 @@ const AtestadoForm = () => {
   const [loadingMedico, setLoadingMedico] = useState(false);
   const [loadingUpa, setLoadingUpa] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
 
   // Load template image
   useEffect(() => {
@@ -269,6 +272,7 @@ const AtestadoForm = () => {
   const fillTest = () => {
     setNomePaciente("DAIANI MANSANARI DOS SANTOS");
     setCnsPaciente("40274054809");
+    setDataNascimento("12/05/1995");
     setNomeUpa("UPA 24H ITAQUERA - CONSULTÓRIOS");
     setEnderecoUpa("Av. Miguel Ignácio Curi, 44 - Arthur Alvim, São Paulo - SP");
     setCepUpa("08295005");
@@ -285,10 +289,10 @@ const AtestadoForm = () => {
   };
 
   const clearAll = () => {
-    setNomePaciente(""); setCnsPaciente(""); setNomeUpa(""); setEnderecoUpa(""); setCepUpa("");
+    setNomePaciente(""); setCnsPaciente(""); setDataNascimento(""); setNomeUpa(""); setEnderecoUpa(""); setCepUpa("");
     setNomeMedico(""); setCrm(""); setUfMedico(""); setEspecialidade("");
     setCidSelecionado(null); setCidSearch(""); setDiasAfastamento("");
-    setDataAtestado(""); setHoraAtendimento("");
+    setDataAtestado(""); setHoraAtendimento(""); setVerificationId(null);
     toast.success("Campos limpos!");
   };
 
@@ -302,8 +306,46 @@ const AtestadoForm = () => {
   };
 
   const handleConfirm = async () => {
+    if (!user) { toast.error("Faça login para continuar."); return; }
     setGenerating(true);
     try {
+      // Check and debit credits
+      const { data: profile } = await supabase.from("profiles").select("credits").eq("id", user.id).single();
+      if (!profile || profile.credits < 1) {
+        toast.error("Créditos insuficientes! Recarregue sua conta.");
+        setGenerating(false);
+        return;
+      }
+      const { error: creditErr } = await supabase.from("profiles").update({ credits: profile.credits - 1 }).eq("id", user.id);
+      if (creditErr) { toast.error("Erro ao debitar crédito."); setGenerating(false); return; }
+
+      // Create verification record
+      const docData = {
+        nomePaciente, cnsPaciente, dataNascimento,
+        cidCodigo: cidSelecionado?.code || "", cidNome: cidSelecionado?.name || "",
+        diasAfastamento, dataAtestado, horaAtendimento,
+        nomeUpa, enderecoUpa, cepUpa,
+        nomeMedico, crm: crm ? `CRM/${ufMedico || "SP"} ${crm}` : "",
+        especialidade, ufMedico,
+      };
+      const { data: inserted, error: vErr } = await supabase
+        .from("document_verifications")
+        .insert({
+          user_id: user.id,
+          document_type: "Atestado Médico",
+          document_name: nomePaciente || "Sem nome",
+          document_data: docData,
+          photo_url: null,
+          status: "valid",
+        } as any)
+        .select("id")
+        .single();
+      if (vErr) throw vErr;
+      setVerificationId(inserted.id);
+
+      // Wait for QR code to render with verification ID
+      await new Promise(r => setTimeout(r, 500));
+
       // Generate clean image (no watermark)
       const offscreen = document.createElement("canvas");
       drawAtestado(offscreen, false);
@@ -371,6 +413,7 @@ const AtestadoForm = () => {
             </div>
             <div className="space-y-4">
               <div><Label className="text-sm font-semibold text-primary">Nome Completo <span className="text-destructive">*</span></Label><Input placeholder="Ex: DAIANI MANSANARI DOS SANTOS" value={nomePaciente} onChange={(e) => setNomePaciente(e.target.value.toUpperCase())} className="mt-1.5 bg-secondary/50" /></div>
+              <div><Label className="text-sm font-semibold text-primary">Data de Nascimento</Label><Input placeholder="DD/MM/AAAA" value={dataNascimento} onChange={(e) => setDataNascimento(e.target.value)} className="mt-1.5 bg-secondary/50" /></div>
               <div><Label className="text-sm font-semibold text-primary">CNS (Cartão Nacional de Saúde)</Label>
                 <div className="flex gap-2 mt-1.5">
                   <Input placeholder="00000000000" value={cnsPaciente} onChange={(e) => setCnsPaciente(e.target.value)} className="bg-secondary/50" />
