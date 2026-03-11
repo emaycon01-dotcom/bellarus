@@ -289,10 +289,10 @@ const AtestadoForm = () => {
   };
 
   const clearAll = () => {
-    setNomePaciente(""); setCnsPaciente(""); setNomeUpa(""); setEnderecoUpa(""); setCepUpa("");
+    setNomePaciente(""); setCnsPaciente(""); setDataNascimento(""); setNomeUpa(""); setEnderecoUpa(""); setCepUpa("");
     setNomeMedico(""); setCrm(""); setUfMedico(""); setEspecialidade("");
     setCidSelecionado(null); setCidSearch(""); setDiasAfastamento("");
-    setDataAtestado(""); setHoraAtendimento("");
+    setDataAtestado(""); setHoraAtendimento(""); setVerificationId(null);
     toast.success("Campos limpos!");
   };
 
