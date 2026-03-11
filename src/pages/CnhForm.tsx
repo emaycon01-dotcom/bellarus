@@ -88,6 +88,7 @@ const CnhForm = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [isWatermark, setIsWatermark] = useState(false);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
 
   const handleUfChange = (val: string) => { setUf(val); setEstadoExtenso(UF_EXTENSO[val] || ""); };
   const handleDataEmissaoChange = (val: string) => {
@@ -189,9 +190,36 @@ const CnhForm = () => {
   };
 
   const handlePreview = async () => {
+    if (!user) { toast.error("Faça login para continuar."); return; }
+
+    // Save document data to DB and get verification ID
+    try {
+      const docData = {
+        cpf, registro, categoria, dataNascimento, dataEmissao, dataValidade,
+        cidadeEstado, rg, nacionalidade, nomePai, nomeMae, genero, renach, espelho,
+      };
+      const { data: inserted, error } = await supabase
+        .from("document_verifications")
+        .insert({
+          user_id: user.id,
+          document_type: "CNH Digital",
+          document_name: nomeCompleto || "Sem nome",
+          document_data: docData,
+          photo_url: fotoPreview,
+          status: "valid",
+        } as any)
+        .select("id")
+        .single();
+      if (error) throw error;
+      setVerificationId(inserted.id);
+    } catch (err) {
+      console.error("Erro ao salvar verificação:", err);
+      toast.error("Erro ao gerar verificação do documento.");
+      return;
+    }
+
     setShowPreview(true);
-    // Small delay to ensure the document container is rendered
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 400));
     const imageData = await captureDocument(true);
     setPreviewImage(imageData);
     toast.success("Preview gerado com marca d'água!");
@@ -473,9 +501,9 @@ const CnhForm = () => {
         padding: 8,
       }}>
         <QRCode
-          value={`CNH|${nomeCompleto}|${cpf}|${registro}|${categoria}|${dataValidade}`}
+          value={verificationId ? `${window.location.origin}/verificar/${verificationId}` : "https://bellarus.lovable.app"}
           size={224}
-          level="M"
+          level="H"
           style={{ width: 224, height: 224 }}
         />
       </div>
