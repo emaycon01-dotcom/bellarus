@@ -276,14 +276,7 @@ const CnhForm = () => {
       <img
         src={cnhTemplateBg}
         alt=""
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: 794,
-          height: 1123,
-          objectFit: "cover",
-        }}
+        style={{ position: "absolute", top: 0, left: 0, width: 794, height: 1123, objectFit: "cover" }}
         crossOrigin="anonymous"
       />
 
@@ -292,80 +285,73 @@ const CnhForm = () => {
         <img
           src={fotoPreview}
           alt="Foto"
-          style={{
-            position: "absolute",
-            top: 142,
-            left: 46,
-            width: 82,
-            height: 108,
-            objectFit: "cover",
-          }}
+          style={{ position: "absolute", top: 175, left: 50, width: 93, height: 122, objectFit: "cover" }}
           crossOrigin="anonymous"
         />
       )}
 
       {/* ─── NOME ─── */}
-      <div style={{ position: "absolute", top: 94, left: 118, fontSize: 10, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 138, left: 132, fontSize: 10, fontWeight: "bold", color: "#000", maxWidth: 260, overflow: "hidden", whiteSpace: "nowrap" as any }}>
         {nomeCompleto}
       </div>
 
       {/* ─── 1ª HABILITAÇÃO ─── */}
-      <div style={{ position: "absolute", top: 94, left: 370, fontSize: 9, color: "#000" }}>
+      <div style={{ position: "absolute", top: 138, left: 412, fontSize: 9, fontWeight: "bold", color: "#000" }}>
         {dataPrimeiraHab}
       </div>
 
       {/* ─── DATA NASCIMENTO / LOCAL / UF ─── */}
-      <div style={{ position: "absolute", top: 118, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 168, left: 168, fontSize: 9, fontWeight: "bold", color: "#000", maxWidth: 280, overflow: "hidden", whiteSpace: "nowrap" as any }}>
         {dataNascimento}
       </div>
 
       {/* ─── DATA EMISSÃO ─── */}
-      <div style={{ position: "absolute", top: 146, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 200, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
         {dataEmissao}
       </div>
 
       {/* ─── VALIDADE ─── */}
-      <div style={{ position: "absolute", top: 146, left: 248, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 200, left: 270, fontSize: 9, fontWeight: "bold", color: "#000" }}>
         {dataValidade}
       </div>
 
       {/* ─── CATEGORIA (large, ACC area) ─── */}
-      <div style={{ position: "absolute", top: 139, left: 368, fontSize: 16, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 194, left: 400, fontSize: 16, fontWeight: "bold", color: "#000" }}>
         {categoria}
       </div>
 
       {/* ─── DOC IDENTIDADE / ORG EMISSOR / UF ─── */}
-      <div style={{ position: "absolute", top: 171, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 228, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
         {rg}
       </div>
 
       {/* ─── CPF ─── */}
-      <div style={{ position: "absolute", top: 197, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 255, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
         {cpf}
       </div>
 
       {/* ─── Nº REGISTRO (red) ─── */}
-      <div style={{ position: "absolute", top: 197, left: 268, fontSize: 9, fontWeight: "bold", color: "#cc0000" }}>
+      <div style={{ position: "absolute", top: 255, left: 290, fontSize: 9, fontWeight: "bold", color: "#cc0000" }}>
         {registro}
       </div>
 
       {/* ─── CAT HAB ─── */}
-      <div style={{ position: "absolute", top: 197, left: 378, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 255, left: 400, fontSize: 9, fontWeight: "bold", color: "#000" }}>
         {categoria}
       </div>
 
       {/* ─── NACIONALIDADE ─── */}
-      <div style={{ position: "absolute", top: 222, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 278, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
         {nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO"}
       </div>
 
       {/* ─── FILIAÇÃO PAI ─── */}
-      <div style={{ position: "absolute", top: 248, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 302, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
         {nomePai}
       </div>
 
       {/* ─── FILIAÇÃO MÃE ─── */}
-      <div style={{ position: "absolute", top: 262, left: 138, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 318, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
         {nomeMae}
       </div>
 
@@ -374,29 +360,15 @@ const CnhForm = () => {
         <img
           src={assinaturaPreview}
           alt="Assinatura"
-          style={{
-            position: "absolute",
-            top: 278,
-            left: 46,
-            width: 90,
-            height: 30,
-            objectFit: "contain",
-          }}
+          style={{ position: "absolute", top: 335, left: 55, width: 100, height: 32, objectFit: "contain" }}
           crossOrigin="anonymous"
         />
       )}
 
       {/* ─── CÓDIGO SEGURANÇA (vertical left, top) ─── */}
       <div style={{
-        position: "absolute",
-        top: 100,
-        left: 12,
-        fontSize: 8,
-        fontWeight: "bold",
-        color: "#000",
-        writingMode: "vertical-rl" as any,
-        transform: "rotate(180deg)",
-        letterSpacing: 1,
+        position: "absolute", top: 130, left: 18, fontSize: 8, fontWeight: "bold", color: "#000",
+        writingMode: "vertical-rl" as any, transform: "rotate(180deg)", letterSpacing: 1,
       }}>
         {codigoSeguranca}
       </div>
@@ -407,11 +379,7 @@ const CnhForm = () => {
         if (!isActive) return null;
         return (
           <div key={`left-${cat}`} style={{
-            position: "absolute",
-            top: 340 + i * 19,
-            left: 190,
-            fontSize: 8,
-            color: "#000",
+            position: "absolute", top: 398 + i * 21, left: 200, fontSize: 8, color: "#000",
           }}>
             {dataValidade}
           </div>
@@ -424,11 +392,7 @@ const CnhForm = () => {
         if (!isActive) return null;
         return (
           <div key={`right-${cat}`} style={{
-            position: "absolute",
-            top: 340 + i * 19,
-            left: 396,
-            fontSize: 8,
-            color: "#000",
+            position: "absolute", top: 398 + i * 21, left: 420, fontSize: 8, color: "#000",
           }}>
             {dataValidade}
           </div>
@@ -436,93 +400,69 @@ const CnhForm = () => {
       })}
 
       {/* ─── 12 OBSERVAÇÕES ─── */}
-      <div style={{ position: "absolute", top: 482, left: 66, fontSize: 8, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 545, left: 70, fontSize: 8, fontWeight: "bold", color: "#000" }}>
         {observacoes.join(", ")}
       </div>
 
       {/* ─── ASSINADO DIGITALMENTE ─── */}
-      <div style={{ position: "absolute", top: 540, left: 200, fontSize: 7, color: "#000", textAlign: "center" as any }}>
+      <div style={{ position: "absolute", top: 592, left: 200, fontSize: 7, color: "#000", textAlign: "center" as any }}>
         ASSINADO DIGITALMENTE
       </div>
-      <div style={{ position: "absolute", top: 552, left: 155, fontSize: 7, color: "#000", textAlign: "center" as any }}>
+      <div style={{ position: "absolute", top: 605, left: 155, fontSize: 7, color: "#000", textAlign: "center" as any }}>
         DEPARTAMENTO ESTADUAL DE TRÂNSITO
       </div>
 
       {/* ─── LOCAL ─── */}
-      <div style={{ position: "absolute", top: 578, left: 66, fontSize: 8, color: "#000" }}>
-        LOCAL:
+      <div style={{ position: "absolute", top: 633, left: 62, fontSize: 7, color: "#666" }}>
+        LOCAL
       </div>
-      <div style={{ position: "absolute", top: 590, left: 66, fontSize: 8, fontWeight: "bold", color: "#000" }}>
+      <div style={{ position: "absolute", top: 645, left: 62, fontSize: 9, fontWeight: "bold", color: "#000" }}>
         {cidadeEstado}
       </div>
 
       {/* ─── ESPELHO ─── */}
-      <div style={{ position: "absolute", top: 570, left: 290, fontSize: 7, color: "#000" }}>
+      <div style={{ position: "absolute", top: 612, left: 370, fontSize: 7, color: "#000" }}>
         {espelho}
       </div>
 
       {/* ─── RENACH ─── */}
-      <div style={{ position: "absolute", top: 582, left: 290, fontSize: 7, color: "#000" }}>
+      <div style={{ position: "absolute", top: 625, left: 370, fontSize: 7, color: "#000" }}>
         {renach}
       </div>
 
       {/* ─── ESTADO POR EXTENSO ─── */}
       <div style={{
-        position: "absolute",
-        top: 610,
-        left: 60,
-        width: 330,
-        fontSize: 18,
-        fontWeight: "bold",
-        color: "#000",
-        textAlign: "center" as any,
+        position: "absolute", top: 670, left: 60, width: 380, fontSize: 18,
+        fontWeight: "bold", color: "#000", textAlign: "center" as any,
       }}>
         {estadoExtenso}
       </div>
 
       {/* ─── CÓDIGO SEGURANÇA (vertical left, bottom) ─── */}
       <div style={{
-        position: "absolute",
-        top: 400,
-        left: 12,
-        fontSize: 8,
-        fontWeight: "bold",
-        color: "#000",
-        writingMode: "vertical-rl" as any,
-        transform: "rotate(180deg)",
-        letterSpacing: 1,
+        position: "absolute", top: 450, left: 18, fontSize: 8, fontWeight: "bold", color: "#000",
+        writingMode: "vertical-rl" as any, transform: "rotate(180deg)", letterSpacing: 1,
       }}>
         {codigoSeguranca}
       </div>
 
       {/* ─── QR CODE ─── */}
       <div style={{
-        position: "absolute",
-        top: 110,
-        left: 505,
-        width: 240,
-        height: 240,
-        backgroundColor: "#fff",
-        padding: 8,
+        position: "absolute", top: 120, left: 510, width: 230, height: 230,
+        backgroundColor: "#fff", padding: 8, display: "flex", alignItems: "center", justifyContent: "center",
       }}>
         <QRCode
           value={verificationId ? `${window.location.origin}/verificar/${verificationId}` : `${window.location.origin}`}
-          size={224}
+          size={214}
           level="H"
-          style={{ width: 224, height: 224 }}
+          style={{ width: 214, height: 214 }}
         />
       </div>
 
       {/* ─── MRZ LINES ─── */}
       <div style={{
-        position: "absolute",
-        top: 825,
-        left: 80,
-        fontSize: 12,
-        fontFamily: "'Courier New', monospace",
-        color: "#222",
-        lineHeight: "22px",
-        letterSpacing: 1,
+        position: "absolute", top: 860, left: 100, fontSize: 12,
+        fontFamily: "'Courier New', monospace", color: "#222", lineHeight: "22px", letterSpacing: 1,
       }}>
         <div>{mrz.line1}</div>
         <div>{mrz.line2}</div>
@@ -532,28 +472,16 @@ const CnhForm = () => {
       {/* ─── WATERMARK OVERLAY ─── */}
       {isWatermark && (
         <div style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: 794,
-          height: 1123,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          pointerEvents: "none",
+          position: "absolute", top: 0, left: 0, width: 794, height: 1123,
+          display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none",
         }}>
           {[-200, -100, 0, 100, 200].map((offset) => (
             <div
               key={offset}
               style={{
-                position: "absolute",
-                top: `calc(50% + ${offset}px)`,
-                left: "50%",
+                position: "absolute", top: `calc(50% + ${offset}px)`, left: "50%",
                 transform: "translate(-50%, -50%) rotate(-35deg)",
-                fontSize: 36,
-                fontWeight: "bold",
-                color: "rgba(255, 0, 0, 0.15)",
-                whiteSpace: "nowrap",
+                fontSize: 36, fontWeight: "bold", color: "rgba(255, 0, 0, 0.15)", whiteSpace: "nowrap",
               }}
             >
               BELLARUS NÃO COPIE
