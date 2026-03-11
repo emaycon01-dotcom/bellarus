@@ -88,6 +88,7 @@ const CnhForm = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [isWatermark, setIsWatermark] = useState(false);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
 
   const handleUfChange = (val: string) => { setUf(val); setEstadoExtenso(UF_EXTENSO[val] || ""); };
   const handleDataEmissaoChange = (val: string) => {
