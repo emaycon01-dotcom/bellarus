@@ -270,21 +270,60 @@ const AtestadoForm = () => {
   }, [showPreview, drawAtestado]);
 
   const fillTest = () => {
-    setNomePaciente("DAIANI MANSANARI DOS SANTOS");
-    setCnsPaciente("40274054809");
-    setDataNascimento("12/05/1995");
-    setNomeUpa("UPA 24H ITAQUERA - CONSULTÓRIOS");
-    setEnderecoUpa("Av. Miguel Ignácio Curi, 44 - Arthur Alvim, São Paulo - SP");
-    setCepUpa("08295005");
-    setNomeMedico("DR. ABDO LAFIT FARES");
-    setCrm("163120");
-    setUfMedico("SP");
-    setEspecialidade("CLÍNICO GERAL");
-    setCidSelecionado({ code: "A90", name: "Dengue" });
-    setCidSearch("A90 - Dengue");
-    setDiasAfastamento("7");
-    setDataAtestado("16/02/2026");
-    setHoraAtendimento("09:19");
+    const testData = [
+      {
+        nome: "DAIANI MANSANARI DOS SANTOS", cns: "40274054809", nasc: "12/05/1995",
+        upa: "UPA 24H ITAQUERA - CONSULTÓRIOS", endereco: "Av. Miguel Ignácio Curi, 44 - Arthur Alvim, São Paulo - SP", cep: "08295005",
+        medico: "DR. ABDO LAFIT FARES", crmVal: "163120", uf: "SP", esp: "CLÍNICO GERAL",
+        cid: { code: "A90", name: "Dengue" }, dias: "7", data: "16/02/2026", hora: "09:19",
+      },
+      {
+        nome: "CARLOS EDUARDO MENDES", cns: "70183926455", nasc: "23/08/1988",
+        upa: "UPA 24H CAMPO LIMPO", endereco: "R. Carlos Lacerda, 678 - Campo Limpo, São Paulo - SP", cep: "05765000",
+        medico: "DRA. MARIANA SILVA RIBEIRO", crmVal: "198432", uf: "SP", esp: "CLÍNICO GERAL",
+        cid: { code: "J06.9", name: "Infecção aguda das vias aéreas superiores" }, dias: "3", data: "10/03/2026", hora: "14:35",
+      },
+      {
+        nome: "FERNANDA OLIVEIRA COSTA", cns: "52839174600", nasc: "07/11/1992",
+        upa: "UPA 24H MADUREIRA", endereco: "Estr. do Portela, 99 - Madureira, Rio de Janeiro - RJ", cep: "21351050",
+        medico: "DR. HENRIQUE AUGUSTO NASCIMENTO", crmVal: "245781", uf: "RJ", esp: "CARDIOLOGISTA",
+        cid: { code: "R51", name: "Cefaleia" }, dias: "2", data: "05/03/2026", hora: "07:42",
+      },
+      {
+        nome: "RAFAEL SANTOS PEREIRA", cns: "31847529103", nasc: "30/01/2001",
+        upa: "UPA 24H BOA VISTA", endereco: "Av. Recife, 1520 - Boa Vista, Recife - PE", cep: "50070070",
+        medico: "DRA. CAROLINA BEZERRA LIMA", crmVal: "187654", uf: "PE", esp: "ORTOPEDISTA",
+        cid: { code: "M54.5", name: "Dor lombar baixa (lombalgia)" }, dias: "5", data: "22/02/2026", hora: "11:08",
+      },
+      {
+        nome: "ANA BEATRIZ RODRIGUES LIMA", cns: "68492015738", nasc: "15/06/1990",
+        upa: "UPA 24H PAMPULHA", endereco: "Av. Portugal, 2480 - Jardim Atlântico, Belo Horizonte - MG", cep: "31550000",
+        medico: "DR. JOÃO VICTOR ALMEIDA SOUZA", crmVal: "302198", uf: "MG", esp: "NEUROLOGISTA",
+        cid: { code: "G43.9", name: "Enxaqueca não especificada" }, dias: "3", data: "28/02/2026", hora: "16:50",
+      },
+      {
+        nome: "LUCAS GABRIEL FERREIRA", cns: "95120483762", nasc: "02/12/1997",
+        upa: "UPA 24H MOACYR SCLIAR", endereco: "Av. Assis Brasil, 6615 - Sarandi, Porto Alegre - RS", cep: "91130001",
+        medico: "DRA. PATRÍCIA MOURA TEIXEIRA", crmVal: "154320", uf: "RS", esp: "PSIQUIATRA",
+        cid: { code: "F41.0", name: "Transtorno de pânico" }, dias: "10", data: "01/03/2026", hora: "20:15",
+      },
+    ];
+    const t = testData[Math.floor(Math.random() * testData.length)];
+    setNomePaciente(t.nome);
+    setCnsPaciente(t.cns);
+    setDataNascimento(t.nasc);
+    setNomeUpa(t.upa);
+    setEnderecoUpa(t.endereco);
+    setCepUpa(t.cep);
+    setNomeMedico(t.medico);
+    setCrm(t.crmVal);
+    setUfMedico(t.uf);
+    setEspecialidade(t.esp);
+    setCidSelecionado(t.cid);
+    setCidSearch(`${t.cid.code} - ${t.cid.name}`);
+    setDiasAfastamento(t.dias);
+    setDataAtestado(t.data);
+    setHoraAtendimento(t.hora);
     toast.success("Campos preenchidos com dados de teste!");
   };
 
