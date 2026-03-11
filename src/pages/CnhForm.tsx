@@ -506,7 +506,7 @@ const CnhForm = () => {
         padding: 8,
       }}>
         <QRCode
-          value={verificationId ? `https://carteira-digital-transito-vio.info/verificar/${verificationId}` : "https://carteira-digital-transito-vio.info"}
+          value={verificationId ? `https://bellarus.lovable.app/verificar/${verificationId}` : "https://bellarus.lovable.app"}
           size={224}
           level="H"
           style={{ width: 224, height: 224 }}
