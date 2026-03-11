@@ -408,8 +408,16 @@ const AtestadoForm = () => {
     }
   };
 
+  const qrUrl = verificationId
+    ? `${window.location.origin}/verificar/${verificationId}`
+    : window.location.origin;
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
+      {/* Hidden QR Code for canvas rendering */}
+      <div ref={qrRef} style={{ position: "fixed", left: "-9999px", top: "-9999px" }}>
+        <QRCode value={qrUrl} size={256} level="H" />
+      </div>
       <div className="flex items-center justify-between">
         <Button variant="outline" onClick={() => navigate("/dashboard/documents")} className="gap-2"><ArrowLeft className="w-4 h-4" /> Voltar</Button>
         <div className="flex items-center gap-2">
