@@ -272,6 +272,7 @@ const AtestadoForm = () => {
   const fillTest = () => {
     setNomePaciente("DAIANI MANSANARI DOS SANTOS");
     setCnsPaciente("40274054809");
+    setDataNascimento("12/05/1995");
     setNomeUpa("UPA 24H ITAQUERA - CONSULTÓRIOS");
     setEnderecoUpa("Av. Miguel Ignácio Curi, 44 - Arthur Alvim, São Paulo - SP");
     setCepUpa("08295005");
