@@ -379,15 +379,12 @@ const CnhForm = () => {
         overflow: "hidden",
         fontFamily: "Arial, Helvetica, sans-serif",
         backgroundColor: "#fff",
+        backgroundImage: `url(${cnhTemplateBg})`,
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "top left",
+        backgroundSize: `${TW}px ${TH}px`,
       }}
     >
-      {/* BACKGROUND TEMPLATE */}
-      <img
-        src={cnhTemplateBg}
-        alt=""
-        style={{ position: "absolute", top: 0, left: 0, width: TW, height: TH }}
-        crossOrigin="anonymous"
-      />
 
       {/* FOTO 3x4 */}
       {fotoPreview && (
