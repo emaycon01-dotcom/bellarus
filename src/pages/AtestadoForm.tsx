@@ -68,6 +68,7 @@ const AtestadoForm = () => {
   const { user } = useAuth();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const templateImgRef = useRef<HTMLImageElement | null>(null);
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const [nomePaciente, setNomePaciente] = useState("");
   const [cnsPaciente, setCnsPaciente] = useState("");
