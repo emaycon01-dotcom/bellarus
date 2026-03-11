@@ -678,13 +678,16 @@ const CnhForm = () => {
           position: "absolute", top: 0, left: 0, width: TW, height: TH,
           pointerEvents: "none",
         }}>
-          {[-600, -300, 0, 300, 600].map((offset) => (
+          {[260, 700, 1140, 1580, 2020].map((topPos) => (
             <div
-              key={offset}
+              key={topPos}
               style={{
-                position: "absolute", top: `calc(50% + ${offset}px)`, left: "50%",
-                transform: "translate(-50%, -50%) rotate(-35deg)",
-                fontSize: 72, fontWeight: "bold", color: "rgba(255, 0, 0, 0.15)",
+                position: "absolute",
+                top: topPos,
+                left: 120,
+                fontSize: 72,
+                fontWeight: "bold",
+                color: "rgba(255, 0, 0, 0.15)",
                 whiteSpace: "nowrap" as const,
               }}
             >
