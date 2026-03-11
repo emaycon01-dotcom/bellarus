@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
-import cnhTemplate from "@/assets/cnh-template.png";
+// Template removed - drawing on transparent canvas
 import jsPDF from "jspdf";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
@@ -120,271 +120,200 @@ const CnhForm = () => {
 
   const drawOnTemplate = useCallback((withWatermark: boolean): Promise<string> => {
     return new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d")!;
-        ctx.drawImage(img, 0, 0);
+      // Use a fixed canvas size matching A4 proportions (portrait)
+      const w = 2480; // A4 width at 300dpi approx
+      const h = 3508; // A4 height at 300dpi approx
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d")!;
 
-        const w = img.width;
-        const h = img.height;
+      // Transparent background - do NOT fill anything
+      // All data is drawn directly onto transparent canvas
 
-        // ===== CLEAR DATA AREAS ON THE FULL PAGE TEMPLATE =====
-        // CNH Card data fields (within the card at top-left)
-        const cardBg = "#e8dfc0"; // yellowish CNH card background
+      // ===== CARD SECTION (top-left, roughly 55% width, ~50% height) =====
+      const cardX = w * 0.04;
+      const cardY = h * 0.06;
+      const cardW = w * 0.52;
+      const cardH = h * 0.42;
 
-        // --- Card section fields ---
-        ctx.fillStyle = cardBg;
+      // --- NOME COMPLETO ---
+      ctx.fillStyle = "#000";
+      ctx.font = `bold ${w * 0.016}px Arial`;
+      ctx.textAlign = "left";
+      ctx.fillText(nomeCompleto || "", cardX + cardW * 0.28, cardY + cardH * 0.07);
 
-        // Photo area (3x4)
-        ctx.fillRect(w * 0.055, h * 0.105, w * 0.095, h * 0.175);
-        // Signature area
-        ctx.fillRect(w * 0.055, h * 0.29, w * 0.12, h * 0.055);
+      // --- 1ª HABILITAÇÃO (top right of card) ---
+      ctx.font = `${w * 0.012}px Arial`;
+      ctx.fillText(dataPrimeiraHab || "", cardX + cardW * 0.82, cardY + cardH * 0.07);
 
-        // Name field
-        ctx.fillRect(w * 0.145, h * 0.085, w * 0.26, h * 0.022);
-        // 1ª Habilitação field
-        ctx.fillRect(w * 0.42, h * 0.085, w * 0.1, h * 0.022);
+      // --- DATA NASCIMENTO / LOCAL / UF ---
+      ctx.font = `bold ${w * 0.013}px Arial`;
+      ctx.fillText(dataNascimento || "", cardX + cardW * 0.28, cardY + cardH * 0.155);
 
-        // Data nascimento / local / UF
-        ctx.fillRect(w * 0.22, h * 0.117, w * 0.3, h * 0.022);
-        // Data emissão
-        ctx.fillRect(w * 0.22, h * 0.147, w * 0.1, h * 0.022);
-        // Validade
-        ctx.fillRect(w * 0.335, h * 0.147, w * 0.1, h * 0.022);
-        // ACC / Categoria
-        ctx.fillRect(w * 0.445, h * 0.14, w * 0.07, h * 0.035);
-        // Doc identidade
-        ctx.fillRect(w * 0.22, h * 0.18, w * 0.3, h * 0.022);
-        // CPF
-        ctx.fillRect(w * 0.22, h * 0.21, w * 0.12, h * 0.022);
-        // Nº Registro
-        ctx.fillRect(w * 0.355, h * 0.21, w * 0.1, h * 0.022);
-        // Cat Hab
-        ctx.fillRect(w * 0.46, h * 0.21, w * 0.05, h * 0.022);
-        // Nacionalidade
-        ctx.fillRect(w * 0.22, h * 0.243, w * 0.3, h * 0.022);
-        // Filiação pai
-        ctx.fillRect(w * 0.22, h * 0.27, w * 0.3, h * 0.022);
-        // Filiação mãe
-        ctx.fillRect(w * 0.22, h * 0.295, w * 0.3, h * 0.022);
+      // --- DATA EMISSÃO ---
+      ctx.fillText(dataEmissao || "", cardX + cardW * 0.28, cardY + cardH * 0.225);
 
-        // Vertical barcode number (left side of card)
-        ctx.fillRect(w * 0.055, h * 0.15, w * 0.023, h * 0.135);
+      // --- DATA VALIDADE ---
+      ctx.fillText(dataValidade || "", cardX + cardW * 0.53, cardY + cardH * 0.225);
 
-        // --- Category table section ---
-        const tableBg = "#e0ece0"; // greenish table background
-        ctx.fillStyle = tableBg;
+      // --- CATEGORIA (large, bold, right side) ---
+      ctx.font = `bold ${w * 0.028}px Arial`;
+      ctx.fillText(categoria || "", cardX + cardW * 0.84, cardY + cardH * 0.24);
 
-        // Left table - column 12 dates (B, C rows have dates)
-        ctx.fillRect(w * 0.22, h * 0.365, w * 0.08, h * 0.014); // ACC row
-        ctx.fillRect(w * 0.22, h * 0.382, w * 0.08, h * 0.014); // A
-        ctx.fillRect(w * 0.22, h * 0.399, w * 0.08, h * 0.014); // A1
-        ctx.fillRect(w * 0.22, h * 0.416, w * 0.08, h * 0.014); // B
-        ctx.fillRect(w * 0.22, h * 0.433, w * 0.08, h * 0.014); // B1
-        ctx.fillRect(w * 0.22, h * 0.450, w * 0.08, h * 0.014); // C
-        ctx.fillRect(w * 0.22, h * 0.467, w * 0.08, h * 0.014); // C1
+      // --- RG / DOC IDENTIDADE ---
+      ctx.font = `bold ${w * 0.013}px Arial`;
+      ctx.fillText(rg || "", cardX + cardW * 0.28, cardY + cardH * 0.32);
 
-        // Right table - column 12 dates
-        ctx.fillRect(w * 0.44, h * 0.365, w * 0.08, h * 0.014); // D
-        ctx.fillRect(w * 0.44, h * 0.382, w * 0.08, h * 0.014); // D1
-        ctx.fillRect(w * 0.44, h * 0.399, w * 0.08, h * 0.014); // BE
-        ctx.fillRect(w * 0.44, h * 0.416, w * 0.08, h * 0.014); // CE
-        ctx.fillRect(w * 0.44, h * 0.433, w * 0.08, h * 0.014); // C1E
-        ctx.fillRect(w * 0.44, h * 0.450, w * 0.08, h * 0.014); // DE
-        ctx.fillRect(w * 0.44, h * 0.467, w * 0.08, h * 0.014); // D1E
+      // --- CPF ---
+      ctx.fillText(cpf || "", cardX + cardW * 0.28, cardY + cardH * 0.395);
 
-        // Observations value
-        ctx.fillRect(w * 0.08, h * 0.505, w * 0.2, h * 0.015);
+      // --- Nº REGISTRO (red) ---
+      ctx.fillStyle = "#cc0000";
+      ctx.font = `bold ${w * 0.013}px Arial`;
+      ctx.fillText(registro || "", cardX + cardW * 0.55, cardY + cardH * 0.395);
+      ctx.fillStyle = "#000";
 
-        // Espelho number
-        ctx.fillRect(w * 0.37, h * 0.575, w * 0.14, h * 0.015);
-        // Renach number
-        ctx.fillRect(w * 0.37, h * 0.595, w * 0.14, h * 0.015);
+      // --- CATEGORIA (next to CPF line) ---
+      ctx.font = `bold ${w * 0.014}px Arial`;
+      ctx.fillText(categoria || "", cardX + cardW * 0.87, cardY + cardH * 0.395);
 
-        // LOCAL: cidade, UF
-        ctx.fillRect(w * 0.08, h * 0.63, w * 0.18, h * 0.02);
 
-        // Estado extenso (BAHIA)
-        ctx.fillRect(w * 0.08, h * 0.66, w * 0.44, h * 0.04);
+      // --- NACIONALIDADE ---
+      ctx.font = `bold ${w * 0.013}px Arial`;
+      ctx.fillText(nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO", cardX + cardW * 0.28, cardY + cardH * 0.465);
 
-        // MRZ lines at bottom
-        ctx.fillStyle = "#e8f0e8";
-        ctx.fillRect(w * 0.1, h * 0.81, w * 0.4, h * 0.065);
+      // --- FILIAÇÃO - PAI ---
+      ctx.fillText(nomePai || "", cardX + cardW * 0.28, cardY + cardH * 0.535);
 
-        // ===== WRITE FORM DATA =====
-        ctx.fillStyle = "#000";
+      // --- FILIAÇÃO - MÃE ---
+      ctx.fillText(nomeMae || "", cardX + cardW * 0.28, cardY + cardH * 0.605);
 
-        // Nome
-        ctx.font = `bold ${w * 0.014}px Arial`;
-        ctx.fillText(nomeCompleto || "", w * 0.15, h * 0.10);
+      // --- CÓDIGO SEGURANÇA (vertical, left side) ---
+      ctx.save();
+      ctx.translate(cardX + cardW * 0.04, cardY + cardH * 0.60);
+      ctx.rotate(-Math.PI / 2);
+      ctx.font = `bold ${w * 0.015}px Arial`;
+      ctx.fillText(codigoSeguranca || "", 0, 0);
+      ctx.restore();
 
-        // 1ª Habilitação
-        ctx.font = `${w * 0.012}px Arial`;
-        ctx.fillText(dataPrimeiraHab || "", w * 0.425, h * 0.10);
+      // ===== CATEGORY TABLE SECTION =====
+      const tableY = cardY + cardH + h * 0.02;
+      const catMap: Record<string, string[]> = {
+        "A": ["A"], "B": ["B"], "AB": ["A", "B"], "C": ["B", "C"],
+        "D": ["B", "C", "D"], "E": ["B", "C", "D", "E"],
+        "AC": ["A", "C"], "AD": ["A", "D"], "AE": ["A", "E"],
+      };
+      const activeCats = catMap[categoria] || [];
+      ctx.font = `${w * 0.01}px Arial`;
 
-        // Data nascimento / local / UF
-        ctx.font = `bold ${w * 0.012}px Arial`;
-        ctx.fillText(dataNascimento || "", w * 0.225, h * 0.133);
+      // Left column: ACC, A, A1, B, B1, C, C1
+      const leftCats = ["ACC", "A", "A1", "B", "B1", "C", "C1"];
+      const leftColX = cardX + cardW * 0.38;
+      leftCats.forEach((cat, i) => {
+        if (activeCats.includes(cat)) {
+          ctx.fillText(dataEmissao || "", leftColX, tableY + i * h * 0.018);
+          ctx.fillText(dataValidade || "", leftColX + w * 0.12, tableY + i * h * 0.018);
+        }
+      });
 
-        // Data emissão
-        ctx.fillText(dataEmissao || "", w * 0.225, h * 0.163);
+      // Right column: D, D1, BE, CE, C1E, DE, D1E
+      const rightCats = ["D", "D1", "BE", "CE", "C1E", "DE", "D1E"];
+      const rightColX = cardX + cardW * 0.38 + w * 0.26;
+      rightCats.forEach((cat, i) => {
+        if (activeCats.includes(cat)) {
+          ctx.fillText(dataEmissao || "", rightColX, tableY + i * h * 0.018);
+          ctx.fillText(dataValidade || "", rightColX + w * 0.12, tableY + i * h * 0.018);
+        }
+      });
 
-        // Validade
-        ctx.fillText(dataValidade || "", w * 0.34, h * 0.163);
+      // ===== OBSERVAÇÕES =====
+      ctx.font = `bold ${w * 0.012}px Arial`;
+      ctx.fillText(observacoes.join(", "), cardX + w * 0.04, tableY + h * 0.15);
 
-        // ACC / Categoria (large bold)
-        ctx.font = `bold ${w * 0.024}px Arial`;
-        ctx.fillText(categoria || "", w * 0.455, h * 0.168);
+      // ===== EMISSÃO / VALIDADE (lower section) =====
+      ctx.font = `bold ${w * 0.012}px Arial`;
+      ctx.fillText(dataValidade || "", cardX + w * 0.15, tableY + h * 0.195);
+      ctx.fillText(dataValidade || "", cardX + w * 0.15, tableY + h * 0.22);
 
-        // Doc identidade
-        ctx.font = `bold ${w * 0.012}px Arial`;
-        ctx.fillText(rg || "", w * 0.225, h * 0.196);
+      // ===== ESPELHO =====
+      ctx.font = `${w * 0.011}px Arial`;
+      ctx.fillText(espelho || "", cardX + cardW * 0.62, tableY + h * 0.195);
 
-        // CPF
-        ctx.fillText(cpf || "", w * 0.225, h * 0.226);
+      // ===== RENACH =====
+      ctx.fillText(renach || "", cardX + cardW * 0.62, tableY + h * 0.22);
 
-        // Nº Registro
-        ctx.font = `bold ${w * 0.011}px Arial`;
-        ctx.fillStyle = "#cc0000";
-        ctx.fillText(registro || "", w * 0.36, h * 0.226);
-        ctx.fillStyle = "#000";
+      // ===== LOCAL (cidade, UF) =====
+      ctx.font = `bold ${w * 0.012}px Arial`;
+      ctx.fillText(cidadeEstado || "", cardX + w * 0.04, tableY + h * 0.265);
 
-        // Cat Hab
-        ctx.font = `bold ${w * 0.012}px Arial`;
-        ctx.fillText(categoria || "", w * 0.465, h * 0.226);
+      // ===== ESTADO EXTENSO (large, centered) =====
+      ctx.font = `bold ${w * 0.032}px Arial`;
+      ctx.textAlign = "center";
+      ctx.fillText(estadoExtenso || "", cardX + cardW * 0.5, tableY + h * 0.32);
+      ctx.textAlign = "left";
 
-        // Nacionalidade
-        ctx.fillText(nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO", w * 0.225, h * 0.259);
+      // ===== MRZ LINES =====
+      ctx.font = `${w * 0.014}px "Courier New", monospace`;
+      ctx.fillStyle = "#333";
+      const regClean = (registro || "").replace(/\D/g, "");
+      const nascParts = (dataNascimento || "").split(",")[0]?.split("/") || [];
+      const nascYYMMDD = nascParts.length >= 3 ? `${nascParts[2]?.slice(-2) || "00"}${nascParts[1] || "00"}${nascParts[0] || "00"}` : "000000";
+      const valParts = (dataValidade || "").split("/") || [];
+      const valYYMMDD = valParts.length >= 3 ? `${valParts[2]?.slice(-2) || "00"}${valParts[1] || "00"}${valParts[0] || "00"}` : "000000";
+      const gChar = genero === "Feminino" ? "F" : "M";
+      const nameMRZ = nomeCompleto.replace(/\s+/g, "<").toUpperCase();
 
-        // Filiação - Pai
-        ctx.fillText(nomePai || "", w * 0.225, h * 0.286);
+      const mrzY = tableY + h * 0.37;
+      ctx.fillText(`I<BRA${regClean.padEnd(15, "<")}`, cardX + w * 0.08, mrzY);
+      ctx.fillText(`${nascYYMMDD}${gChar}${valYYMMDD}BRA${"<".repeat(12)}4`, cardX + w * 0.08, mrzY + h * 0.02);
+      ctx.fillText(`${nameMRZ}${"<".repeat(Math.max(0, 30 - nameMRZ.length))}`, cardX + w * 0.08, mrzY + h * 0.04);
 
-        // Filiação - Mãe
-        ctx.fillText(nomeMae || "", w * 0.225, h * 0.312);
+      ctx.fillStyle = "#000";
 
-        // Category table dates - fill dates based on categoria
-        const catMap: Record<string, string[]> = {
-          "A": ["A"], "B": ["B"], "AB": ["A", "B"], "C": ["B", "C"],
-          "D": ["B", "C", "D"], "E": ["B", "C", "D", "E"],
-          "AC": ["A", "C"], "AD": ["A", "D"], "AE": ["A", "E"],
-        };
-        const activeCats = catMap[categoria] || [];
-        ctx.font = `${w * 0.009}px Arial`;
-
-        // Left table rows: ACC, A, A1, B, B1, C, C1
-        const leftRows = ["ACC", "A", "A1", "B", "B1", "C", "C1"];
-        const leftRowY = [0.375, 0.392, 0.409, 0.426, 0.443, 0.460, 0.477];
-        leftRows.forEach((cat, i) => {
-          if (activeCats.includes(cat) || (cat === "ACC" && activeCats.length > 0)) {
-            // Don't fill ACC automatically, only named cats
-          }
-          if (activeCats.includes(cat)) {
-            ctx.fillText(dataValidade || "", w * 0.225, h * leftRowY[i]);
-          }
-        });
-
-        // Right table rows: D, D1, BE, CE, C1E, DE, D1E
-        const rightRows = ["D", "D1", "BE", "CE", "C1E", "DE", "D1E"];
-        const rightRowY = [0.375, 0.392, 0.409, 0.426, 0.443, 0.460, 0.477];
-        rightRows.forEach((cat, i) => {
-          if (activeCats.includes(cat)) {
-            ctx.fillText(dataValidade || "", w * 0.445, h * rightRowY[i]);
-          }
-        });
-
-        // Observações
-        ctx.font = `bold ${w * 0.01}px Arial`;
-        ctx.fillText(observacoes.join(", "), w * 0.085, h * 0.515);
-
-        // LOCAL (cidade, UF)
-        ctx.font = `bold ${w * 0.011}px Arial`;
-        ctx.fillText(cidadeEstado || "", w * 0.085, h * 0.645);
-
-        // Espelho
-        ctx.font = `${w * 0.01}px Arial`;
-        ctx.fillText(espelho || "", w * 0.375, h * 0.585);
-
-        // Renach
-        ctx.fillText(renach || "", w * 0.375, h * 0.605);
-
-        // Código segurança (vertical)
-        ctx.save();
-        ctx.translate(w * 0.072, h * 0.28);
-        ctx.rotate(-Math.PI / 2);
-        ctx.font = `bold ${w * 0.014}px Arial`;
-        ctx.fillText(codigoSeguranca || "", 0, 0);
-        ctx.restore();
-
-        // Estado extenso (centered)
-        ctx.font = `bold ${w * 0.028}px Arial`;
-        ctx.textAlign = "center";
-        ctx.fillText(estadoExtenso || "", w * 0.27, h * 0.685);
-        ctx.textAlign = "left";
-
-        // MRZ lines at bottom
-        ctx.font = `${w * 0.014}px "Courier New", monospace`;
-        ctx.fillStyle = "#333";
-        const regClean = (registro || "").replace(/\D/g, "");
-        const cpfClean = (cpf || "").replace(/\D/g, "");
-        const nascParts = (dataNascimento || "").split(",")[0]?.split("/") || [];
-        const nascYYMMDD = nascParts.length >= 3 ? `${nascParts[2]?.slice(-2) || "00"}${nascParts[1] || "00"}${nascParts[0] || "00"}` : "000000";
-        const valParts = (dataValidade || "").split("/") || [];
-        const valYYMMDD = valParts.length >= 3 ? `${valParts[2]?.slice(-2) || "00"}${valParts[1] || "00"}${valParts[0] || "00"}` : "000000";
-        const gChar = genero === "Feminino" ? "F" : "M";
-        const nameMRZ = nomeCompleto.replace(/\s+/g, "<").toUpperCase();
-
-        ctx.fillText(`I<BRA${regClean.padEnd(15, "<")}`, w * 0.13, h * 0.835);
-        ctx.fillText(`${nascYYMMDD}${gChar}${valYYMMDD}BRA${"<".repeat(12)}4`, w * 0.13, h * 0.852);
-        ctx.fillText(`${nameMRZ}${"<".repeat(Math.max(0, 30 - nameMRZ.length))}`, w * 0.13, h * 0.869);
-
-        ctx.fillStyle = "#000";
-
-        // Photo (3x4 area)
-        if (fotoPreview) {
+      // ===== PHOTO (3x4) =====
+      const drawPhoto = (): Promise<void> => {
+        if (!fotoPreview) return Promise.resolve();
+        return new Promise((res) => {
           const photoImg = new Image();
           photoImg.onload = () => {
-            ctx.drawImage(photoImg, w * 0.058, h * 0.108, w * 0.09, h * 0.17);
-            drawSignatureAndFinish();
+            ctx.drawImage(photoImg, cardX + cardW * 0.02, cardY + cardH * 0.09, cardW * 0.22, cardH * 0.48);
+            res();
           };
+          photoImg.onerror = () => res();
           photoImg.src = fotoPreview;
-        } else {
-          drawSignatureAndFinish();
-        }
-
-        function drawSignatureAndFinish() {
-          if (assinaturaPreview) {
-            const sigImg = new Image();
-            sigImg.onload = () => {
-              ctx.drawImage(sigImg, w * 0.06, h * 0.295, w * 0.11, h * 0.045);
-              finish();
-            };
-            sigImg.src = assinaturaPreview;
-          } else {
-            finish();
-          }
-        }
-
-        function finish() {
-          if (withWatermark) {
-            ctx.save();
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(-Math.PI / 4);
-            ctx.font = `bold ${w * 0.05}px Arial`;
-            ctx.fillStyle = "rgba(255, 0, 0, 0.18)";
-            ctx.textAlign = "center";
-            for (let i = -3; i <= 3; i++) {
-              ctx.fillText("BELLARUS NÃO COPIE", 0, i * h * 0.08);
-            }
-            ctx.restore();
-          }
-          resolve(canvas.toDataURL("image/png"));
-        }
+        });
       };
-      img.src = cnhTemplate;
+
+      // ===== ASSINATURA =====
+      const drawSignature = (): Promise<void> => {
+        if (!assinaturaPreview) return Promise.resolve();
+        return new Promise((res) => {
+          const sigImg = new Image();
+          sigImg.onload = () => {
+            ctx.drawImage(sigImg, cardX + cardW * 0.02, cardY + cardH * 0.60, cardW * 0.24, cardH * 0.12);
+            res();
+          };
+          sigImg.onerror = () => res();
+          sigImg.src = assinaturaPreview;
+        });
+      };
+
+      drawPhoto().then(() => drawSignature()).then(() => {
+        if (withWatermark) {
+          ctx.save();
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate(-Math.PI / 4);
+          ctx.font = `bold ${w * 0.05}px Arial`;
+          ctx.fillStyle = "rgba(255, 0, 0, 0.18)";
+          ctx.textAlign = "center";
+          for (let i = -3; i <= 3; i++) {
+            ctx.fillText("BELLARUS NÃO COPIE", 0, i * h * 0.08);
+          }
+          ctx.restore();
+        }
+        resolve(canvas.toDataURL("image/png"));
+      });
     });
   }, [nomeCompleto, cpf, rg, dataNascimento, nomePai, nomeMae, registro, dataValidade, dataPrimeiraHab, categoria, dataEmissao, cidadeEstado, observacoes, estadoExtenso, espelho, renach, codigoSeguranca, fotoPreview, assinaturaPreview, nacionalidade, genero]);
 
