@@ -306,8 +306,46 @@ const AtestadoForm = () => {
   };
 
   const handleConfirm = async () => {
+    if (!user) { toast.error("Faça login para continuar."); return; }
     setGenerating(true);
     try {
+      // Check and debit credits
+      const { data: profile } = await supabase.from("profiles").select("credits").eq("id", user.id).single();
+      if (!profile || profile.credits < 1) {
+        toast.error("Créditos insuficientes! Recarregue sua conta.");
+        setGenerating(false);
+        return;
+      }
+      const { error: creditErr } = await supabase.from("profiles").update({ credits: profile.credits - 1 }).eq("id", user.id);
+      if (creditErr) { toast.error("Erro ao debitar crédito."); setGenerating(false); return; }
+
+      // Create verification record
+      const docData = {
+        nomePaciente, cnsPaciente, dataNascimento,
+        cidCodigo: cidSelecionado?.code || "", cidNome: cidSelecionado?.name || "",
+        diasAfastamento, dataAtestado, horaAtendimento,
+        nomeUpa, enderecoUpa, cepUpa,
+        nomeMedico, crm: crm ? `CRM/${ufMedico || "SP"} ${crm}` : "",
+        especialidade, ufMedico,
+      };
+      const { data: inserted, error: vErr } = await supabase
+        .from("document_verifications")
+        .insert({
+          user_id: user.id,
+          document_type: "Atestado Médico",
+          document_name: nomePaciente || "Sem nome",
+          document_data: docData,
+          photo_url: null,
+          status: "valid",
+        } as any)
+        .select("id")
+        .single();
+      if (vErr) throw vErr;
+      setVerificationId(inserted.id);
+
+      // Wait for QR code to render with verification ID
+      await new Promise(r => setTimeout(r, 500));
+
       // Generate clean image (no watermark)
       const offscreen = document.createElement("canvas");
       drawAtestado(offscreen, false);
