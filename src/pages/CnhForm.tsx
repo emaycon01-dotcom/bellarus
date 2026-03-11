@@ -352,13 +352,26 @@ const CnhForm = () => {
         overflow: "hidden",
         fontFamily: "Arial, Helvetica, sans-serif",
         backgroundColor: "#fff",
-        backgroundImage: `url(${cnhTemplateBg})`,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "top left",
-        backgroundSize: `${TW}px ${TH}px`,
       }}
     >
-
+      {/* TEMPLATE PNG FIXO 1653x2339 (sem background CSS) */}
+      <img
+        src={cnhTemplateBg}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        crossOrigin="anonymous"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: TW,
+          height: TH,
+          pointerEvents: "none",
+          userSelect: "none",
+          zIndex: 0,
+        }}
+      />
       {/* FOTO 3x4 */}
       {fotoPreview && (
         <img
