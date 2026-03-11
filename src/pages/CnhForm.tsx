@@ -256,9 +256,13 @@ const CnhForm = () => {
   };
 
   /* =========================================================
-   * DOCUMENT CONTAINER – inline JSX (NOT a nested component)
-   * All coordinates are fixed px values calibrated to 794x1123
+   * DOCUMENT CONTAINER – 794×1123 px fixed, all absolute px
+   * Calibrated to match official CNH Digital template
    * ========================================================= */
+  const verificationUrl = verificationId
+    ? `${window.location.origin}/verificar/${verificationId}`
+    : window.location.origin;
+
   const documentJSX = (
     <div
       ref={documentRef}
@@ -270,218 +274,352 @@ const CnhForm = () => {
         overflow: "hidden",
         fontFamily: "Arial, Helvetica, sans-serif",
         backgroundColor: "#fff",
+        transform: "scale(1)",
+        transformOrigin: "top left",
       }}
     >
-      {/* Background template */}
+      {/* ─── BACKGROUND TEMPLATE ─── */}
       <img
         src={cnhTemplateBg}
         alt=""
-        style={{ position: "absolute", top: 0, left: 0, width: 794, height: 1123, objectFit: "cover" }}
+        style={{ position: "absolute", top: 0, left: 0, width: 794, height: 1123 }}
         crossOrigin="anonymous"
       />
 
-      {/* ─── PHOTO 3x4 ─── */}
+      {/* ═══════════════════════════════════════════
+       *  SEÇÃO SUPERIOR ESQUERDA (dados + foto)
+       * ═══════════════════════════════════════════ */}
+
+      {/* FOTO 3x4 */}
       {fotoPreview && (
         <img
           src={fotoPreview}
           alt="Foto"
-          style={{ position: "absolute", top: 175, left: 50, width: 93, height: 122, objectFit: "cover" }}
           crossOrigin="anonymous"
+          style={{
+            position: "absolute",
+            top: 218,
+            left: 68,
+            width: 105,
+            height: 132,
+            objectFit: "cover",
+          }}
         />
       )}
 
-      {/* ─── NOME ─── */}
-      <div style={{ position: "absolute", top: 138, left: 132, fontSize: 10, fontWeight: "bold", color: "#000", maxWidth: 260, overflow: "hidden", whiteSpace: "nowrap" as any }}>
+      {/* NOME */}
+      <div style={{
+        position: "absolute", top: 170, left: 180, fontSize: 11, fontWeight: "bold",
+        color: "#000", maxWidth: 260, overflow: "hidden", whiteSpace: "nowrap" as const,
+      }}>
         {nomeCompleto}
       </div>
 
-      {/* ─── 1ª HABILITAÇÃO ─── */}
-      <div style={{ position: "absolute", top: 138, left: 412, fontSize: 9, fontWeight: "bold", color: "#000" }}>
-        {dataPrimeiraHab}
-      </div>
-
-      {/* ─── DATA NASCIMENTO / LOCAL / UF ─── */}
-      <div style={{ position: "absolute", top: 168, left: 168, fontSize: 9, fontWeight: "bold", color: "#000", maxWidth: 280, overflow: "hidden", whiteSpace: "nowrap" as any }}>
+      {/* DATA NASCIMENTO / LOCAL / UF */}
+      <div style={{
+        position: "absolute", top: 208, left: 180, fontSize: 9, fontWeight: "bold",
+        color: "#000", maxWidth: 280, overflow: "hidden", whiteSpace: "nowrap" as const,
+      }}>
         {dataNascimento}
       </div>
 
-      {/* ─── DATA EMISSÃO ─── */}
-      <div style={{ position: "absolute", top: 200, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      {/* DATA EMISSÃO */}
+      <div style={{
+        position: "absolute", top: 258, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
+      }}>
         {dataEmissao}
       </div>
 
-      {/* ─── VALIDADE ─── */}
-      <div style={{ position: "absolute", top: 200, left: 270, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      {/* DATA VALIDADE */}
+      <div style={{
+        position: "absolute", top: 258, left: 305, fontSize: 9, fontWeight: "bold", color: "#000",
+      }}>
         {dataValidade}
       </div>
 
-      {/* ─── CATEGORIA (large, ACC area) ─── */}
-      <div style={{ position: "absolute", top: 194, left: 400, fontSize: 16, fontWeight: "bold", color: "#000" }}>
-        {categoria}
-      </div>
-
-      {/* ─── DOC IDENTIDADE / ORG EMISSOR / UF ─── */}
-      <div style={{ position: "absolute", top: 228, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      {/* DOC IDENTIDADE / ORG EMISSOR / UF */}
+      <div style={{
+        position: "absolute", top: 290, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
+      }}>
         {rg}
       </div>
 
-      {/* ─── CPF ─── */}
-      <div style={{ position: "absolute", top: 255, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      {/* CPF */}
+      <div style={{
+        position: "absolute", top: 320, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
+      }}>
         {cpf}
       </div>
 
-      {/* ─── Nº REGISTRO (red) ─── */}
-      <div style={{ position: "absolute", top: 255, left: 290, fontSize: 9, fontWeight: "bold", color: "#cc0000" }}>
+      {/* Nº REGISTRO (vermelho) */}
+      <div style={{
+        position: "absolute", top: 320, left: 330, fontSize: 9, fontWeight: "bold", color: "#cc0000",
+      }}>
         {registro}
       </div>
 
-      {/* ─── CAT HAB ─── */}
-      <div style={{ position: "absolute", top: 255, left: 400, fontSize: 9, fontWeight: "bold", color: "#000" }}>
-        {categoria}
-      </div>
-
-      {/* ─── NACIONALIDADE ─── */}
-      <div style={{ position: "absolute", top: 278, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      {/* NACIONALIDADE */}
+      <div style={{
+        position: "absolute", top: 350, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
+      }}>
         {nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO"}
       </div>
 
-      {/* ─── FILIAÇÃO PAI ─── */}
-      <div style={{ position: "absolute", top: 302, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      {/* FILIAÇÃO – PAI */}
+      <div style={{
+        position: "absolute", top: 378, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
+        maxWidth: 260, overflow: "hidden", whiteSpace: "nowrap" as const,
+      }}>
         {nomePai}
       </div>
 
-      {/* ─── FILIAÇÃO MÃE ─── */}
-      <div style={{ position: "absolute", top: 318, left: 145, fontSize: 9, fontWeight: "bold", color: "#000" }}>
+      {/* FILIAÇÃO – MÃE */}
+      <div style={{
+        position: "absolute", top: 398, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
+        maxWidth: 260, overflow: "hidden", whiteSpace: "nowrap" as const,
+      }}>
         {nomeMae}
       </div>
 
-      {/* ─── ASSINATURA ─── */}
+      {/* ═══════════════════════════════════════════
+       *  1ª HABILITAÇÃO (lado direito do cabeçalho)
+       * ═══════════════════════════════════════════ */}
+      <div style={{
+        position: "absolute", top: 170, left: 468, fontSize: 9, fontWeight: "bold", color: "#000",
+      }}>
+        {dataPrimeiraHab}
+      </div>
+
+      {/* CATEGORIA (grande, ao lado da 1ª hab) */}
+      <div style={{
+        position: "absolute", top: 245, left: 468, fontSize: 16, fontWeight: "bold", color: "#000",
+      }}>
+        {categoria}
+      </div>
+
+      {/* CAT HAB (repetição menor) */}
+      <div style={{
+        position: "absolute", top: 320, left: 468, fontSize: 9, fontWeight: "bold", color: "#000",
+      }}>
+        {categoria}
+      </div>
+
+      {/* ═══════════════════════════════════════════
+       *  ASSINATURA
+       * ═══════════════════════════════════════════ */}
       {assinaturaPreview && (
         <img
           src={assinaturaPreview}
           alt="Assinatura"
-          style={{ position: "absolute", top: 335, left: 55, width: 100, height: 32, objectFit: "contain" }}
           crossOrigin="anonymous"
+          style={{
+            position: "absolute",
+            top: 418,
+            left: 68,
+            width: 110,
+            height: 35,
+            objectFit: "contain",
+          }}
         />
       )}
 
-      {/* ─── CÓDIGO SEGURANÇA (vertical left, top) ─── */}
+      {/* ═══════════════════════════════════════════
+       *  CÓDIGO SEGURANÇA (vertical esquerda, topo)
+       * ═══════════════════════════════════════════ */}
       <div style={{
-        position: "absolute", top: 130, left: 18, fontSize: 8, fontWeight: "bold", color: "#000",
-        writingMode: "vertical-rl" as any, transform: "rotate(180deg)", letterSpacing: 1,
+        position: "absolute", top: 160, left: 32, fontSize: 8, fontWeight: "bold", color: "#000",
+        writingMode: "vertical-rl" as const, transform: "rotate(180deg)", letterSpacing: 1,
       }}>
         {codigoSeguranca}
       </div>
 
-      {/* ─── CATEGORY TABLE LEFT (ACC, A, A1, B, B1, C, C1) ─── */}
+      {/* ═══════════════════════════════════════════
+       *  SEÇÃO CENTRAL – TABELA DE CATEGORIAS
+       * ═══════════════════════════════════════════ */}
+
+      {/* Categorias lado esquerdo (ACC, A, A1, B, B1, C, C1) */}
       {leftCats.map((cat, i) => {
         const isActive = cat === "ACC" ? activeCats.length > 0 : activeCats.includes(cat);
         if (!isActive) return null;
         return (
           <div key={`left-${cat}`} style={{
-            position: "absolute", top: 398 + i * 21, left: 200, fontSize: 8, color: "#000",
+            position: "absolute", top: 480 + i * 20, left: 245, fontSize: 8, color: "#000",
           }}>
             {dataValidade}
           </div>
         );
       })}
 
-      {/* ─── CATEGORY TABLE RIGHT (D, D1, BE, CE, C1E, DE, D1E) ─── */}
+      {/* Categorias lado direito (D, D1, BE, CE, C1E, DE, D1E) */}
       {rightCats.map((cat, i) => {
         const isActive = activeCats.includes(cat);
         if (!isActive) return null;
         return (
           <div key={`right-${cat}`} style={{
-            position: "absolute", top: 398 + i * 21, left: 420, fontSize: 8, color: "#000",
+            position: "absolute", top: 480 + i * 20, left: 420, fontSize: 8, color: "#000",
           }}>
             {dataValidade}
           </div>
         );
       })}
 
-      {/* ─── 12 OBSERVAÇÕES ─── */}
-      <div style={{ position: "absolute", top: 545, left: 70, fontSize: 8, fontWeight: "bold", color: "#000" }}>
+      {/* 12 OBSERVAÇÕES */}
+      <div style={{
+        position: "absolute", top: 635, left: 100, fontSize: 8, fontWeight: "bold", color: "#000",
+      }}>
         {observacoes.join(", ")}
       </div>
 
-      {/* ─── ASSINADO DIGITALMENTE ─── */}
-      <div style={{ position: "absolute", top: 592, left: 200, fontSize: 7, color: "#000", textAlign: "center" as any }}>
+      {/* VALIDADE (seção central) */}
+      <div style={{
+        position: "absolute", top: 665, left: 245, fontSize: 9, fontWeight: "bold", color: "#000",
+      }}>
+        {dataValidade}
+      </div>
+
+      {/* DATA VALIDADE (seção central repetição) */}
+      <div style={{
+        position: "absolute", top: 690, left: 245, fontSize: 9, fontWeight: "bold", color: "#000",
+      }}>
+        {dataValidade}
+      </div>
+
+      {/* ═══════════════════════════════════════════
+       *  SEÇÃO INFERIOR ESQUERDA
+       * ═══════════════════════════════════════════ */}
+
+      {/* ASSINADO DIGITALMENTE */}
+      <div style={{
+        position: "absolute", top: 735, left: 130, width: 240, fontSize: 8,
+        color: "#000", textAlign: "center" as const, fontWeight: "bold",
+      }}>
         ASSINADO DIGITALMENTE
       </div>
-      <div style={{ position: "absolute", top: 605, left: 155, fontSize: 7, color: "#000", textAlign: "center" as any }}>
+      <div style={{
+        position: "absolute", top: 750, left: 100, width: 300, fontSize: 7,
+        color: "#000", textAlign: "center" as const, fontWeight: "bold",
+      }}>
         DEPARTAMENTO ESTADUAL DE TRÂNSITO
       </div>
 
-      {/* ─── LOCAL ─── */}
-      <div style={{ position: "absolute", top: 633, left: 62, fontSize: 7, color: "#666" }}>
-        LOCAL
-      </div>
-      <div style={{ position: "absolute", top: 645, left: 62, fontSize: 9, fontWeight: "bold", color: "#000" }}>
-        {cidadeEstado}
-      </div>
-
-      {/* ─── ESPELHO ─── */}
-      <div style={{ position: "absolute", top: 612, left: 370, fontSize: 7, color: "#000" }}>
+      {/* ESPELHO */}
+      <div style={{
+        position: "absolute", top: 778, left: 390, fontSize: 8, color: "#000",
+      }}>
         {espelho}
       </div>
 
-      {/* ─── RENACH ─── */}
-      <div style={{ position: "absolute", top: 625, left: 370, fontSize: 7, color: "#000" }}>
+      {/* RENACH */}
+      <div style={{
+        position: "absolute", top: 796, left: 390, fontSize: 8, color: "#000",
+      }}>
         {renach}
       </div>
 
-      {/* ─── ESTADO POR EXTENSO ─── */}
+      {/* LOCAL */}
       <div style={{
-        position: "absolute", top: 670, left: 60, width: 380, fontSize: 18,
-        fontWeight: "bold", color: "#000", textAlign: "center" as any,
+        position: "absolute", top: 820, left: 68, fontSize: 7, color: "#666",
+      }}>
+        {cidadeEstado}
+      </div>
+
+      {/* ESTADO POR EXTENSO */}
+      <div style={{
+        position: "absolute", top: 850, left: 68, width: 380, fontSize: 20,
+        fontWeight: "bold", color: "#000", textAlign: "center" as const,
       }}>
         {estadoExtenso}
       </div>
 
-      {/* ─── CÓDIGO SEGURANÇA (vertical left, bottom) ─── */}
+      {/* CÓDIGO SEGURANÇA (vertical esquerda, inferior) */}
       <div style={{
-        position: "absolute", top: 450, left: 18, fontSize: 8, fontWeight: "bold", color: "#000",
-        writingMode: "vertical-rl" as any, transform: "rotate(180deg)", letterSpacing: 1,
+        position: "absolute", top: 530, left: 32, fontSize: 8, fontWeight: "bold", color: "#000",
+        writingMode: "vertical-rl" as const, transform: "rotate(180deg)", letterSpacing: 1,
       }}>
         {codigoSeguranca}
       </div>
 
-      {/* ─── QR CODE ─── */}
-      <div style={{
-        position: "absolute", top: 120, left: 510, width: 230, height: 230,
-        backgroundColor: "#fff", padding: 8, display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
+      {/* ═══════════════════════════════════════════
+       *  QR CODE – posição fixa lado direito
+       * ═══════════════════════════════════════════ */}
+      <div
+        id="qrcode"
+        style={{
+          position: "absolute",
+          top: 185,
+          right: 65,
+          width: 260,
+          height: 260,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <QRCode
-          value={verificationId ? `${window.location.origin}/verificar/${verificationId}` : `${window.location.origin}`}
-          size={214}
+          value={verificationUrl}
+          size={240}
           level="H"
-          style={{ width: 214, height: 214 }}
+          style={{ width: 240, height: 240 }}
         />
       </div>
 
-      {/* ─── MRZ LINES ─── */}
+      {/* ═══════════════════════════════════════════
+       *  TEXTO SERPRO (lado direito inferior)
+       * ═══════════════════════════════════════════ */}
       <div style={{
-        position: "absolute", top: 860, left: 100, fontSize: 12,
-        fontFamily: "'Courier New', monospace", color: "#222", lineHeight: "22px", letterSpacing: 1,
+        position: "absolute", top: 700, left: 480, width: 280, fontSize: 7,
+        color: "#333", lineHeight: "11px",
+      }}>
+        Documento assinado com certificado digital em conformidade
+        com a Medida Provisória nº 2200-2/2001. Sua validade poderá
+        ser confirmada por meio do programa Assinador Serpro.
+      </div>
+      <div style={{
+        position: "absolute", top: 748, left: 480, width: 280, fontSize: 7,
+        color: "#333", lineHeight: "11px",
+      }}>
+        As orientações para instalar o Assinador Serpro e realizar a
+        validação do documento digital estão disponíveis em:
+        https://www.serpro.gov.br/assinador-digital.
+      </div>
+
+      {/* SERPRO / SENATRAN */}
+      <div style={{
+        position: "absolute", top: 800, left: 580, fontSize: 12, fontWeight: "bold", color: "#000",
+      }}>
+        <span style={{ fontWeight: "bold" }}>SERPRO</span>
+        <span style={{ color: "#666" }}> / </span>
+        <span style={{ fontWeight: "bold" }}>SENATRAN</span>
+      </div>
+
+      {/* ═══════════════════════════════════════════
+       *  MRZ LINES (rodapé)
+       * ═══════════════════════════════════════════ */}
+      <div style={{
+        position: "absolute", top: 940, left: 68, fontSize: 13,
+        fontFamily: "'Courier New', monospace", color: "#222", lineHeight: "24px", letterSpacing: 1,
       }}>
         <div>{mrz.line1}</div>
         <div>{mrz.line2}</div>
         <div>{mrz.line3}</div>
       </div>
 
-      {/* ─── WATERMARK OVERLAY ─── */}
+      {/* ═══════════════════════════════════════════
+       *  WATERMARK OVERLAY
+       * ═══════════════════════════════════════════ */}
       {isWatermark && (
         <div style={{
           position: "absolute", top: 0, left: 0, width: 794, height: 1123,
-          display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none",
+          pointerEvents: "none",
         }}>
-          {[-200, -100, 0, 100, 200].map((offset) => (
+          {[-300, -150, 0, 150, 300].map((offset) => (
             <div
               key={offset}
               style={{
                 position: "absolute", top: `calc(50% + ${offset}px)`, left: "50%",
                 transform: "translate(-50%, -50%) rotate(-35deg)",
-                fontSize: 36, fontWeight: "bold", color: "rgba(255, 0, 0, 0.15)", whiteSpace: "nowrap",
+                fontSize: 36, fontWeight: "bold", color: "rgba(255, 0, 0, 0.15)",
+                whiteSpace: "nowrap" as const,
               }}
             >
               BELLARUS NÃO COPIE
