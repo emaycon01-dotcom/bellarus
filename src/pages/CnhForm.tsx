@@ -120,16 +120,18 @@ const CnhForm = () => {
 
   const drawOnTemplate = useCallback((withWatermark: boolean): Promise<string> => {
     return new Promise((resolve) => {
-      // Use a fixed canvas size matching A4 proportions (portrait)
-      const w = 2480; // A4 width at 300dpi approx
-      const h = 3508; // A4 height at 300dpi approx
+      const bgImg = new Image();
+      bgImg.onload = () => {
+      const w = bgImg.naturalWidth;
+      const h = bgImg.naturalHeight;
       const canvas = document.createElement("canvas");
       canvas.width = w;
       canvas.height = h;
       const ctx = canvas.getContext("2d")!;
 
-      // Transparent background - do NOT fill anything
-      // All data is drawn directly onto transparent canvas
+      // Draw template background first
+      ctx.drawImage(bgImg, 0, 0, w, h);
+
 
       // ===== CARD SECTION (top-left, roughly 55% width, ~50% height) =====
       const cardX = w * 0.04;
