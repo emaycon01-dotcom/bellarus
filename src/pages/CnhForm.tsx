@@ -156,47 +156,9 @@ const CnhForm = () => {
   // Template dimensions (fixed)
   const TW = 1653;
   const TH = 2339;
-  const TEMPLATE_WIDTH = 1653;
-  const TEMPLATE_HEIGHT = 2339;
-
-  const [templateNaturalSize, setTemplateNaturalSize] = useState({
-    width: TEMPLATE_WIDTH,
-    height: TEMPLATE_HEIGHT,
-  });
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = cnhTemplateBg;
-    img.onload = () => {
-      setTemplateNaturalSize({
-        width: img.naturalWidth || TEMPLATE_WIDTH,
-        height: img.naturalHeight || TEMPLATE_HEIGHT,
-      });
-    };
-  }, []);
-
-  type TemplateField = {
-    top: number;
-    left: number;
-    w?: number;
-    h?: number;
-    fontSize?: number;
-  };
-
-  const scaleX = TW / templateNaturalSize.width;
-  const scaleY = TH / templateNaturalSize.height;
-
-  const alignFieldToTemplate = <T extends TemplateField>(field: T): T => ({
-    ...field,
-    top: Math.round(field.top * scaleY),
-    left: Math.round(field.left * scaleX),
-    ...(field.w ? { w: Math.round(field.w * scaleX) } : {}),
-    ...(field.h ? { h: Math.round(field.h * scaleY) } : {}),
-    ...(field.fontSize ? { fontSize: Math.round(field.fontSize * scaleY) } : {}),
-  });
-
-  const alignNumberX = (value: number) => Math.round(value * scaleX);
-  const alignNumberY = (value: number) => Math.round(value * scaleY);
+  const EXPORT_DPI = 300;
+  const CSS_DPI = 96;
+  const RENDER_SCALE = EXPORT_DPI / CSS_DPI;
 
   const captureDocument = async (withWatermark: boolean): Promise<string> => {
     setIsWatermark(withWatermark);
@@ -211,7 +173,7 @@ const CnhForm = () => {
     if (!el) throw new Error("Document container not found");
 
     const canvas = await html2canvas(el, {
-      scale: 1,
+      scale: RENDER_SCALE,
       useCORS: true,
       backgroundColor: null,
       width: TW,
@@ -303,70 +265,67 @@ const CnhForm = () => {
     : window.location.origin;
 
   const baseF = {
-    foto:       { top: 290, left: 105, w: 180, h: 240 },
-    nome:       { top: 250, left: 310, fontSize: 18 },
-    primeiraHab:{ top: 250, left: 770, fontSize: 18 },
-    nascimento: { top: 310, left: 310, fontSize: 16 },
-    emissao:    { top: 375, left: 265, fontSize: 16 },
-    validade:   { top: 375, left: 480, fontSize: 16 },
-    acc:        { top: 375, left: 680, fontSize: 16 },
-    docId:      { top: 430, left: 265, fontSize: 16 },
-    cpf:        { top: 490, left: 265, fontSize: 16 },
-    registro:   { top: 490, left: 530, fontSize: 16 },
-    catHab:     { top: 490, left: 740, fontSize: 16 },
-    nacional:   { top: 540, left: 265, fontSize: 16 },
-    filiacaoPai:{ top: 590, left: 265, fontSize: 16 },
-    filiacaoMae:{ top: 620, left: 265, fontSize: 16 },
-    assinatura: { top: 670, left: 130, w: 260, h: 65 },
-    codSegSup:  { top: 270, left: 55 },
-    codSegInf:  { top: 870, left: 55 },
-    obs:        { top: 1100, left: 170 },
-    assinado:   { top: 1250, left: 250, w: 430 },
-    depto:      { top: 1275, left: 200, w: 530 },
-    local:      { top: 1340, left: 120 },
-    qr:         { top: 155, left: 870, w: 510, h: 510 },
-    serproTxt1: { top: 1080, left: 830 },
-    serproTxt2: { top: 1160, left: 830 },
-    serproLabel:{ top: 1290, left: 1080 },
-    legenda:    { top: 1470, left: 80 },
-    mrz:        { top: 1600, left: 80 },
+    foto:        { top: 290, left: 105, w: 180, h: 240 },
+    nome:        { top: 250, left: 310, w: 440, h: 22, fontSize: 18 },
+    primeiraHab: { top: 250, left: 770, w: 210, h: 22, fontSize: 18 },
+    nascimento:  { top: 310, left: 310, w: 560, h: 22, fontSize: 16 },
+    emissao:     { top: 375, left: 265, w: 180, h: 22, fontSize: 16 },
+    validade:    { top: 375, left: 480, w: 180, h: 22, fontSize: 16 },
+    acc:         { top: 375, left: 680, w: 60, h: 22, fontSize: 16 },
+    docId:       { top: 430, left: 265, w: 250, h: 22, fontSize: 16 },
+    cpf:         { top: 490, left: 265, w: 220, h: 22, fontSize: 16 },
+    registro:    { top: 490, left: 530, w: 190, h: 22, fontSize: 16 },
+    catHab:      { top: 490, left: 740, w: 80, h: 22, fontSize: 16 },
+    nacional:    { top: 540, left: 265, w: 240, h: 22, fontSize: 16 },
+    filiacaoPai: { top: 590, left: 265, w: 560, h: 22, fontSize: 16 },
+    filiacaoMae: { top: 620, left: 265, w: 560, h: 22, fontSize: 16 },
+    assinatura:  { top: 670, left: 130, w: 260, h: 65 },
+    codSegSup:   { top: 270, left: 55, w: 26, h: 420, fontSize: 13 },
+    codSegInf:   { top: 870, left: 55, w: 26, h: 420, fontSize: 13 },
+    obs:         { top: 1100, left: 170, w: 420, h: 22, fontSize: 14 },
+    assinado:    { top: 1250, left: 250, w: 430, h: 24, fontSize: 15 },
+    depto:       { top: 1275, left: 200, w: 530, h: 22, fontSize: 13 },
+    local:       { top: 1340, left: 120, w: 360, h: 20, fontSize: 13 },
+    qr:          { top: 155, left: 870, w: 510, h: 510 },
+    serproTxt1:  { top: 1080, left: 830, w: 560, h: 62, fontSize: 13 },
+    serproTxt2:  { top: 1160, left: 830, w: 560, h: 62, fontSize: 13 },
+    serproLabel: { top: 1290, left: 1080, w: 260, h: 24, fontSize: 22 },
+    legenda:     { top: 1470, left: 80, w: 1500, h: 120, fontSize: 10 },
+    mrz:         { top: 1600, left: 80, w: 1450, h: 122, fontSize: 22 },
+  } as const;
+
+  const F = {
+    ...baseF,
+    catLeftStart: 830,
+    catLeftX: 240,
+    catRightStart: 830,
+    catRightX: 610,
+    catRowH: 40,
+    catValidadeW: 150,
+    catValidadeH: 18,
+  } as const;
+
+  const fixedTextBase = {
+    fontFamily: "Arial, Helvetica, sans-serif",
+    lineHeight: 1,
+    letterSpacing: 0,
+    whiteSpace: "nowrap" as const,
+    overflow: "hidden" as const,
   };
 
-  // Field position map dynamically aligned to detected template size
-  const F = {
-    foto: alignFieldToTemplate(baseF.foto),
-    nome: alignFieldToTemplate(baseF.nome),
-    primeiraHab: alignFieldToTemplate(baseF.primeiraHab),
-    nascimento: alignFieldToTemplate(baseF.nascimento),
-    emissao: alignFieldToTemplate(baseF.emissao),
-    validade: alignFieldToTemplate(baseF.validade),
-    acc: alignFieldToTemplate(baseF.acc),
-    docId: alignFieldToTemplate(baseF.docId),
-    cpf: alignFieldToTemplate(baseF.cpf),
-    registro: alignFieldToTemplate(baseF.registro),
-    catHab: alignFieldToTemplate(baseF.catHab),
-    nacional: alignFieldToTemplate(baseF.nacional),
-    filiacaoPai: alignFieldToTemplate(baseF.filiacaoPai),
-    filiacaoMae: alignFieldToTemplate(baseF.filiacaoMae),
-    assinatura: alignFieldToTemplate(baseF.assinatura),
-    codSegSup: alignFieldToTemplate(baseF.codSegSup),
-    codSegInf: alignFieldToTemplate(baseF.codSegInf),
-    obs: alignFieldToTemplate(baseF.obs),
-    assinado: alignFieldToTemplate(baseF.assinado),
-    depto: alignFieldToTemplate(baseF.depto),
-    local: alignFieldToTemplate(baseF.local),
-    qr: alignFieldToTemplate(baseF.qr),
-    serproTxt1: alignFieldToTemplate(baseF.serproTxt1),
-    serproTxt2: alignFieldToTemplate(baseF.serproTxt2),
-    serproLabel: alignFieldToTemplate(baseF.serproLabel),
-    legenda: alignFieldToTemplate(baseF.legenda),
-    mrz: alignFieldToTemplate(baseF.mrz),
-    catLeftStart: alignNumberY(830),
-    catLeftX: alignNumberX(240),
-    catRightStart: alignNumberY(830),
-    catRightX: alignNumberX(610),
-    catRowH: alignNumberY(40),
-  } as const;
+  const fixedTextStyle = (
+    field: { top: number; left: number; w: number; h: number; fontSize: number },
+    extra: Record<string, unknown> = {},
+  ) => ({
+    position: "absolute" as const,
+    top: field.top,
+    left: field.left,
+    width: field.w,
+    height: field.h,
+    fontSize: field.fontSize,
+    ...fixedTextBase,
+    ...extra,
+  });
 
   const documentJSX = (
     <div
