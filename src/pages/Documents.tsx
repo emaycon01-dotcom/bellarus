@@ -49,7 +49,7 @@ const Documents = () => {
   const navigate = useNavigate();
 
   const routeMap: Record<string, string> = {
-    "CNH Digital (2024)": "/dashboard/documents/cnh",
+    
     "CIN (RG Digital)": "/dashboard/documents/cin",
     "Náutica PDF": "/dashboard/documents/nautica",
     "Arrais Náutica": "/dashboard/documents/nautica",

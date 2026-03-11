@@ -53,7 +53,7 @@ const App = () => (
           <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="documents" element={<Documents />} />
-            <Route path="documents/cnh" element={<CnhForm />} />
+            
             <Route path="documents/nautica" element={<NauticaForm />} />
             <Route path="documents/rg-pdf" element={<RgPdfForm />} />
             <Route path="documents/crlve" element={<CrlveForm />} />
