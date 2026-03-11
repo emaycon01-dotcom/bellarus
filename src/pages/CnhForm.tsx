@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
-import cnhTemplateBg from "@/assets/cnh-template-bg.jpg";
+import cnhTemplateBg from "@/assets/cnh-template-bg.png";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import QRCode from "react-qr-code";
@@ -287,10 +287,8 @@ const CnhForm = () => {
       />
 
       {/* ═══════════════════════════════════════════
-       *  SEÇÃO SUPERIOR ESQUERDA (dados + foto)
+       *  FOTO 3x4 – lado esquerdo, abaixo do cabeçalho
        * ═══════════════════════════════════════════ */}
-
-      {/* FOTO 3x4 */}
       {fotoPreview && (
         <img
           src={fotoPreview}
@@ -298,114 +296,124 @@ const CnhForm = () => {
           crossOrigin="anonymous"
           style={{
             position: "absolute",
-            top: 218,
-            left: 68,
-            width: 105,
-            height: 132,
+            top: 168,
+            left: 58,
+            width: 100,
+            height: 130,
             objectFit: "cover",
           }}
         />
       )}
 
-      {/* NOME */}
+      {/* ═══ CÓDIGO SEGURANÇA (vertical esquerda, VÁLIDA EM TODO O TERRITÓRIO NACIONAL) ═══ */}
       <div style={{
-        position: "absolute", top: 170, left: 180, fontSize: 11, fontWeight: "bold",
-        color: "#000", maxWidth: 260, overflow: "hidden", whiteSpace: "nowrap" as const,
+        position: "absolute", top: 155, left: 22, fontSize: 7, fontWeight: "bold", color: "#000",
+        writingMode: "vertical-rl" as const, transform: "rotate(180deg)", letterSpacing: 1,
+      }}>
+        {codigoSeguranca}
+      </div>
+
+      {/* ═══════════════════════════════════════════
+       *  DADOS PESSOAIS – posicionados sobre os campos do template
+       * ═══════════════════════════════════════════ */}
+
+      {/* 2 e 1 NOME E SOBRENOME */}
+      <div style={{
+        position: "absolute", top: 141, left: 168, fontSize: 10, fontWeight: "bold",
+        color: "#000", maxWidth: 280, overflow: "hidden", whiteSpace: "nowrap" as const,
       }}>
         {nomeCompleto}
       </div>
 
-      {/* DATA NASCIMENTO / LOCAL / UF */}
+      {/* 1ª HABILITAÇÃO (canto superior direito do card) */}
       <div style={{
-        position: "absolute", top: 208, left: 180, fontSize: 9, fontWeight: "bold",
-        color: "#000", maxWidth: 280, overflow: "hidden", whiteSpace: "nowrap" as const,
+        position: "absolute", top: 141, left: 430, fontSize: 10, fontWeight: "bold", color: "#000",
+      }}>
+        {dataPrimeiraHab}
+      </div>
+
+      {/* 3 DATA, LOCAL E UF DE NASCIMENTO */}
+      <div style={{
+        position: "absolute", top: 170, left: 168, fontSize: 9, fontWeight: "bold",
+        color: "#000", maxWidth: 300, overflow: "hidden", whiteSpace: "nowrap" as const,
       }}>
         {dataNascimento}
       </div>
 
-      {/* DATA EMISSÃO */}
+      {/* 4a DATA EMISSÃO */}
       <div style={{
-        position: "absolute", top: 258, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
+        position: "absolute", top: 200, left: 168, fontSize: 9, fontWeight: "bold", color: "#000",
       }}>
         {dataEmissao}
       </div>
 
-      {/* DATA VALIDADE */}
+      {/* 4b VALIDADE */}
       <div style={{
-        position: "absolute", top: 258, left: 305, fontSize: 9, fontWeight: "bold", color: "#000",
+        position: "absolute", top: 200, left: 290, fontSize: 9, fontWeight: "bold", color: "#000",
       }}>
         {dataValidade}
       </div>
 
-      {/* DOC IDENTIDADE / ORG EMISSOR / UF */}
+      {/* ACC (ao lado da validade) */}
       <div style={{
-        position: "absolute", top: 290, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
+        position: "absolute", top: 200, left: 400, fontSize: 9, fontWeight: "bold", color: "#000",
+      }}>
+        {activeCats.length > 0 ? "ACC" : ""}
+      </div>
+
+      {/* 4c DOC IDENTIDADE / ÓRG EMISSOR / UF */}
+      <div style={{
+        position: "absolute", top: 230, left: 168, fontSize: 9, fontWeight: "bold", color: "#000",
       }}>
         {rg}
       </div>
 
-      {/* CPF */}
+      {/* 4d CPF */}
       <div style={{
-        position: "absolute", top: 320, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
+        position: "absolute", top: 260, left: 168, fontSize: 9, fontWeight: "bold", color: "#000",
       }}>
         {cpf}
       </div>
 
-      {/* Nº REGISTRO (vermelho) */}
+      {/* 5 Nº REGISTRO (vermelho) */}
       <div style={{
-        position: "absolute", top: 320, left: 330, fontSize: 9, fontWeight: "bold", color: "#cc0000",
+        position: "absolute", top: 260, left: 310, fontSize: 9, fontWeight: "bold", color: "#cc0000",
       }}>
         {registro}
       </div>
 
+      {/* 8 CAT HAB */}
+      <div style={{
+        position: "absolute", top: 260, left: 440, fontSize: 9, fontWeight: "bold", color: "#000",
+      }}>
+        {categoria}
+      </div>
+
       {/* NACIONALIDADE */}
       <div style={{
-        position: "absolute", top: 350, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
+        position: "absolute", top: 285, left: 168, fontSize: 9, fontWeight: "bold", color: "#000",
       }}>
-        {nacionalidade === "BRASILEIRA" ? "BRASILEIRO" : "ESTRANGEIRO"}
+        {nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)"}
       </div>
 
       {/* FILIAÇÃO – PAI */}
       <div style={{
-        position: "absolute", top: 378, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
-        maxWidth: 260, overflow: "hidden", whiteSpace: "nowrap" as const,
+        position: "absolute", top: 310, left: 168, fontSize: 9, fontWeight: "bold", color: "#000",
+        maxWidth: 310, overflow: "hidden", whiteSpace: "nowrap" as const,
       }}>
         {nomePai}
       </div>
 
       {/* FILIAÇÃO – MÃE */}
       <div style={{
-        position: "absolute", top: 398, left: 180, fontSize: 9, fontWeight: "bold", color: "#000",
-        maxWidth: 260, overflow: "hidden", whiteSpace: "nowrap" as const,
+        position: "absolute", top: 330, left: 168, fontSize: 9, fontWeight: "bold", color: "#000",
+        maxWidth: 310, overflow: "hidden", whiteSpace: "nowrap" as const,
       }}>
         {nomeMae}
       </div>
 
       {/* ═══════════════════════════════════════════
-       *  1ª HABILITAÇÃO (lado direito do cabeçalho)
-       * ═══════════════════════════════════════════ */}
-      <div style={{
-        position: "absolute", top: 170, left: 468, fontSize: 9, fontWeight: "bold", color: "#000",
-      }}>
-        {dataPrimeiraHab}
-      </div>
-
-      {/* CATEGORIA (grande, ao lado da 1ª hab) */}
-      <div style={{
-        position: "absolute", top: 245, left: 468, fontSize: 16, fontWeight: "bold", color: "#000",
-      }}>
-        {categoria}
-      </div>
-
-      {/* CAT HAB (repetição menor) */}
-      <div style={{
-        position: "absolute", top: 320, left: 468, fontSize: 9, fontWeight: "bold", color: "#000",
-      }}>
-        {categoria}
-      </div>
-
-      {/* ═══════════════════════════════════════════
-       *  ASSINATURA
+       *  7 ASSINATURA DO PORTADOR
        * ═══════════════════════════════════════════ */}
       {assinaturaPreview && (
         <img
@@ -414,24 +422,14 @@ const CnhForm = () => {
           crossOrigin="anonymous"
           style={{
             position: "absolute",
-            top: 418,
+            top: 360,
             left: 68,
-            width: 110,
-            height: 35,
+            width: 140,
+            height: 40,
             objectFit: "contain",
           }}
         />
       )}
-
-      {/* ═══════════════════════════════════════════
-       *  CÓDIGO SEGURANÇA (vertical esquerda, topo)
-       * ═══════════════════════════════════════════ */}
-      <div style={{
-        position: "absolute", top: 160, left: 32, fontSize: 8, fontWeight: "bold", color: "#000",
-        writingMode: "vertical-rl" as const, transform: "rotate(180deg)", letterSpacing: 1,
-      }}>
-        {codigoSeguranca}
-      </div>
 
       {/* ═══════════════════════════════════════════
        *  SEÇÃO CENTRAL – TABELA DE CATEGORIAS
@@ -443,7 +441,7 @@ const CnhForm = () => {
         if (!isActive) return null;
         return (
           <div key={`left-${cat}`} style={{
-            position: "absolute", top: 480 + i * 20, left: 245, fontSize: 8, color: "#000",
+            position: "absolute", top: 432 + i * 22, left: 160, fontSize: 8, color: "#000",
           }}>
             {dataValidade}
           </div>
@@ -456,7 +454,7 @@ const CnhForm = () => {
         if (!isActive) return null;
         return (
           <div key={`right-${cat}`} style={{
-            position: "absolute", top: 480 + i * 20, left: 420, fontSize: 8, color: "#000",
+            position: "absolute", top: 432 + i * 22, left: 380, fontSize: 8, color: "#000",
           }}>
             {dataValidade}
           </div>
@@ -465,91 +463,46 @@ const CnhForm = () => {
 
       {/* 12 OBSERVAÇÕES */}
       <div style={{
-        position: "absolute", top: 635, left: 100, fontSize: 8, fontWeight: "bold", color: "#000",
+        position: "absolute", top: 600, left: 95, fontSize: 8, fontWeight: "bold", color: "#000",
+        maxWidth: 200,
       }}>
         {observacoes.join(", ")}
       </div>
 
-      {/* VALIDADE (seção central) */}
-      <div style={{
-        position: "absolute", top: 665, left: 245, fontSize: 9, fontWeight: "bold", color: "#000",
-      }}>
-        {dataValidade}
-      </div>
-
-      {/* DATA VALIDADE (seção central repetição) */}
-      <div style={{
-        position: "absolute", top: 690, left: 245, fontSize: 9, fontWeight: "bold", color: "#000",
-      }}>
-        {dataValidade}
-      </div>
-
       {/* ═══════════════════════════════════════════
-       *  SEÇÃO INFERIOR ESQUERDA
+       *  SEÇÃO INFERIOR ESQUERDA – ASSINADO DIGITALMENTE
        * ═══════════════════════════════════════════ */}
-
-      {/* ASSINADO DIGITALMENTE */}
       <div style={{
-        position: "absolute", top: 735, left: 130, width: 240, fontSize: 8,
+        position: "absolute", top: 680, left: 130, width: 240, fontSize: 8,
         color: "#000", textAlign: "center" as const, fontWeight: "bold",
       }}>
         ASSINADO DIGITALMENTE
       </div>
       <div style={{
-        position: "absolute", top: 750, left: 100, width: 300, fontSize: 7,
+        position: "absolute", top: 695, left: 100, width: 300, fontSize: 7,
         color: "#000", textAlign: "center" as const, fontWeight: "bold",
       }}>
         DEPARTAMENTO ESTADUAL DE TRÂNSITO
       </div>
 
-      {/* ESPELHO */}
-      <div style={{
-        position: "absolute", top: 778, left: 390, fontSize: 8, color: "#000",
-      }}>
-        {espelho}
-      </div>
-
-      {/* RENACH */}
-      <div style={{
-        position: "absolute", top: 796, left: 390, fontSize: 8, color: "#000",
-      }}>
-        {renach}
-      </div>
-
       {/* LOCAL */}
       <div style={{
-        position: "absolute", top: 820, left: 68, fontSize: 7, color: "#666",
+        position: "absolute", top: 730, left: 68, fontSize: 7, color: "#555",
       }}>
         {cidadeEstado}
       </div>
 
-      {/* ESTADO POR EXTENSO */}
-      <div style={{
-        position: "absolute", top: 850, left: 68, width: 380, fontSize: 20,
-        fontWeight: "bold", color: "#000", textAlign: "center" as const,
-      }}>
-        {estadoExtenso}
-      </div>
-
-      {/* CÓDIGO SEGURANÇA (vertical esquerda, inferior) */}
-      <div style={{
-        position: "absolute", top: 530, left: 32, fontSize: 8, fontWeight: "bold", color: "#000",
-        writingMode: "vertical-rl" as const, transform: "rotate(180deg)", letterSpacing: 1,
-      }}>
-        {codigoSeguranca}
-      </div>
-
       {/* ═══════════════════════════════════════════
-       *  QR CODE – posição fixa lado direito
+       *  QR CODE – posição fixa lado direito (SVG grande, alta resolução)
        * ═══════════════════════════════════════════ */}
       <div
         id="qrcode"
         style={{
           position: "absolute",
-          top: 185,
-          right: 65,
-          width: 260,
-          height: 260,
+          top: 105,
+          left: 500,
+          width: 270,
+          height: 270,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -557,9 +510,9 @@ const CnhForm = () => {
       >
         <QRCode
           value={verificationUrl}
-          size={240}
+          size={250}
           level="H"
-          style={{ width: 240, height: 240 }}
+          style={{ width: 250, height: 250 }}
         />
       </div>
 
@@ -567,7 +520,7 @@ const CnhForm = () => {
        *  TEXTO SERPRO (lado direito inferior)
        * ═══════════════════════════════════════════ */}
       <div style={{
-        position: "absolute", top: 700, left: 480, width: 280, fontSize: 7,
+        position: "absolute", top: 590, left: 460, width: 300, fontSize: 7,
         color: "#333", lineHeight: "11px",
       }}>
         Documento assinado com certificado digital em conformidade
@@ -575,7 +528,7 @@ const CnhForm = () => {
         ser confirmada por meio do programa Assinador Serpro.
       </div>
       <div style={{
-        position: "absolute", top: 748, left: 480, width: 280, fontSize: 7,
+        position: "absolute", top: 638, left: 460, width: 300, fontSize: 7,
         color: "#333", lineHeight: "11px",
       }}>
         As orientações para instalar o Assinador Serpro e realizar a
@@ -585,19 +538,37 @@ const CnhForm = () => {
 
       {/* SERPRO / SENATRAN */}
       <div style={{
-        position: "absolute", top: 800, left: 580, fontSize: 12, fontWeight: "bold", color: "#000",
+        position: "absolute", top: 700, left: 580, fontSize: 12, fontWeight: "bold", color: "#000",
       }}>
         <span style={{ fontWeight: "bold" }}>SERPRO</span>
         <span style={{ color: "#666" }}> / </span>
         <span style={{ fontWeight: "bold" }}>SENATRAN</span>
       </div>
 
+      {/* CÓDIGO SEGURANÇA (vertical inferior) */}
+      <div style={{
+        position: "absolute", top: 470, left: 22, fontSize: 7, fontWeight: "bold", color: "#000",
+        writingMode: "vertical-rl" as const, transform: "rotate(180deg)", letterSpacing: 1,
+      }}>
+        {codigoSeguranca}
+      </div>
+
+      {/* ═══════════════════════════════════════════
+       *  LEGENDA MRZ (rodapé inferior)
+       * ═══════════════════════════════════════════ */}
+      <div style={{
+        position: "absolute", top: 780, left: 50, fontSize: 6, color: "#444",
+        lineHeight: "9px", maxWidth: 700,
+      }}>
+        {`2 e 1. Nome e Sobrenome / Name and Surname / Nombre y Apellidos - Primera Habilitação / First Driver License / Primera Licencia de Conducir – 3. Data e Local de Nascimento / Date and Place of Birth DD/MM/YYYY / Fecha y Lugar de Nacimiento - 4a. Data de Emissão / Issuing Date DD/MM/YYYY / Fecha de Emisión - 4b. Data de Validade / Expiration Date DD/MM/YYYY / Válida Hasta – ACC – 4c. Documento Identidade - Órgão emissor / Identity Document - Issuing Authority / Documento de Identificación – Autoridad Expedidora – 4d. CPF – 5. Número de registro da CNH / Driver License Number / Número de Permiso de Conducir – 9. Categoria de Veículos da Carteira de Habilitação / Driver license Class / Categoría de Permiso de Conducir – Nacionalidade / Nationality / Nacionalidad – Filiação / Father / Filiación – 12. Observações / Observations / Observaciones – Local / Place / Lugar`}
+      </div>
+
       {/* ═══════════════════════════════════════════
        *  MRZ LINES (rodapé)
        * ═══════════════════════════════════════════ */}
       <div style={{
-        position: "absolute", top: 940, left: 68, fontSize: 13,
-        fontFamily: "'Courier New', monospace", color: "#222", lineHeight: "24px", letterSpacing: 1,
+        position: "absolute", top: 850, left: 50, fontSize: 12,
+        fontFamily: "'Courier New', monospace", color: "#222", lineHeight: "20px", letterSpacing: 1,
       }}>
         <div>{mrz.line1}</div>
         <div>{mrz.line2}</div>
