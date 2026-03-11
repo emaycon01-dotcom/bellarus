@@ -71,6 +71,39 @@ export type Database = {
         }
         Relationships: []
       }
+      document_verifications: {
+        Row: {
+          created_at: string
+          document_data: Json
+          document_name: string
+          document_type: string
+          id: string
+          photo_url: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_data?: Json
+          document_name: string
+          document_type: string
+          id?: string
+          photo_url?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          document_data?: Json
+          document_name?: string
+          document_type?: string
+          id?: string
+          photo_url?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
