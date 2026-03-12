@@ -244,8 +244,8 @@ const CnhForm = () => {
     const fields = form.getFields();
     const textFields = fields.filter((field): field is PDFTextField => field instanceof PDFTextField);
 
-    const resolvePlaceholderKey = (rawFieldName: string): string | null => {
-      const normalized = normalizeFieldName(rawFieldName);
+    const resolveValueKey = (rawValue: string): string | null => {
+      const normalized = normalizeFieldName(rawValue);
 
       if (textValues.has(normalized)) return normalized;
 
@@ -256,14 +256,59 @@ const CnhForm = () => {
       return keys.find((key) => normalized.includes(key) || key.includes(normalized)) ?? null;
     };
 
+    const resolvePlaceholderKey = (field: PDFTextField): string | null => {
+      const byName = resolveValueKey(field.getName());
+      if (byName) return byName;
+
+      const currentFieldText = field.getText() || "";
+      const placeholderMatch = currentFieldText.match(/\{\{\s*([^}]+)\s*\}\}/);
+      if (placeholderMatch?.[1]) {
+        const byPlaceholderText = resolveValueKey(placeholderMatch[1]);
+        if (byPlaceholderText) return byPlaceholderText;
+      }
+
+      return resolveValueKey(currentFieldText);
+    };
+
     let matchedTextFields = 0;
+    const unresolvedFields: PDFTextField[] = [];
+
     textFields.forEach((field) => {
-      const resolvedKey = resolvePlaceholderKey(field.getName());
-      if (!resolvedKey) return;
+      const resolvedKey = resolvePlaceholderKey(field);
+      if (!resolvedKey) {
+        unresolvedFields.push(field);
+        return;
+      }
 
       field.setText(textValues.get(resolvedKey) || "");
       matchedTextFields += 1;
     });
+
+    if (unresolvedFields.length > 0) {
+      const orderedFallbackValues = [
+        nomeCompleto,
+        dataPrimeiraHab,
+        dataNascimento,
+        dataEmissao,
+        dataValidade,
+        rg,
+        cpf,
+        registro,
+        categoria,
+        nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)",
+        nomePai,
+        nomeMae,
+        cidadeEstado,
+        codigoSeguranca,
+        renach,
+        estadoExtenso,
+      ].filter(Boolean) as string[];
+
+      unresolvedFields.forEach((field, index) => {
+        const fallbackValue = orderedFallbackValues[index];
+        if (fallbackValue) field.setText(fallbackValue);
+      });
+    }
 
     if (matchedTextFields === 0 && textFields.length > 0) {
       const orderedFallbackValues = [
