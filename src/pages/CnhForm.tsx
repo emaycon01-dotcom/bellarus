@@ -563,6 +563,16 @@ const CnhForm = () => {
         {cidadeEstado}
       </div>
 
+      {/* CÓDIGO SEGURANÇA (bottom section) */}
+      <div style={fixedTextStyle(F.codSeg, { color: "#555" })}>
+        {codigoSeguranca}
+      </div>
+
+      {/* RENACH (bottom section) */}
+      <div style={fixedTextStyle(F.renachField, { color: "#555" })}>
+        {renach}
+      </div>
+
       {/* ESTADO POR EXTENSO */}
       <div style={fixedTextStyle(F.estadoExtenso, { fontWeight: "bold", color: "#000" })}>
         {estadoExtenso}
