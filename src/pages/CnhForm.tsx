@@ -85,7 +85,7 @@ const CnhForm = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [isWatermark, setIsWatermark] = useState(false);
+  
   const [verificationId, setVerificationId] = useState<string | null>(null);
 
   const handleUfChange = (val: string) => { setUf(val); setEstadoExtenso(UF_EXTENSO[val] || ""); };
