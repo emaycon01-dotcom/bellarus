@@ -14,9 +14,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
-import cnhTemplateBg from "@/assets/cnh-template-official.png";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
-import html2canvas from "html2canvas";
 import QRCode from "react-qr-code";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
