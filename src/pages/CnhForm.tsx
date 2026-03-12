@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFButton, PDFDocument, PDFTextField, StandardFonts, rgb } from "pdf-lib";
 import QRCode from "react-qr-code";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
@@ -195,47 +195,236 @@ const CnhForm = () => {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-    // Helper: draw text directly without white rectangle background
-    const drawText = (text: string, field: { top: number; left: number; w: number; h: number; fontSize: number }, options?: { color?: { r: number; g: number; b: number }; bold?: boolean }) => {
-      const pdfX = field.left * scaleX;
-      const pdfY = pageH - (field.top + field.h) * scaleY;
-      const pdfW = field.w * scaleX;
-      const fontSize = field.fontSize * scaleY * 1.1;
+    const normalizeFieldName = (value: string) =>
+      value
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "");
 
-      const color = options?.color ? rgb(options.color.r, options.color.g, options.color.b) : rgb(0, 0, 0);
-      const usedFont = options?.bold !== false ? fontBold : font;
+    const mrz = getMRZ();
 
-      page.drawText(text || "", {
-        x: pdfX,
-        y: pdfY + 2 * scaleY,
-        size: Math.min(fontSize, 14),
-        font: usedFont,
-        color,
-        maxWidth: pdfW,
-      });
+    const textValues = new Map<string, string>([
+      ["NOMECOMPLETO", nomeCompleto || ""],
+      ["DATAPRIMEIRAHAB", dataPrimeiraHab || ""],
+      ["DATANASCIMENTO", dataNascimento || ""],
+      ["DATAEMISSAO", dataEmissao || ""],
+      ["DATAVALIDADE", dataValidade || ""],
+      ["RG", rg || ""],
+      ["CPF", cpf || ""],
+      ["REGISTRO", registro || ""],
+      ["CATEGORIA", categoria || ""],
+      ["NACIONALIDADE", nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)"],
+      ["NOMEPAI", nomePai || ""],
+      ["NOMEMAE", nomeMae || ""],
+      ["CIDADEESTADO", cidadeEstado || ""],
+      ["CODIGOSEGURANCA", codigoSeguranca || ""],
+      ["RENACH", renach || ""],
+      ["ESTADOEXTENSO", estadoExtenso || ""],
+      ["OBSERVACOES", observacoes.join(", ") || ""],
+      ["ESPELHO", espelho || ""],
+      ["MRZLINHA1", mrz.line1],
+      ["MRZLINHA2", mrz.line2],
+      ["MRZLINHA3", mrz.line3],
+      ["ASSINADO", "Documento assinado com certificado digital"],
+      ["DEPTO", "DEPARTAMENTO ESTADUAL DE TRÂNSITO"],
+    ]);
+
+    const aliasToPlaceholder = new Map<string, string>([
+      ["NOMEESOBRENOME", "NOMECOMPLETO"],
+      ["DATAHABILITACAO", "DATAPRIMEIRAHAB"],
+      ["PRIMEIRAHABILITACAO", "DATAPRIMEIRAHAB"],
+      ["DOCIDENTIDADEORGEMISSORUF", "RG"],
+      ["CODSEGURANCA", "CODIGOSEGURANCA"],
+      ["LOCAL", "CIDADEESTADO"],
+      ["ESTADO", "ESTADOEXTENSO"],
+    ]);
+
+    const form = pdfDoc.getForm();
+    const fields = form.getFields();
+    const textFields = fields.filter((field): field is PDFTextField => field instanceof PDFTextField);
+
+    const resolvePlaceholderKey = (rawFieldName: string): string | null => {
+      const normalized = normalizeFieldName(rawFieldName);
+
+      if (textValues.has(normalized)) return normalized;
+
+      const alias = aliasToPlaceholder.get(normalized);
+      if (alias && textValues.has(alias)) return alias;
+
+      const keys = [...textValues.keys()].sort((a, b) => b.length - a.length);
+      return keys.find((key) => normalized.includes(key) || key.includes(normalized)) ?? null;
     };
 
-    // Draw all text fields
-    drawText(nomeCompleto, baseF.nome);
-    drawText(dataPrimeiraHab, baseF.primeiraHab);
-    drawText(dataNascimento, baseF.nascimento);
-    drawText(dataEmissao, baseF.emissao);
-    drawText(dataValidade, baseF.validade);
-    drawText(rg, baseF.docId);
-    drawText(cpf, baseF.cpf);
-    drawText(registro, baseF.registro, { color: { r: 0.8, g: 0, b: 0 } });
-    drawText(categoria, baseF.catHab);
-    drawText(nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)", baseF.nacional);
-    drawText(nomePai, baseF.filiacaoPai);
-    drawText(nomeMae, baseF.filiacaoMae);
-    drawText(observacoes.join(", "), baseF.obs);
-    drawText(cidadeEstado, baseF.local);
-    drawText(codigoSeguranca, baseF.codSeg);
-    drawText(renach, baseF.renachField);
-    drawText(estadoExtenso, baseF.estadoExtenso, { bold: true });
+    let matchedTextFields = 0;
+    textFields.forEach((field) => {
+      const resolvedKey = resolvePlaceholderKey(field.getName());
+      if (!resolvedKey) return;
 
-    // MRZ
-    const mrz = getMRZ();
+      field.setText(textValues.get(resolvedKey) || "");
+      matchedTextFields += 1;
+    });
+
+    if (matchedTextFields === 0 && textFields.length > 0) {
+      const orderedFallbackValues = [
+        nomeCompleto,
+        dataPrimeiraHab,
+        dataNascimento,
+        dataEmissao,
+        dataValidade,
+        rg,
+        cpf,
+        registro,
+        categoria,
+        nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)",
+        nomePai,
+        nomeMae,
+        cidadeEstado,
+        codigoSeguranca,
+        renach,
+        estadoExtenso,
+      ];
+
+      textFields.slice(0, orderedFallbackValues.length).forEach((field, index) => {
+        field.setText(orderedFallbackValues[index] || "");
+      });
+    }
+
+    form.updateFieldAppearances(font);
+
+    const embedDataUrlImage = async (dataUrl: string) => {
+      const bytes = await fetch(dataUrl).then(r => r.arrayBuffer());
+      if (dataUrl.includes("image/png")) return pdfDoc.embedPng(bytes);
+      return pdfDoc.embedJpg(bytes);
+    };
+
+    const setButtonImageByCandidates = async (candidates: string[], imageDataUrl: string | null) => {
+      if (!imageDataUrl) return false;
+
+      const buttons = fields.filter((field): field is PDFButton => field instanceof PDFButton);
+      const normalizedCandidates = candidates.map(normalizeFieldName);
+
+      const matchedButton = buttons.find((button) => {
+        const normalizedButtonName = normalizeFieldName(button.getName());
+        return normalizedCandidates.some((candidate) =>
+          normalizedButtonName.includes(candidate) || candidate.includes(normalizedButtonName)
+        );
+      });
+
+      if (!matchedButton) return false;
+
+      const image = await embedDataUrlImage(imageDataUrl);
+      matchedButton.setImage(image);
+      return true;
+    };
+
+    const photoSetInPlaceholder = await setButtonImageByCandidates(
+      ["FOTO", "FOTO34", "PHOTO", "IMAGEMFOTO"],
+      fotoPreview
+    );
+
+    const signatureSetInPlaceholder = await setButtonImageByCandidates(
+      ["ASSINATURA", "ASSINATURAPORTADOR", "SIGNATURE"],
+      assinaturaPreview
+    );
+
+    if (!photoSetInPlaceholder && fotoPreview) {
+      try {
+        const photoImage = await embedDataUrlImage(fotoPreview);
+        const f = baseF.foto;
+        page.drawImage(photoImage, {
+          x: f.left * scaleX,
+          y: pageH - (f.top + f.h) * scaleY,
+          width: f.w * scaleX,
+          height: f.h * scaleY,
+        });
+      } catch (e) {
+        console.warn("Erro ao embutir foto:", e);
+      }
+    }
+
+    if (!signatureSetInPlaceholder && assinaturaPreview) {
+      try {
+        const sigImage = await embedDataUrlImage(assinaturaPreview);
+        const f = baseF.assinatura;
+        page.drawImage(sigImage, {
+          x: f.left * scaleX,
+          y: pageH - (f.top + f.h) * scaleY,
+          width: f.w * scaleX,
+          height: f.h * scaleY,
+        });
+      } catch (e) {
+        console.warn("Erro ao embutir assinatura:", e);
+      }
+    }
+
+    // Generate QR code
+    const verUrl = finalVerificationId
+      ? `${window.location.origin}/verificar/${finalVerificationId}`
+      : window.location.origin;
+
+    try {
+      const qrDiv = document.createElement("div");
+      qrDiv.style.position = "fixed";
+      qrDiv.style.left = "-9999px";
+      document.body.appendChild(qrDiv);
+
+      const { createRoot } = await import("react-dom/client");
+      const root = createRoot(qrDiv);
+
+      await new Promise<void>((resolve) => {
+        root.render(<QRCode value={verUrl} size={500} level="H" />);
+        setTimeout(resolve, 300);
+      });
+
+      const qrSvg = qrDiv.querySelector("svg");
+      if (qrSvg) {
+        const svgData = new XMLSerializer().serializeToString(qrSvg);
+        const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+
+        const img = new Image();
+        img.src = svgUrl;
+        await new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+        });
+
+        const c = document.createElement("canvas");
+        c.width = 520;
+        c.height = 520;
+
+        const ctx = c.getContext("2d")!;
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, 520, 520);
+        ctx.drawImage(img, 10, 10, 500, 500);
+
+        URL.revokeObjectURL(svgUrl);
+
+        const qrPngDataUrl = c.toDataURL("image/png");
+        const qrSetInPlaceholder = await setButtonImageByCandidates(
+          ["QRCODE", "QR", "QR_CODE", "CODIGOQR"],
+          qrPngDataUrl
+        );
+
+        if (!qrSetInPlaceholder) {
+          const qrImage = await embedDataUrlImage(qrPngDataUrl);
+          const qf = baseF.qr;
+          page.drawImage(qrImage, {
+            x: qf.left * scaleX,
+            y: pageH - (qf.top + qf.h) * scaleY,
+            width: qf.w * scaleX,
+            height: qf.h * scaleY,
+          });
+        }
+      }
+
+      root.unmount();
+      document.body.removeChild(qrDiv);
+    } catch (e) {
+      console.warn("Erro ao embutir QR Code:", e);
+    }
+
+    // MRZ (fallback when template has no dedicated fields)
     const mrzFont = await pdfDoc.embedFont(StandardFonts.Courier);
     const mrzField = baseF.mrz;
     const mrzFontSize = 9;
@@ -251,91 +440,13 @@ const CnhForm = () => {
       });
     });
 
-    // Embed photo
-    if (fotoPreview) {
-      try {
-        const photoBytes = await fetch(fotoPreview).then(r => r.arrayBuffer());
-        const photoImage = fotoPreview.includes("image/png")
-          ? await pdfDoc.embedPng(photoBytes)
-          : await pdfDoc.embedJpg(photoBytes);
-        const f = baseF.foto;
-        page.drawImage(photoImage, {
-          x: f.left * scaleX,
-          y: pageH - (f.top + f.h) * scaleY,
-          width: f.w * scaleX,
-          height: f.h * scaleY,
-        });
-      } catch (e) { console.warn("Erro ao embutir foto:", e); }
-    }
-
-    // Embed signature
-    if (assinaturaPreview) {
-      try {
-        const sigBytes = await fetch(assinaturaPreview).then(r => r.arrayBuffer());
-        const sigImage = assinaturaPreview.includes("image/png")
-          ? await pdfDoc.embedPng(sigBytes)
-          : await pdfDoc.embedJpg(sigBytes);
-        const f = baseF.assinatura;
-        page.drawImage(sigImage, {
-          x: f.left * scaleX,
-          y: pageH - (f.top + f.h) * scaleY,
-          width: f.w * scaleX,
-          height: f.h * scaleY,
-        });
-      } catch (e) { console.warn("Erro ao embutir assinatura:", e); }
-    }
-
-    // Generate QR code
-    const verUrl = finalVerificationId
-      ? `${window.location.origin}/verificar/${finalVerificationId}`
-      : window.location.origin;
-    try {
-      const qrDiv = document.createElement("div");
-      qrDiv.style.position = "fixed";
-      qrDiv.style.left = "-9999px";
-      document.body.appendChild(qrDiv);
-      const { createRoot } = await import("react-dom/client");
-      const root = createRoot(qrDiv);
-      await new Promise<void>((resolve) => {
-        root.render(<QRCode value={verUrl} size={500} level="H" />);
-        setTimeout(resolve, 300);
-      });
-      const qrSvg = qrDiv.querySelector("svg");
-      if (qrSvg) {
-        const svgData = new XMLSerializer().serializeToString(qrSvg);
-        const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-        const svgUrl = URL.createObjectURL(svgBlob);
-        const img = new Image();
-        img.src = svgUrl;
-        await new Promise<void>((resolve) => { img.onload = () => resolve(); });
-        const c = document.createElement("canvas");
-        c.width = 520; c.height = 520;
-        const ctx = c.getContext("2d")!;
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, 520, 520);
-        ctx.drawImage(img, 10, 10, 500, 500);
-        URL.revokeObjectURL(svgUrl);
-        const qrPng = c.toDataURL("image/png");
-        const qrBytes = await fetch(qrPng).then(r => r.arrayBuffer());
-        const qrImage = await pdfDoc.embedPng(qrBytes);
-        const qf = baseF.qr;
-        page.drawImage(qrImage, {
-          x: qf.left * scaleX,
-          y: pageH - (qf.top + qf.h) * scaleY,
-          width: qf.w * scaleX,
-          height: qf.h * scaleY,
-        });
-      }
-      root.unmount();
-      document.body.removeChild(qrDiv);
-    } catch (e) { console.warn("Erro ao embutir QR Code:", e); }
-
     // Espelho vertical text
     if (espelho) {
       const espFontSize = 8;
       const chars = espelho.split("");
       const supField = baseF.espelhoSup;
       const supStartY = pageH - supField.top * scaleY;
+
       chars.forEach((ch, i) => {
         page.drawText(ch, {
           x: supField.left * scaleX,
@@ -345,6 +456,7 @@ const CnhForm = () => {
           color: rgb(0, 0, 0),
         });
       });
+
       const infField = baseF.espelhoInf;
       const infStartY = pageH - infField.top * scaleY;
       chars.forEach((ch, i) => {
@@ -357,6 +469,8 @@ const CnhForm = () => {
         });
       });
     }
+
+    form.flatten();
 
     // Watermark
     if (withWatermark) {
