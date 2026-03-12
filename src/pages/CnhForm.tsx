@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
 import cnhTemplateBg from "@/assets/cnh-template-official.png";
-import jsPDF from "jspdf";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import html2canvas from "html2canvas";
 import QRCode from "react-qr-code";
 
