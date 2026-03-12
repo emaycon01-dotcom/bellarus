@@ -146,17 +146,9 @@ const CnhForm = () => {
     };
   };
 
-  const activeCats = catMap[categoria] || [];
-  const leftCats = ["ACC", "A", "A1", "B", "B1", "C", "C1"];
-  const rightCats = ["D", "D1", "BE", "CE", "C1E", "DE", "D1E"];
-  const mrz = getMRZ();
-
   // Template dimensions (fixed)
   const TW = 1653;
   const TH = 2339;
-  const EXPORT_DPI = 300;
-  const CSS_DPI = 96;
-  const RENDER_SCALE = EXPORT_DPI / CSS_DPI;
 
   // Shared PDF generation function
   const generatePdfBytes = async (withWatermark: boolean, finalVerificationId?: string | null): Promise<Uint8Array> => {
