@@ -47,33 +47,61 @@ const formatCPF = (v: string) => {
 };
 
 // ── Coordinate map (pixels on 1653×2339 canvas) ─────────────────────
+// Calibrated against cnh-template-official.png layout
 const F = {
-  foto:          { x: 100, y: 285, w: 215, h: 285 },
-  assinatura:    { x: 125, y: 650, w: 280, h: 65 },
-  nome:          { x: 345, y: 248, w: 560, h: 26, size: 19 },
-  primeiraHab:   { x: 960, y: 248, w: 220, h: 26, size: 19 },
-  nascimento:    { x: 345, y: 310, w: 620, h: 24, size: 16 },
-  emissao:       { x: 340, y: 365, w: 195, h: 24, size: 16 },
-  validade:      { x: 575, y: 365, w: 195, h: 24, size: 16 },
-  acc:           { x: 815, y: 365, w: 80,  h: 24, size: 16 },
-  docId:         { x: 340, y: 415, w: 560, h: 24, size: 16 },
-  cpf:           { x: 340, y: 468, w: 235, h: 24, size: 16 },
-  registro:      { x: 625, y: 468, w: 200, h: 24, size: 16 },
-  catHab:        { x: 870, y: 468, w: 90,  h: 24, size: 16 },
-  nacional:      { x: 340, y: 515, w: 400, h: 24, size: 16 },
-  filiacaoPai:   { x: 340, y: 568, w: 560, h: 24, size: 16 },
-  filiacaoMae:   { x: 340, y: 600, w: 560, h: 24, size: 16 },
-  obs:           { x: 175, y: 1085, w: 420, h: 100, size: 14 },
-  assinado:      { x: 250, y: 1220, w: 440, h: 24, size: 14 },
-  depto:         { x: 180, y: 1248, w: 540, h: 22, size: 12 },
-  local:         { x: 125, y: 1315, w: 360, h: 22, size: 13 },
-  codSeg:        { x: 500, y: 1315, w: 360, h: 22, size: 13 },
-  renachField:   { x: 500, y: 1340, w: 360, h: 22, size: 13 },
-  estadoExtenso: { x: 125, y: 1360, w: 500, h: 40, size: 28 },
-  espelhoSup:    { x: 58,  y: 250, w: 24, h: 420, size: 12 },
-  espelhoInf:    { x: 58,  y: 760, w: 24, h: 420, size: 12 },
-  qr:            { x: 1020, y: 140, w: 520, h: 520 },
-  mrz:           { x: 85,  y: 1560, w: 1450, h: 130, size: 22 },
+  // ── Foto 3×4 e assinatura (lado esquerdo do cartão) ──
+  foto:          { x: 80,  y: 250, w: 198, h: 275 },
+  assinatura:    { x: 82,  y: 568, w: 194, h: 48  },
+
+  // ── Dados pessoais (lado direito da foto) ──
+  nome:          { x: 302, y: 220, w: 510, h: 28, size: 17 },
+  primeiraHab:   { x: 830, y: 220, w: 195, h: 28, size: 15 },
+  nascimento:    { x: 302, y: 278, w: 575, h: 24, size: 13 },
+
+  // ── Linha: emissão / validade / ACC ──
+  emissao:       { x: 302, y: 330, w: 172, h: 24, size: 13 },
+  validade:      { x: 500, y: 330, w: 172, h: 24, size: 13 },
+  acc:           { x: 710, y: 330, w: 75,  h: 24, size: 13 },
+
+  // ── Doc identidade ──
+  docId:         { x: 302, y: 378, w: 520, h: 24, size: 13 },
+
+  // ── Linha: CPF / Registro / Categoria ──
+  cpf:           { x: 302, y: 428, w: 210, h: 24, size: 13 },
+  registro:      { x: 538, y: 428, w: 185, h: 24, size: 13 },
+  catHab:        { x: 758, y: 428, w: 85,  h: 24, size: 13 },
+
+  // ── Nacionalidade ──
+  nacional:      { x: 302, y: 475, w: 380, h: 24, size: 13 },
+
+  // ── Filiação (pai e mãe) ──
+  filiacaoPai:   { x: 302, y: 520, w: 520, h: 24, size: 13 },
+  filiacaoMae:   { x: 302, y: 548, w: 520, h: 24, size: 13 },
+
+  // ── Seção inferior: Observações ──
+  obs:           { x: 142, y: 910, w: 395, h: 115, size: 12 },
+
+  // ── Assinatura digital e departamento ──
+  assinado:      { x: 225, y: 1095, w: 430, h: 24, size: 12 },
+  depto:         { x: 165, y: 1120, w: 500, h: 22, size: 11 },
+
+  // ── Local / código segurança / renach ──
+  local:         { x: 112, y: 1172, w: 330, h: 22, size: 12 },
+  codSeg:        { x: 455, y: 1172, w: 330, h: 22, size: 12 },
+  renachField:   { x: 455, y: 1198, w: 330, h: 22, size: 12 },
+
+  // ── Nome do estado por extenso ──
+  estadoExtenso: { x: 112, y: 1235, w: 480, h: 42, size: 26 },
+
+  // ── Espelho vertical (margem esquerda) ──
+  espelhoSup:    { x: 52,  y: 255, w: 22, h: 310, size: 10 },
+  espelhoInf:    { x: 52,  y: 620, w: 22, h: 310, size: 10 },
+
+  // ── QR Code (lado direito superior) ──
+  qr:            { x: 905, y: 108, w: 500, h: 500 },
+
+  // ── MRZ (rodapé) ──
+  mrz:           { x: 78,  y: 1710, w: 1500, h: 140, size: 20 },
 } as const;
 
 const TW = 1653;
