@@ -14,8 +14,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
-import { PDFButton, PDFDocument, PDFTextField, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import QRCode from "react-qr-code";
+import cnhBgImage from "@/assets/cnh-template-official.png";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 const UF_EXTENSO: Record<string, string> = {
@@ -45,49 +46,38 @@ const formatCPF = (v: string) => {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 };
 
-const catMap: Record<string, string[]> = {
-  "A": ["A"], "B": ["B"], "AB": ["A", "B"], "C": ["B", "C"],
-  "D": ["B", "C", "D"], "E": ["B", "C", "D", "E"],
-  "AC": ["A", "C"], "AD": ["A", "D"], "AE": ["A", "E"],
-};
+// ── Coordinate map (pixels on 1653×2339 canvas) ─────────────────────
+const F = {
+  foto:          { x: 100, y: 285, w: 215, h: 285 },
+  assinatura:    { x: 125, y: 650, w: 280, h: 65 },
+  nome:          { x: 345, y: 248, w: 560, h: 26, size: 19 },
+  primeiraHab:   { x: 960, y: 248, w: 220, h: 26, size: 19 },
+  nascimento:    { x: 345, y: 310, w: 620, h: 24, size: 16 },
+  emissao:       { x: 340, y: 365, w: 195, h: 24, size: 16 },
+  validade:      { x: 575, y: 365, w: 195, h: 24, size: 16 },
+  acc:           { x: 815, y: 365, w: 80,  h: 24, size: 16 },
+  docId:         { x: 340, y: 415, w: 560, h: 24, size: 16 },
+  cpf:           { x: 340, y: 468, w: 235, h: 24, size: 16 },
+  registro:      { x: 625, y: 468, w: 200, h: 24, size: 16 },
+  catHab:        { x: 870, y: 468, w: 90,  h: 24, size: 16 },
+  nacional:      { x: 340, y: 515, w: 400, h: 24, size: 16 },
+  filiacaoPai:   { x: 340, y: 568, w: 560, h: 24, size: 16 },
+  filiacaoMae:   { x: 340, y: 600, w: 560, h: 24, size: 16 },
+  obs:           { x: 175, y: 1085, w: 420, h: 100, size: 14 },
+  assinado:      { x: 250, y: 1220, w: 440, h: 24, size: 14 },
+  depto:         { x: 180, y: 1248, w: 540, h: 22, size: 12 },
+  local:         { x: 125, y: 1315, w: 360, h: 22, size: 13 },
+  codSeg:        { x: 500, y: 1315, w: 360, h: 22, size: 13 },
+  renachField:   { x: 500, y: 1340, w: 360, h: 22, size: 13 },
+  estadoExtenso: { x: 125, y: 1360, w: 500, h: 40, size: 28 },
+  espelhoSup:    { x: 58,  y: 250, w: 24, h: 420, size: 12 },
+  espelhoInf:    { x: 58,  y: 760, w: 24, h: 420, size: 12 },
+  qr:            { x: 1020, y: 140, w: 520, h: 520 },
+  mrz:           { x: 85,  y: 1560, w: 1450, h: 130, size: 22 },
+} as const;
 
-// Template dimensions (fixed)
 const TW = 1653;
 const TH = 2339;
-
-// Field coordinate map (pixel coords on 1653x2339 template)
-const baseF = {
-  foto:        { top: 285, left: 100, w: 215, h: 285 },
-  nome:        { top: 248, left: 345, w: 560, h: 26, fontSize: 19 },
-  primeiraHab: { top: 248, left: 960, w: 220, h: 26, fontSize: 19 },
-  nascimento:  { top: 310, left: 345, w: 620, h: 24, fontSize: 16 },
-  emissao:     { top: 365, left: 340, w: 195, h: 24, fontSize: 16 },
-  validade:    { top: 365, left: 575, w: 195, h: 24, fontSize: 16 },
-  acc:         { top: 365, left: 815, w: 80, h: 24, fontSize: 16 },
-  docId:       { top: 415, left: 340, w: 560, h: 24, fontSize: 16 },
-  cpf:         { top: 468, left: 340, w: 235, h: 24, fontSize: 16 },
-  registro:    { top: 468, left: 625, w: 200, h: 24, fontSize: 16 },
-  catHab:      { top: 468, left: 870, w: 90, h: 24, fontSize: 16 },
-  nacional:    { top: 515, left: 340, w: 400, h: 24, fontSize: 16 },
-  filiacaoPai: { top: 568, left: 340, w: 560, h: 24, fontSize: 16 },
-  filiacaoMae: { top: 600, left: 340, w: 560, h: 24, fontSize: 16 },
-  assinatura:  { top: 650, left: 125, w: 280, h: 65 },
-  espelhoSup:  { top: 250, left: 58, w: 24, h: 420, fontSize: 12 },
-  espelhoInf:  { top: 760, left: 58, w: 24, h: 420, fontSize: 12 },
-  obs:         { top: 1085, left: 175, w: 420, h: 100, fontSize: 14 },
-  assinado:    { top: 1220, left: 250, w: 440, h: 24, fontSize: 14 },
-  depto:       { top: 1248, left: 180, w: 540, h: 22, fontSize: 12 },
-  local:       { top: 1315, left: 125, w: 360, h: 22, fontSize: 13 },
-  codSeg:      { top: 1315, left: 500, w: 360, h: 22, fontSize: 13 },
-  renachField: { top: 1340, left: 500, w: 360, h: 22, fontSize: 13 },
-  estadoExtenso: { top: 1360, left: 125, w: 500, h: 40, fontSize: 28 },
-  qr:          { top: 140, left: 1020, w: 520, h: 520 },
-  serproTxt1:  { top: 1060, left: 850, w: 560, h: 70, fontSize: 13 },
-  serproTxt2:  { top: 1150, left: 850, w: 560, h: 70, fontSize: 13 },
-  serproLabel: { top: 1280, left: 1100, w: 260, h: 28, fontSize: 22 },
-  legenda:     { top: 1440, left: 85, w: 1500, h: 120, fontSize: 10 },
-  mrz:         { top: 1560, left: 85, w: 1450, h: 130, fontSize: 22 },
-} as const;
 
 const CnhForm = () => {
   const navigate = useNavigate();
@@ -162,7 +152,6 @@ const CnhForm = () => {
     toast.success("Campos limpos!");
   };
 
-  // MRZ generation
   const getMRZ = () => {
     const regClean = (registro || "").replace(/\D/g, "");
     const nascParts = (dataNascimento || "").split(",")[0]?.split("/") || [];
@@ -182,184 +171,46 @@ const CnhForm = () => {
     };
   };
 
-  // Shared PDF generation function
+  // ══════════════════════════════════════════════════════════════════
+  // PDF GENERATION — 100% from scratch, NO template placeholders
+  // Uses background image + direct drawText at precise coordinates
+  // ══════════════════════════════════════════════════════════════════
   const generatePdfBytes = async (withWatermark: boolean, finalVerificationId?: string | null): Promise<Uint8Array> => {
-    const templateBytes = await fetch("/templates/cnh-template.pdf").then(r => r.arrayBuffer());
-    const pdfDoc = await PDFDocument.load(templateBytes);
-    const page = pdfDoc.getPages()[0];
-    const { width: pageW, height: pageH } = page.getSize();
+    const pdfDoc = await PDFDocument.create();
+
+    // Load background image
+    const bgBytes = await fetch(cnhBgImage).then(r => r.arrayBuffer());
+    let bgImg;
+    try { bgImg = await pdfDoc.embedPng(bgBytes); } catch { bgImg = await pdfDoc.embedJpg(bgBytes); }
+
+    // Page proportional to template
+    const pageW = 595.28;
+    const pageH = pageW * (TH / TW);
+    const page = pdfDoc.addPage([pageW, pageH]);
+
+    // Draw background full-page
+    page.drawImage(bgImg, { x: 0, y: 0, width: pageW, height: pageH });
 
     const scaleX = pageW / TW;
     const scaleY = pageH / TH;
 
+    // Fonts
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const mrzFont = await pdfDoc.embedFont(StandardFonts.Courier);
 
-    const normalizeFieldName = (value: string) =>
-      value
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toUpperCase()
-        .replace(/[^A-Z0-9]/g, "");
-
-    const mrz = getMRZ();
-
-    const textValues = new Map<string, string>([
-      ["NOMECOMPLETO", nomeCompleto || ""],
-      ["DATAPRIMEIRAHAB", dataPrimeiraHab || ""],
-      ["DATANASCIMENTO", dataNascimento || ""],
-      ["DATAEMISSAO", dataEmissao || ""],
-      ["DATAVALIDADE", dataValidade || ""],
-      ["RG", rg || ""],
-      ["CPF", cpf || ""],
-      ["REGISTRO", registro || ""],
-      ["CATEGORIA", categoria || ""],
-      ["NACIONALIDADE", nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)"],
-      ["NOMEPAI", nomePai || ""],
-      ["NOMEMAE", nomeMae || ""],
-      ["CIDADEESTADO", cidadeEstado || ""],
-      ["CODIGOSEGURANCA", codigoSeguranca || ""],
-      ["RENACH", renach || ""],
-      ["ESTADOEXTENSO", estadoExtenso || ""],
-      ["OBSERVACOES", observacoes.join(", ") || ""],
-      ["ESPELHO", espelho || ""],
-      ["MRZLINHA1", mrz.line1],
-      ["MRZLINHA2", mrz.line2],
-      ["MRZLINHA3", mrz.line3],
-      ["ASSINADO", "Documento assinado com certificado digital"],
-      ["DEPTO", "DEPARTAMENTO ESTADUAL DE TRÂNSITO"],
-    ]);
-
-    const aliasToPlaceholder = new Map<string, string>([
-      ["NOMEESOBRENOME", "NOMECOMPLETO"],
-      ["DATAHABILITACAO", "DATAPRIMEIRAHAB"],
-      ["PRIMEIRAHABILITACAO", "DATAPRIMEIRAHAB"],
-      ["DOCIDENTIDADEORGEMISSORUF", "RG"],
-      ["CODSEGURANCA", "CODIGOSEGURANCA"],
-      ["LOCAL", "CIDADEESTADO"],
-      ["ESTADO", "ESTADOEXTENSO"],
-    ]);
-
-    const form = pdfDoc.getForm();
-    const fields = form.getFields();
-    const textFields = fields.filter((field): field is PDFTextField => field instanceof PDFTextField);
-
-    const resolveValueKey = (rawValue: string): string | null => {
-      const normalized = normalizeFieldName(rawValue);
-
-      if (textValues.has(normalized)) return normalized;
-
-      const alias = aliasToPlaceholder.get(normalized);
-      if (alias && textValues.has(alias)) return alias;
-
-      const keys = [...textValues.keys()].sort((a, b) => b.length - a.length);
-      return keys.find((key) => normalized.includes(key) || key.includes(normalized)) ?? null;
-    };
-
-    const resolvePlaceholderKey = (field: PDFTextField): string | null => {
-      const byName = resolveValueKey(field.getName());
-      if (byName) return byName;
-
-      const currentFieldText = field.getText() || "";
-      const placeholderMatch = currentFieldText.match(/\{\{\s*([^}]+)\s*\}\}/);
-      if (placeholderMatch?.[1]) {
-        const byPlaceholderText = resolveValueKey(placeholderMatch[1]);
-        if (byPlaceholderText) return byPlaceholderText;
-      }
-
-      return resolveValueKey(currentFieldText);
-    };
-
-    let matchedTextFields = 0;
-    const unresolvedFields: PDFTextField[] = [];
-
-    textFields.forEach((field) => {
-      const resolvedKey = resolvePlaceholderKey(field);
-      if (!resolvedKey) {
-        unresolvedFields.push(field);
-        return;
-      }
-
-      field.setText(textValues.get(resolvedKey) || "");
-      matchedTextFields += 1;
-    });
-
-    if (unresolvedFields.length > 0) {
-      const orderedFallbackValues = [
-        nomeCompleto,
-        dataPrimeiraHab,
-        dataNascimento,
-        dataEmissao,
-        dataValidade,
-        rg,
-        cpf,
-        registro,
-        categoria,
-        nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)",
-        nomePai,
-        nomeMae,
-        cidadeEstado,
-        codigoSeguranca,
-        renach,
-        estadoExtenso,
-      ].filter(Boolean) as string[];
-
-      unresolvedFields.forEach((field, index) => {
-        const fallbackValue = orderedFallbackValues[index];
-        if (fallbackValue) field.setText(fallbackValue);
-      });
-    }
-
-    if (matchedTextFields === 0 && textFields.length > 0) {
-      const orderedFallbackValues = [
-        nomeCompleto,
-        dataPrimeiraHab,
-        dataNascimento,
-        dataEmissao,
-        dataValidade,
-        rg,
-        cpf,
-        registro,
-        categoria,
-        nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)",
-        nomePai,
-        nomeMae,
-        cidadeEstado,
-        codigoSeguranca,
-        renach,
-        estadoExtenso,
-      ];
-
-      textFields.slice(0, orderedFallbackValues.length).forEach((field, index) => {
-        field.setText(orderedFallbackValues[index] || "");
-      });
-    }
-
-    form.updateFieldAppearances(font);
-
-    const drawTextByCoordinates = (
+    // ── drawField: render text at template coordinates ──
+    const drawField = (
       text: string,
-      field: { top: number; left: number; w: number; h: number; fontSize: number },
-      options?: { color?: { r: number; g: number; b: number }; bold?: boolean; mask?: boolean }
+      field: { x: number; y: number; w: number; h: number; size: number },
+      opts?: { color?: { r: number; g: number; b: number }; bold?: boolean; font?: typeof font }
     ) => {
       if (!text) return;
-
-      const pdfX = field.left * scaleX;
-      const pdfY = pageH - (field.top + field.h) * scaleY;
-      const pdfW = field.w * scaleX;
-      const fontSize = Math.min(field.fontSize * scaleY * 1.1, 14);
-      const color = options?.color ? rgb(options.color.r, options.color.g, options.color.b) : rgb(0, 0, 0);
-      const usedFont = options?.bold === false ? font : fontBold;
-
-      if (options?.mask !== false) {
-        page.drawRectangle({
-          x: pdfX,
-          y: pdfY,
-          width: pdfW,
-          height: field.h * scaleY,
-          color: rgb(1, 1, 1),
-        });
-      }
+      const pdfX = field.x * scaleX;
+      const pdfY = pageH - (field.y + field.h) * scaleY;
+      const fontSize = Math.min(field.size * scaleY * 1.1, 14);
+      const usedFont = opts?.font || (opts?.bold === false ? font : fontBold);
+      const color = opts?.color ? rgb(opts.color.r, opts.color.g, opts.color.b) : rgb(0, 0, 0);
 
       page.drawText(text, {
         x: pdfX,
@@ -367,97 +218,91 @@ const CnhForm = () => {
         size: fontSize,
         font: usedFont,
         color,
-        maxWidth: pdfW,
+        maxWidth: field.w * scaleX,
       });
     };
 
-    // Sempre desenha texto por coordenadas para garantir substituição visual dos placeholders
-    // mesmo quando o template tiver placeholders estáticos no fundo (não-editáveis).
-    drawTextByCoordinates(nomeCompleto, baseF.nome);
-    drawTextByCoordinates(dataPrimeiraHab, baseF.primeiraHab);
-    drawTextByCoordinates(dataNascimento, baseF.nascimento, { bold: false });
-    drawTextByCoordinates(dataEmissao, baseF.emissao, { bold: false });
-    drawTextByCoordinates(dataValidade, baseF.validade, { bold: false });
-    drawTextByCoordinates(rg, baseF.docId, { bold: false });
-    drawTextByCoordinates(cpf, baseF.cpf, { bold: false });
-    drawTextByCoordinates(registro, baseF.registro, { color: { r: 0.8, g: 0, b: 0 } });
-    drawTextByCoordinates(categoria, baseF.catHab, { bold: false });
-    drawTextByCoordinates(nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)", baseF.nacional, { bold: false });
-    drawTextByCoordinates(nomePai, baseF.filiacaoPai, { bold: false });
-    drawTextByCoordinates(nomeMae, baseF.filiacaoMae, { bold: false });
-    drawTextByCoordinates(observacoes.join(", "), baseF.obs, { bold: false });
-    drawTextByCoordinates(cidadeEstado, baseF.local, { bold: false });
-    drawTextByCoordinates(codigoSeguranca, baseF.codSeg, { bold: false });
-    drawTextByCoordinates(renach, baseF.renachField, { bold: false });
-    drawTextByCoordinates(estadoExtenso, baseF.estadoExtenso, { bold: true });
-
-    const embedDataUrlImage = async (dataUrl: string) => {
-      const bytes = await fetch(dataUrl).then(r => r.arrayBuffer());
-      if (dataUrl.includes("image/png")) return pdfDoc.embedPng(bytes);
-      return pdfDoc.embedJpg(bytes);
+    // ── drawImg: embed image at template coordinates ──
+    const drawImg = async (dataUrl: string, field: { x: number; y: number; w: number; h: number }) => {
+      try {
+        const bytes = await fetch(dataUrl).then(r => r.arrayBuffer());
+        const img = dataUrl.includes("image/png")
+          ? await pdfDoc.embedPng(bytes)
+          : await pdfDoc.embedJpg(bytes);
+        page.drawImage(img, {
+          x: field.x * scaleX,
+          y: pageH - (field.y + field.h) * scaleY,
+          width: field.w * scaleX,
+          height: field.h * scaleY,
+        });
+      } catch (e) {
+        console.warn("Erro ao embutir imagem:", e);
+      }
     };
 
-    const setButtonImageByCandidates = async (candidates: string[], imageDataUrl: string | null) => {
-      if (!imageDataUrl) return false;
+    // ── All text fields ──
+    drawField(nomeCompleto, F.nome);
+    drawField(dataPrimeiraHab, F.primeiraHab);
+    drawField(dataNascimento, F.nascimento, { bold: false });
+    drawField(dataEmissao, F.emissao, { bold: false });
+    drawField(dataValidade, F.validade, { bold: false });
+    drawField(rg, F.docId, { bold: false });
+    drawField(cpf, F.cpf, { bold: false });
+    drawField(registro, F.registro, { color: { r: 0.8, g: 0, b: 0 } });
+    drawField(categoria, F.catHab, { bold: false });
+    drawField(
+      nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : nacionalidade ? "ESTRANGEIRO(A)" : "",
+      F.nacional, { bold: false }
+    );
+    drawField(nomePai, F.filiacaoPai, { bold: false });
+    drawField(nomeMae, F.filiacaoMae, { bold: false });
+    drawField(observacoes.join(", "), F.obs, { bold: false });
+    drawField("Documento assinado com certificado digital", F.assinado, { bold: false });
+    drawField("DEPARTAMENTO ESTADUAL DE TRÂNSITO", F.depto, { bold: false });
+    drawField(cidadeEstado, F.local, { bold: false });
+    drawField(codigoSeguranca, F.codSeg, { bold: false });
+    drawField(renach, F.renachField, { bold: false });
+    drawField(estadoExtenso, F.estadoExtenso, { bold: true });
 
-      const buttons = fields.filter((field): field is PDFButton => field instanceof PDFButton);
-      const normalizedCandidates = candidates.map(normalizeFieldName);
+    // ── Espelho vertical ──
+    if (espelho) {
+      const espFS = 8 * scaleY;
+      const chars = espelho.split("");
+      const drawVert = (startX: number, startY: number) => {
+        chars.forEach((ch, i) => {
+          page.drawText(ch, {
+            x: startX * scaleX,
+            y: pageH - (startY + i * 14) * scaleY,
+            size: espFS,
+            font: fontBold,
+            color: rgb(0, 0, 0),
+          });
+        });
+      };
+      drawVert(F.espelhoSup.x, F.espelhoSup.y);
+      drawVert(F.espelhoInf.x, F.espelhoInf.y);
+    }
 
-      const matchedButton = buttons.find((button) => {
-        const normalizedButtonName = normalizeFieldName(button.getName());
-        return normalizedCandidates.some((candidate) =>
-          normalizedButtonName.includes(candidate) || candidate.includes(normalizedButtonName)
-        );
+    // ── MRZ ──
+    const mrz = getMRZ();
+    const mrzFS = 9;
+    const mrzX = F.mrz.x * scaleX;
+    const mrzBaseY = pageH - F.mrz.y * scaleY;
+    [mrz.line1, mrz.line2, mrz.line3].forEach((line, i) => {
+      page.drawText(line, {
+        x: mrzX,
+        y: mrzBaseY - i * (mrzFS + 4) * scaleY,
+        size: mrzFS,
+        font: mrzFont,
+        color: rgb(0, 0, 0),
       });
+    });
 
-      if (!matchedButton) return false;
+    // ── Images ──
+    if (fotoPreview) await drawImg(fotoPreview, F.foto);
+    if (assinaturaPreview) await drawImg(assinaturaPreview, F.assinatura);
 
-      const image = await embedDataUrlImage(imageDataUrl);
-      matchedButton.setImage(image);
-      return true;
-    };
-
-    const photoSetInPlaceholder = await setButtonImageByCandidates(
-      ["FOTO", "FOTO34", "PHOTO", "IMAGEMFOTO"],
-      fotoPreview
-    );
-
-    const signatureSetInPlaceholder = await setButtonImageByCandidates(
-      ["ASSINATURA", "ASSINATURAPORTADOR", "SIGNATURE"],
-      assinaturaPreview
-    );
-
-    if (!photoSetInPlaceholder && fotoPreview) {
-      try {
-        const photoImage = await embedDataUrlImage(fotoPreview);
-        const f = baseF.foto;
-        page.drawImage(photoImage, {
-          x: f.left * scaleX,
-          y: pageH - (f.top + f.h) * scaleY,
-          width: f.w * scaleX,
-          height: f.h * scaleY,
-        });
-      } catch (e) {
-        console.warn("Erro ao embutir foto:", e);
-      }
-    }
-
-    if (!signatureSetInPlaceholder && assinaturaPreview) {
-      try {
-        const sigImage = await embedDataUrlImage(assinaturaPreview);
-        const f = baseF.assinatura;
-        page.drawImage(sigImage, {
-          x: f.left * scaleX,
-          y: pageH - (f.top + f.h) * scaleY,
-          width: f.w * scaleX,
-          height: f.h * scaleY,
-        });
-      } catch (e) {
-        console.warn("Erro ao embutir assinatura:", e);
-      }
-    }
-
-    // Generate QR code
+    // ── QR Code ──
     const verUrl = finalVerificationId
       ? `${window.location.origin}/verificar/${finalVerificationId}`
       : window.location.origin;
@@ -484,37 +329,17 @@ const CnhForm = () => {
 
         const img = new Image();
         img.src = svgUrl;
-        await new Promise<void>((resolve) => {
-          img.onload = () => resolve();
-        });
+        await new Promise<void>((resolve) => { img.onload = () => resolve(); });
 
         const c = document.createElement("canvas");
-        c.width = 520;
-        c.height = 520;
-
+        c.width = 520; c.height = 520;
         const ctx = c.getContext("2d")!;
         ctx.fillStyle = "#fff";
         ctx.fillRect(0, 0, 520, 520);
         ctx.drawImage(img, 10, 10, 500, 500);
-
         URL.revokeObjectURL(svgUrl);
 
-        const qrPngDataUrl = c.toDataURL("image/png");
-        const qrSetInPlaceholder = await setButtonImageByCandidates(
-          ["QRCODE", "QR", "QR_CODE", "CODIGOQR"],
-          qrPngDataUrl
-        );
-
-        if (!qrSetInPlaceholder) {
-          const qrImage = await embedDataUrlImage(qrPngDataUrl);
-          const qf = baseF.qr;
-          page.drawImage(qrImage, {
-            x: qf.left * scaleX,
-            y: pageH - (qf.top + qf.h) * scaleY,
-            width: qf.w * scaleX,
-            height: qf.h * scaleY,
-          });
-        }
+        await drawImg(c.toDataURL("image/png"), F.qr);
       }
 
       root.unmount();
@@ -523,63 +348,15 @@ const CnhForm = () => {
       console.warn("Erro ao embutir QR Code:", e);
     }
 
-    // MRZ (fallback when template has no dedicated fields)
-    const mrzFont = await pdfDoc.embedFont(StandardFonts.Courier);
-    const mrzField = baseF.mrz;
-    const mrzFontSize = 9;
-    const mrzX = mrzField.left * scaleX;
-    const mrzBaseY = pageH - mrzField.top * scaleY;
-    [mrz.line1, mrz.line2, mrz.line3].forEach((line, i) => {
-      page.drawText(line, {
-        x: mrzX,
-        y: mrzBaseY - i * (mrzFontSize + 4) * scaleY,
-        size: mrzFontSize,
-        font: mrzFont,
-        color: rgb(0, 0, 0),
-      });
-    });
-
-    // Espelho vertical text
-    if (espelho) {
-      const espFontSize = 8;
-      const chars = espelho.split("");
-      const supField = baseF.espelhoSup;
-      const supStartY = pageH - supField.top * scaleY;
-
-      chars.forEach((ch, i) => {
-        page.drawText(ch, {
-          x: supField.left * scaleX,
-          y: supStartY - i * (espFontSize + 2) * scaleY,
-          size: espFontSize,
-          font: fontBold,
-          color: rgb(0, 0, 0),
-        });
-      });
-
-      const infField = baseF.espelhoInf;
-      const infStartY = pageH - infField.top * scaleY;
-      chars.forEach((ch, i) => {
-        page.drawText(ch, {
-          x: infField.left * scaleX,
-          y: infStartY - i * (espFontSize + 2) * scaleY,
-          size: espFontSize,
-          font: fontBold,
-          color: rgb(0, 0, 0),
-        });
-      });
-    }
-
-    form.flatten();
-
-    // Watermark
+    // ── Watermark ──
     if (withWatermark) {
-      const watermarkFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const wmFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
       [260, 700, 1140, 1580, 2020].forEach((topPos) => {
         page.drawText("BELLARUS NÃO COPIE", {
           x: 120 * scaleX,
           y: pageH - topPos * scaleY,
           size: 72 * scaleY,
-          font: watermarkFont,
+          font: wmFont,
           color: rgb(1, 0, 0),
           opacity: 0.15,
         });
@@ -589,6 +366,7 @@ const CnhForm = () => {
     return pdfDoc.save();
   };
 
+  // ── Preview ──
   const handlePreview = async () => {
     if (!user) { toast.error("Faça login para continuar."); return; }
     setVerificationId(null);
@@ -605,6 +383,7 @@ const CnhForm = () => {
     }
   };
 
+  // ── Confirm & Download ──
   const handleConfirm = async () => {
     if (!user) { toast.error("Faça login para continuar."); return; }
     setConfirming(true);
@@ -620,7 +399,6 @@ const CnhForm = () => {
       if (error) { toast.error("Erro ao debitar crédito."); setConfirming(false); return; }
     }
 
-    // Create verification record ONLY on paid confirm
     let finalVerificationId = verificationId;
     try {
       const docData = {
@@ -669,9 +447,9 @@ const CnhForm = () => {
     setConfirming(false);
   };
 
+  // ── UI ──
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <Button variant="outline" onClick={() => navigate("/dashboard/documents")} className="gap-2"><ArrowLeft className="w-4 h-4" /> Voltar</Button>
         <div className="flex items-center gap-2">
@@ -681,7 +459,6 @@ const CnhForm = () => {
         </div>
       </div>
 
-      {/* Feature badges */}
       <div className="grid grid-cols-3 gap-3">
         {[{ icon: Shield, label: "Documento Seguro", desc: "Validação oficial" }, { icon: Users, label: "Processo Rápido", desc: "Conclua em minutos" }, { icon: Clock, label: "Validade 45 Dias", desc: "Tempo garantido" }].map((f) => (
           <div key={f.label} className="glass-card p-4 flex items-center gap-3">
@@ -691,7 +468,6 @@ const CnhForm = () => {
         ))}
       </div>
 
-      {/* Stepper */}
       <div className="flex items-center justify-center gap-4 py-3">
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${!showPreview ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>1</div>
@@ -704,7 +480,6 @@ const CnhForm = () => {
         </div>
       </div>
 
-      {/* Main card */}
       <div className="glass-card p-8 text-center space-y-2">
         <div className="w-16 h-16 rounded-2xl navy-gradient flex items-center justify-center mx-auto"><Contact className="w-8 h-8 text-primary-foreground" /></div>
         <h2 className="text-xl font-display font-bold text-primary">Criar CNH Digital</h2>
@@ -713,7 +488,6 @@ const CnhForm = () => {
 
       {!showPreview ? (
         <>
-          {/* Section 1 - Personal Data */}
           <div className="glass-card p-6 space-y-5">
             <div className="flex items-center gap-3 border-b border-border pb-4"><UserCircle className="w-5 h-5 text-primary" /><h3 className="text-lg font-display font-bold text-foreground">Dados Pessoais</h3></div>
             <div className="space-y-4">
@@ -742,7 +516,6 @@ const CnhForm = () => {
             </div>
           </div>
 
-          {/* Section 2 - Document Data */}
           <div className="glass-card p-6 space-y-5">
             <div className="flex items-center gap-3 border-b border-border pb-4"><FileText className="w-5 h-5 text-primary" /><h3 className="text-lg font-display font-bold text-foreground">Dados do Documento</h3></div>
             <div className="space-y-4">
@@ -751,7 +524,7 @@ const CnhForm = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><Label className="text-sm font-semibold text-primary">Categoria <span className="text-destructive">*</span></Label><Select value={categoria} onValueChange={setCategoria}><SelectTrigger className="mt-1.5 bg-secondary/50"><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{CATEGORIA_OPTIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
-                <div><Label className="text-sm font-semibold text-primary">CNH Definitiva? <span className="text-destructive">*</span></Label><Select value={cnhDefinitiva} onValueChange={setCnhDefinitiva}><SelectTrigger className="mt-1.5 bg-secondary/50"><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{["Sim","Não"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label className="text-sm font-semibold text-primary">CNH Definitiva <span className="text-destructive">*</span></Label><Select value={cnhDefinitiva} onValueChange={setCnhDefinitiva}><SelectTrigger className="mt-1.5 bg-secondary/50"><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent><SelectItem value="Sim">Sim</SelectItem><SelectItem value="Não">Não</SelectItem></SelectContent></Select></div>
               </div>
               <div><Label className="text-sm font-semibold text-primary">1ª Habilitação <span className="text-destructive">*</span></Label><Input placeholder="DD/MM/AAAA" value={dataPrimeiraHab} onChange={(e) => setDataPrimeiraHab(e.target.value)} className="mt-1.5 bg-secondary/50" /></div>
               <div className="grid grid-cols-2 gap-4">
@@ -772,7 +545,6 @@ const CnhForm = () => {
             </div>
           </div>
 
-          {/* Section 3 - Extra */}
           <div className="glass-card p-6 space-y-5">
             <div className="flex items-center gap-3 border-b border-border pb-4"><Contact className="w-5 h-5 text-primary" /><h3 className="text-lg font-display font-bold text-foreground">Informações Adicionais</h3></div>
             <div className="space-y-4">
@@ -812,11 +584,7 @@ const CnhForm = () => {
 
           {previewPdfUrl && (
             <div className="rounded-2xl border-2 border-accent/30 overflow-hidden shadow-lg">
-              <iframe
-                src={previewPdfUrl}
-                title="Preview CNH"
-                style={{ width: "100%", height: "80vh", border: "none", display: "block" }}
-              />
+              <iframe src={previewPdfUrl} title="Preview CNH" style={{ width: "100%", height: "80vh", border: "none", display: "block" }} />
             </div>
           )}
 
