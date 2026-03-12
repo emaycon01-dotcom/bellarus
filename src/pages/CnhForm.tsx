@@ -392,9 +392,9 @@ const CnhForm = () => {
         />
       )}
 
-      {/* CÓDIGO SEGURANÇA (vertical superior) */}
+      {/* ESPELHO (vertical superior) */}
       <div
-        style={fixedTextStyle(F.codSegSup, {
+        style={fixedTextStyle(F.espelhoSup, {
           fontWeight: "bold",
           color: "#000",
           writingMode: "vertical-rl",
@@ -402,7 +402,7 @@ const CnhForm = () => {
           textAlign: "center",
         })}
       >
-        {codigoSeguranca}
+        {espelho}
       </div>
 
       {/* NOME E SOBRENOME */}
