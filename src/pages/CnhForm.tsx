@@ -294,12 +294,14 @@ const CnhForm = () => {
     filiacaoPai: { top: 568, left: 340, w: 560, h: 24, fontSize: 16 },
     filiacaoMae: { top: 600, left: 340, w: 560, h: 24, fontSize: 16 },
     assinatura:  { top: 650, left: 125, w: 280, h: 65 },
-    codSegSup:   { top: 250, left: 58, w: 24, h: 420, fontSize: 12 },
-    codSegInf:   { top: 760, left: 58, w: 24, h: 420, fontSize: 12 },
+    espelhoSup:  { top: 250, left: 58, w: 24, h: 420, fontSize: 12 },
+    espelhoInf:  { top: 760, left: 58, w: 24, h: 420, fontSize: 12 },
     obs:         { top: 1085, left: 175, w: 420, h: 100, fontSize: 14 },
     assinado:    { top: 1220, left: 250, w: 440, h: 24, fontSize: 14 },
     depto:       { top: 1248, left: 180, w: 540, h: 22, fontSize: 12 },
     local:       { top: 1315, left: 125, w: 360, h: 22, fontSize: 13 },
+    codSeg:      { top: 1315, left: 500, w: 360, h: 22, fontSize: 13 },
+    renachField: { top: 1340, left: 500, w: 360, h: 22, fontSize: 13 },
     estadoExtenso: { top: 1360, left: 125, w: 500, h: 40, fontSize: 28 },
     qr:          { top: 140, left: 1020, w: 520, h: 520 },
     serproTxt1:  { top: 1060, left: 850, w: 560, h: 70, fontSize: 13 },
@@ -390,9 +392,9 @@ const CnhForm = () => {
         />
       )}
 
-      {/* CÓDIGO SEGURANÇA (vertical superior) */}
+      {/* ESPELHO (vertical superior) */}
       <div
-        style={fixedTextStyle(F.codSegSup, {
+        style={fixedTextStyle(F.espelhoSup, {
           fontWeight: "bold",
           color: "#000",
           writingMode: "vertical-rl",
@@ -400,7 +402,7 @@ const CnhForm = () => {
           textAlign: "center",
         })}
       >
-        {codigoSeguranca}
+        {espelho}
       </div>
 
       {/* NOME E SOBRENOME */}
@@ -561,6 +563,16 @@ const CnhForm = () => {
         {cidadeEstado}
       </div>
 
+      {/* CÓDIGO SEGURANÇA (bottom section) */}
+      <div style={fixedTextStyle(F.codSeg, { color: "#555" })}>
+        {codigoSeguranca}
+      </div>
+
+      {/* RENACH (bottom section) */}
+      <div style={fixedTextStyle(F.renachField, { color: "#555" })}>
+        {renach}
+      </div>
+
       {/* ESTADO POR EXTENSO */}
       <div style={fixedTextStyle(F.estadoExtenso, { fontWeight: "bold", color: "#000" })}>
         {estadoExtenso}
@@ -628,9 +640,9 @@ const CnhForm = () => {
         <span>SENATRAN</span>
       </div>
 
-      {/* CÓDIGO SEGURANÇA (vertical inferior) */}
+      {/* ESPELHO (vertical inferior) */}
       <div
-        style={fixedTextStyle(F.codSegInf, {
+        style={fixedTextStyle(F.espelhoInf, {
           fontWeight: "bold",
           color: "#000",
           writingMode: "vertical-rl",
@@ -638,7 +650,7 @@ const CnhForm = () => {
           textAlign: "center",
         })}
       >
-        {codigoSeguranca}
+        {espelho}
       </div>
 
       {/* LEGENDA (rodapé) */}
