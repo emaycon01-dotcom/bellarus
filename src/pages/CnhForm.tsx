@@ -85,7 +85,7 @@ const CnhForm = () => {
   const [nomeMae, setNomeMae] = useState("");
 
   const [showPreview, setShowPreview] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [isWatermark, setIsWatermark] = useState(false);
   const [verificationId, setVerificationId] = useState<string | null>(null);
