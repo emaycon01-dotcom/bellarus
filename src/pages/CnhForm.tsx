@@ -339,14 +339,18 @@ const CnhForm = () => {
 
   const handlePreview = async () => {
     if (!user) { toast.error("Faça login para continuar."); return; }
-
-    // Preview does NOT create verification — QR code will be non-functional
     setVerificationId(null);
     setShowPreview(true);
-    await new Promise(r => setTimeout(r, 400));
-    const imageData = await captureDocument(true);
-    setPreviewImage(imageData);
-    toast.success("Preview gerado com marca d'água!");
+    try {
+      const pdfBytes = await generatePdfBytes(true);
+      const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
+      if (previewPdfUrl) URL.revokeObjectURL(previewPdfUrl);
+      setPreviewPdfUrl(URL.createObjectURL(blob));
+      toast.success("Preview gerado com marca d'água!");
+    } catch (err) {
+      console.error("Erro ao gerar preview:", err);
+      toast.error("Erro ao gerar preview.");
+    }
   };
 
   const handleConfirm = async () => {
