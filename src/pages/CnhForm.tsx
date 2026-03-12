@@ -371,27 +371,25 @@ const CnhForm = () => {
       });
     };
 
-    const shouldApplyCoordinateFallback = matchedTextFields < 8;
-
-    if (shouldApplyCoordinateFallback) {
-      drawTextByCoordinates(nomeCompleto, baseF.nome);
-      drawTextByCoordinates(dataPrimeiraHab, baseF.primeiraHab);
-      drawTextByCoordinates(dataNascimento, baseF.nascimento, { bold: false });
-      drawTextByCoordinates(dataEmissao, baseF.emissao, { bold: false });
-      drawTextByCoordinates(dataValidade, baseF.validade, { bold: false });
-      drawTextByCoordinates(rg, baseF.docId, { bold: false });
-      drawTextByCoordinates(cpf, baseF.cpf, { bold: false });
-      drawTextByCoordinates(registro, baseF.registro, { color: { r: 0.8, g: 0, b: 0 } });
-      drawTextByCoordinates(categoria, baseF.catHab, { bold: false });
-      drawTextByCoordinates(nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)", baseF.nacional, { bold: false });
-      drawTextByCoordinates(nomePai, baseF.filiacaoPai, { bold: false });
-      drawTextByCoordinates(nomeMae, baseF.filiacaoMae, { bold: false });
-      drawTextByCoordinates(observacoes.join(", "), baseF.obs, { bold: false });
-      drawTextByCoordinates(cidadeEstado, baseF.local, { bold: false });
-      drawTextByCoordinates(codigoSeguranca, baseF.codSeg, { bold: false });
-      drawTextByCoordinates(renach, baseF.renachField, { bold: false });
-      drawTextByCoordinates(estadoExtenso, baseF.estadoExtenso, { bold: true });
-    }
+    // Sempre desenha texto por coordenadas para garantir substituição visual dos placeholders
+    // mesmo quando o template tiver placeholders estáticos no fundo (não-editáveis).
+    drawTextByCoordinates(nomeCompleto, baseF.nome);
+    drawTextByCoordinates(dataPrimeiraHab, baseF.primeiraHab);
+    drawTextByCoordinates(dataNascimento, baseF.nascimento, { bold: false });
+    drawTextByCoordinates(dataEmissao, baseF.emissao, { bold: false });
+    drawTextByCoordinates(dataValidade, baseF.validade, { bold: false });
+    drawTextByCoordinates(rg, baseF.docId, { bold: false });
+    drawTextByCoordinates(cpf, baseF.cpf, { bold: false });
+    drawTextByCoordinates(registro, baseF.registro, { color: { r: 0.8, g: 0, b: 0 } });
+    drawTextByCoordinates(categoria, baseF.catHab, { bold: false });
+    drawTextByCoordinates(nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)", baseF.nacional, { bold: false });
+    drawTextByCoordinates(nomePai, baseF.filiacaoPai, { bold: false });
+    drawTextByCoordinates(nomeMae, baseF.filiacaoMae, { bold: false });
+    drawTextByCoordinates(observacoes.join(", "), baseF.obs, { bold: false });
+    drawTextByCoordinates(cidadeEstado, baseF.local, { bold: false });
+    drawTextByCoordinates(codigoSeguranca, baseF.codSeg, { bold: false });
+    drawTextByCoordinates(renach, baseF.renachField, { bold: false });
+    drawTextByCoordinates(estadoExtenso, baseF.estadoExtenso, { bold: true });
 
     const embedDataUrlImage = async (dataUrl: string) => {
       const bytes = await fetch(dataUrl).then(r => r.arrayBuffer());
