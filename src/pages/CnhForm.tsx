@@ -1001,15 +1001,15 @@ const CnhForm = () => {
                 <p className="text-xs text-muted-foreground">Visualização com marca d'água de proteção</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => { setShowPreview(false); setPreviewImage(null); }} className="gap-2"><ArrowLeft className="w-4 h-4" /> Editar</Button>
+            <Button variant="outline" size="sm" onClick={() => { setShowPreview(false); if (previewPdfUrl) { URL.revokeObjectURL(previewPdfUrl); setPreviewPdfUrl(null); } }} className="gap-2"><ArrowLeft className="w-4 h-4" /> Editar</Button>
           </div>
 
-          {previewImage && (
-            <div className="rounded-2xl border-2 border-accent/30 overflow-auto shadow-lg">
-              <img
-                src={previewImage}
-                alt="Preview CNH"
-                style={{ width: TW, height: TH, maxWidth: "none", display: "block" }}
+          {previewPdfUrl && (
+            <div className="rounded-2xl border-2 border-accent/30 overflow-hidden shadow-lg">
+              <iframe
+                src={previewPdfUrl}
+                title="Preview CNH"
+                style={{ width: "100%", height: "80vh", border: "none", display: "block" }}
               />
             </div>
           )}
@@ -1022,18 +1022,13 @@ const CnhForm = () => {
           </div>
 
           <div className="flex items-center justify-center gap-4">
-            <Button variant="outline" size="lg" onClick={() => { setShowPreview(false); setPreviewImage(null); }} className="gap-2"><ArrowLeft className="w-4 h-4" /> Editar Dados</Button>
+            <Button variant="outline" size="lg" onClick={() => { setShowPreview(false); if (previewPdfUrl) { URL.revokeObjectURL(previewPdfUrl); setPreviewPdfUrl(null); } }} className="gap-2"><ArrowLeft className="w-4 h-4" /> Editar Dados</Button>
             <Button size="lg" disabled={confirming} className="gap-2 bg-gradient-to-r from-accent to-primary text-white shadow-lg hover:shadow-xl transition-all" onClick={handleConfirm}>
               <FileText className="w-5 h-5" /> {confirming ? "Gerando PDF..." : "Gerar PDF (1 Crédito)"}
             </Button>
           </div>
         </div>
       )}
-
-      {/* Hidden document container for html2canvas capture */}
-      <div style={{ position: "fixed", top: -9999, left: -9999, zIndex: -1 }}>
-        {documentJSX}
-      </div>
     </div>
   );
 };
