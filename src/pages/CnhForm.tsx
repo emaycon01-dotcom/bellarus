@@ -640,9 +640,9 @@ const CnhForm = () => {
         <span>SENATRAN</span>
       </div>
 
-      {/* CÓDIGO SEGURANÇA (vertical inferior) */}
+      {/* ESPELHO (vertical inferior) */}
       <div
-        style={fixedTextStyle(F.codSegInf, {
+        style={fixedTextStyle(F.espelhoInf, {
           fontWeight: "bold",
           color: "#000",
           writingMode: "vertical-rl",
@@ -650,7 +650,7 @@ const CnhForm = () => {
           textAlign: "center",
         })}
       >
-        {codigoSeguranca}
+        {espelho}
       </div>
 
       {/* LEGENDA (rodapé) */}
