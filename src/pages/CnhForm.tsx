@@ -51,12 +51,49 @@ const catMap: Record<string, string[]> = {
   "AC": ["A", "C"], "AD": ["A", "D"], "AE": ["A", "E"],
 };
 
+// Template dimensions (fixed)
+const TW = 1653;
+const TH = 2339;
+
+// Field coordinate map (pixel coords on 1653x2339 template)
+const baseF = {
+  foto:        { top: 285, left: 100, w: 215, h: 285 },
+  nome:        { top: 248, left: 345, w: 560, h: 26, fontSize: 19 },
+  primeiraHab: { top: 248, left: 960, w: 220, h: 26, fontSize: 19 },
+  nascimento:  { top: 310, left: 345, w: 620, h: 24, fontSize: 16 },
+  emissao:     { top: 365, left: 340, w: 195, h: 24, fontSize: 16 },
+  validade:    { top: 365, left: 575, w: 195, h: 24, fontSize: 16 },
+  acc:         { top: 365, left: 815, w: 80, h: 24, fontSize: 16 },
+  docId:       { top: 415, left: 340, w: 560, h: 24, fontSize: 16 },
+  cpf:         { top: 468, left: 340, w: 235, h: 24, fontSize: 16 },
+  registro:    { top: 468, left: 625, w: 200, h: 24, fontSize: 16 },
+  catHab:      { top: 468, left: 870, w: 90, h: 24, fontSize: 16 },
+  nacional:    { top: 515, left: 340, w: 400, h: 24, fontSize: 16 },
+  filiacaoPai: { top: 568, left: 340, w: 560, h: 24, fontSize: 16 },
+  filiacaoMae: { top: 600, left: 340, w: 560, h: 24, fontSize: 16 },
+  assinatura:  { top: 650, left: 125, w: 280, h: 65 },
+  espelhoSup:  { top: 250, left: 58, w: 24, h: 420, fontSize: 12 },
+  espelhoInf:  { top: 760, left: 58, w: 24, h: 420, fontSize: 12 },
+  obs:         { top: 1085, left: 175, w: 420, h: 100, fontSize: 14 },
+  assinado:    { top: 1220, left: 250, w: 440, h: 24, fontSize: 14 },
+  depto:       { top: 1248, left: 180, w: 540, h: 22, fontSize: 12 },
+  local:       { top: 1315, left: 125, w: 360, h: 22, fontSize: 13 },
+  codSeg:      { top: 1315, left: 500, w: 360, h: 22, fontSize: 13 },
+  renachField: { top: 1340, left: 500, w: 360, h: 22, fontSize: 13 },
+  estadoExtenso: { top: 1360, left: 125, w: 500, h: 40, fontSize: 28 },
+  qr:          { top: 140, left: 1020, w: 520, h: 520 },
+  serproTxt1:  { top: 1060, left: 850, w: 560, h: 70, fontSize: 13 },
+  serproTxt2:  { top: 1150, left: 850, w: 560, h: 70, fontSize: 13 },
+  serproLabel: { top: 1280, left: 1100, w: 260, h: 28, fontSize: 22 },
+  legenda:     { top: 1440, left: 85, w: 1500, h: 120, fontSize: 10 },
+  mrz:         { top: 1560, left: 85, w: 1450, h: 130, fontSize: 22 },
+} as const;
+
 const CnhForm = () => {
   const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const fotoRef = useRef<HTMLInputElement>(null);
   const assinaturaRef = useRef<HTMLInputElement>(null);
-  
 
   const [cpf, setCpf] = useState("");
   const [nomeCompleto, setNomeCompleto] = useState("");
@@ -85,7 +122,6 @@ const CnhForm = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
-  
   const [verificationId, setVerificationId] = useState<string | null>(null);
 
   const handleUfChange = (val: string) => { setUf(val); setEstadoExtenso(UF_EXTENSO[val] || ""); };
@@ -146,10 +182,6 @@ const CnhForm = () => {
     };
   };
 
-  // Template dimensions (fixed)
-  const TW = 1653;
-  const TH = 2339;
-
   // Shared PDF generation function
   const generatePdfBytes = async (withWatermark: boolean, finalVerificationId?: string | null): Promise<Uint8Array> => {
     const templateBytes = await fetch("/templates/cnh-template.pdf").then(r => r.arrayBuffer());
@@ -202,6 +234,23 @@ const CnhForm = () => {
     drawText(renach, baseF.renachField);
     drawText(estadoExtenso, baseF.estadoExtenso, { bold: true });
 
+    // MRZ
+    const mrz = getMRZ();
+    const mrzFont = await pdfDoc.embedFont(StandardFonts.Courier);
+    const mrzField = baseF.mrz;
+    const mrzFontSize = 9;
+    const mrzX = mrzField.left * scaleX;
+    const mrzBaseY = pageH - mrzField.top * scaleY;
+    [mrz.line1, mrz.line2, mrz.line3].forEach((line, i) => {
+      page.drawText(line, {
+        x: mrzX,
+        y: mrzBaseY - i * (mrzFontSize + 4) * scaleY,
+        size: mrzFontSize,
+        font: mrzFont,
+        color: rgb(0, 0, 0),
+      });
+    });
+
     // Embed photo
     if (fotoPreview) {
       try {
@@ -219,7 +268,7 @@ const CnhForm = () => {
       } catch (e) { console.warn("Erro ao embutir foto:", e); }
     }
 
-    // Embed signature (no white rectangle)
+    // Embed signature
     if (assinaturaPreview) {
       try {
         const sigBytes = await fetch(assinaturaPreview).then(r => r.arrayBuffer());
@@ -281,7 +330,7 @@ const CnhForm = () => {
       document.body.removeChild(qrDiv);
     } catch (e) { console.warn("Erro ao embutir QR Code:", e); }
 
-    // Espelho vertical text (no white rectangles)
+    // Espelho vertical text
     if (espelho) {
       const espFontSize = 8;
       const chars = espelho.split("");
@@ -406,452 +455,6 @@ const CnhForm = () => {
     }
     setConfirming(false);
   };
-
-  /* =========================================================
-   * DOCUMENT CONTAINER – 1653×2339 px fixed, all absolute px
-   * Positions calibrated to cnh_digital_página_1-2.png template
-   * ========================================================= */
-  const verificationUrl = verificationId
-    ? `${window.location.origin}/verificar/${verificationId}`
-    : window.location.origin;
-
-  const baseF = {
-    foto:        { top: 285, left: 100, w: 215, h: 285 },
-    nome:        { top: 248, left: 345, w: 560, h: 26, fontSize: 19 },
-    primeiraHab: { top: 248, left: 960, w: 220, h: 26, fontSize: 19 },
-    nascimento:  { top: 310, left: 345, w: 620, h: 24, fontSize: 16 },
-    emissao:     { top: 365, left: 340, w: 195, h: 24, fontSize: 16 },
-    validade:    { top: 365, left: 575, w: 195, h: 24, fontSize: 16 },
-    acc:         { top: 365, left: 815, w: 80, h: 24, fontSize: 16 },
-    docId:       { top: 415, left: 340, w: 560, h: 24, fontSize: 16 },
-    cpf:         { top: 468, left: 340, w: 235, h: 24, fontSize: 16 },
-    registro:    { top: 468, left: 625, w: 200, h: 24, fontSize: 16 },
-    catHab:      { top: 468, left: 870, w: 90, h: 24, fontSize: 16 },
-    nacional:    { top: 515, left: 340, w: 400, h: 24, fontSize: 16 },
-    filiacaoPai: { top: 568, left: 340, w: 560, h: 24, fontSize: 16 },
-    filiacaoMae: { top: 600, left: 340, w: 560, h: 24, fontSize: 16 },
-    assinatura:  { top: 650, left: 125, w: 280, h: 65 },
-    espelhoSup:  { top: 250, left: 58, w: 24, h: 420, fontSize: 12 },
-    espelhoInf:  { top: 760, left: 58, w: 24, h: 420, fontSize: 12 },
-    obs:         { top: 1085, left: 175, w: 420, h: 100, fontSize: 14 },
-    assinado:    { top: 1220, left: 250, w: 440, h: 24, fontSize: 14 },
-    depto:       { top: 1248, left: 180, w: 540, h: 22, fontSize: 12 },
-    local:       { top: 1315, left: 125, w: 360, h: 22, fontSize: 13 },
-    codSeg:      { top: 1315, left: 500, w: 360, h: 22, fontSize: 13 },
-    renachField: { top: 1340, left: 500, w: 360, h: 22, fontSize: 13 },
-    estadoExtenso: { top: 1360, left: 125, w: 500, h: 40, fontSize: 28 },
-    qr:          { top: 140, left: 1020, w: 520, h: 520 },
-    serproTxt1:  { top: 1060, left: 850, w: 560, h: 70, fontSize: 13 },
-    serproTxt2:  { top: 1150, left: 850, w: 560, h: 70, fontSize: 13 },
-    serproLabel: { top: 1280, left: 1100, w: 260, h: 28, fontSize: 22 },
-    legenda:     { top: 1440, left: 85, w: 1500, h: 120, fontSize: 10 },
-    mrz:         { top: 1560, left: 85, w: 1450, h: 130, fontSize: 22 },
-  } as const;
-
-  const F = {
-    ...baseF,
-    catLeftStart: 795,
-    catLeftX: 275,
-    catRightStart: 795,
-    catRightX: 660,
-    catRowH: 38,
-    catValidadeW: 155,
-    catValidadeH: 20,
-  } as const;
-
-  const fixedTextBase = {
-    fontFamily: "Arial, Helvetica, sans-serif",
-    lineHeight: 1,
-    letterSpacing: 0,
-    whiteSpace: "nowrap" as const,
-    overflow: "hidden" as const,
-  };
-
-  const fixedTextStyle = (
-    field: { top: number; left: number; w: number; h: number; fontSize: number },
-    extra: Record<string, unknown> = {},
-  ) => ({
-    position: "absolute" as const,
-    top: field.top,
-    left: field.left,
-    width: field.w,
-    height: field.h,
-    fontSize: field.fontSize,
-    ...fixedTextBase,
-    ...extra,
-  });
-
-  const documentJSX = (
-    <div
-      ref={documentRef}
-      id="cnh-documento"
-      style={{
-        position: "relative",
-        width: TW,
-        height: TH,
-        overflow: "hidden",
-        fontFamily: "Arial, Helvetica, sans-serif",
-        backgroundColor: "#fff",
-      }}
-    >
-      {/* TEMPLATE PNG FIXO 1653x2339 (sem background CSS) */}
-      <img
-        src={cnhTemplateBg}
-        alt=""
-        aria-hidden="true"
-        draggable={false}
-        crossOrigin="anonymous"
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: TW,
-          height: TH,
-          pointerEvents: "none",
-          userSelect: "none",
-          zIndex: 0,
-        }}
-      />
-      {/* FOTO 3x4 */}
-      {fotoPreview && (
-        <img
-          src={fotoPreview}
-          alt="Foto"
-          crossOrigin="anonymous"
-          style={{
-            position: "absolute",
-            top: F.foto.top,
-            left: F.foto.left,
-            width: F.foto.w,
-            height: F.foto.h,
-            objectFit: "cover",
-          }}
-        />
-      )}
-
-      {/* ESPELHO (vertical superior) */}
-      <div
-        style={fixedTextStyle(F.espelhoSup, {
-          fontWeight: "bold",
-          color: "#000",
-          writingMode: "vertical-rl",
-          textOrientation: "upright",
-          textAlign: "center",
-        })}
-      >
-        {espelho}
-      </div>
-
-      {/* NOME E SOBRENOME */}
-      <div style={fixedTextStyle(F.nome, { fontWeight: "bold", color: "#000" })}>
-        {nomeCompleto}
-      </div>
-
-      {/* 1ª HABILITAÇÃO */}
-      <div style={fixedTextStyle(F.primeiraHab, { fontWeight: "bold", color: "#000" })}>
-        {dataPrimeiraHab}
-      </div>
-
-      {/* DATA/LOCAL NASCIMENTO */}
-      <div style={fixedTextStyle(F.nascimento, { fontWeight: "bold", color: "#000" })}>
-        {dataNascimento}
-      </div>
-
-      {/* DATA EMISSÃO */}
-      <div style={fixedTextStyle(F.emissao, { fontWeight: "bold", color: "#000" })}>
-        {dataEmissao}
-      </div>
-
-      {/* VALIDADE */}
-      <div style={fixedTextStyle(F.validade, { fontWeight: "bold", color: "#000" })}>
-        {dataValidade}
-      </div>
-
-      {/* ACC */}
-      <div style={fixedTextStyle(F.acc, { fontWeight: "bold", color: "#000" })}>
-        {activeCats.length > 0 ? "ACC" : ""}
-      </div>
-
-      {/* DOC IDENTIDADE */}
-      <div style={fixedTextStyle(F.docId, { fontWeight: "bold", color: "#000" })}>
-        {rg}
-      </div>
-
-      {/* CPF */}
-      <div style={fixedTextStyle(F.cpf, { fontWeight: "bold", color: "#000" })}>
-        {cpf}
-      </div>
-
-      {/* Nº REGISTRO (vermelho) */}
-      <div style={fixedTextStyle(F.registro, { fontWeight: "bold", color: "#cc0000" })}>
-        {registro}
-      </div>
-
-      {/* CAT HAB */}
-      <div style={fixedTextStyle(F.catHab, { fontWeight: "bold", color: "#000" })}>
-        {categoria}
-      </div>
-
-      {/* NACIONALIDADE */}
-      <div style={fixedTextStyle(F.nacional, { fontWeight: "bold", color: "#000" })}>
-        {nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)"}
-      </div>
-
-      {/* FILIAÇÃO – PAI */}
-      <div style={fixedTextStyle(F.filiacaoPai, { fontWeight: "bold", color: "#000" })}>
-        {nomePai}
-      </div>
-
-      {/* FILIAÇÃO – MÃE */}
-      <div style={fixedTextStyle(F.filiacaoMae, { fontWeight: "bold", color: "#000" })}>
-        {nomeMae}
-      </div>
-
-      {/* ASSINATURA DO PORTADOR */}
-      {assinaturaPreview && (
-        <img
-          src={assinaturaPreview}
-          alt="Assinatura"
-          crossOrigin="anonymous"
-          style={{
-            position: "absolute",
-            top: F.assinatura.top,
-            left: F.assinatura.left,
-            width: F.assinatura.w,
-            height: F.assinatura.h,
-            objectFit: "contain",
-          }}
-        />
-      )}
-
-      {/* CATEGORIAS – lado esquerdo */}
-      {leftCats.map((cat, i) => {
-        const isActive = cat === "ACC" ? activeCats.length > 0 : activeCats.includes(cat);
-        if (!isActive) return null;
-        return (
-          <div
-            key={`left-${cat}`}
-            style={fixedTextStyle(
-              {
-                top: F.catLeftStart + i * F.catRowH,
-                left: F.catLeftX,
-                w: F.catValidadeW,
-                h: F.catValidadeH,
-                fontSize: 14,
-              },
-              { color: "#000", fontWeight: "bold" },
-            )}
-          >
-            {dataValidade}
-          </div>
-        );
-      })}
-
-      {/* CATEGORIAS – lado direito */}
-      {rightCats.map((cat, i) => {
-        const isActive = activeCats.includes(cat);
-        if (!isActive) return null;
-        return (
-          <div
-            key={`right-${cat}`}
-            style={fixedTextStyle(
-              {
-                top: F.catRightStart + i * F.catRowH,
-                left: F.catRightX,
-                w: F.catValidadeW,
-                h: F.catValidadeH,
-                fontSize: 14,
-              },
-              { color: "#000", fontWeight: "bold" },
-            )}
-          >
-            {dataValidade}
-          </div>
-        );
-      })}
-
-      {/* 12 OBSERVAÇÕES */}
-      <div style={fixedTextStyle(F.obs, { fontWeight: "bold", color: "#000" })}>
-        {observacoes.join(", ")}
-      </div>
-
-      {/* ASSINADO DIGITALMENTE */}
-      <div
-        style={fixedTextStyle(F.assinado, {
-          color: "#000",
-          textAlign: "center",
-          fontWeight: "bold",
-        })}
-      >
-        ASSINADO DIGITALMENTE
-      </div>
-      <div
-        style={fixedTextStyle(F.depto, {
-          color: "#000",
-          textAlign: "center",
-          fontWeight: "bold",
-        })}
-      >
-        DEPARTAMENTO ESTADUAL DE TRÂNSITO
-      </div>
-
-      {/* LOCAL */}
-      <div style={fixedTextStyle(F.local, { color: "#555" })}>
-        {cidadeEstado}
-      </div>
-
-      {/* CÓDIGO SEGURANÇA (bottom section) */}
-      <div style={fixedTextStyle(F.codSeg, { color: "#555" })}>
-        {codigoSeguranca}
-      </div>
-
-      {/* RENACH (bottom section) */}
-      <div style={fixedTextStyle(F.renachField, { color: "#555" })}>
-        {renach}
-      </div>
-
-      {/* ESTADO POR EXTENSO */}
-      <div style={fixedTextStyle(F.estadoExtenso, { fontWeight: "bold", color: "#000" })}>
-        {estadoExtenso}
-      </div>
-
-      {/* QR CODE */}
-      <div
-        id="qrcode"
-        style={{
-          position: "absolute",
-          top: F.qr.top,
-          left: F.qr.left,
-          width: F.qr.w,
-          height: F.qr.h,
-        }}
-      >
-        <QRCode
-          value={verificationUrl}
-          size={F.qr.w - 10}
-          level="H"
-          style={{ width: F.qr.w - 10, height: F.qr.h - 10 }}
-        />
-      </div>
-
-      {/* TEXTO SERPRO */}
-      <div style={{
-        position: "absolute",
-        top: F.serproTxt1.top,
-        left: F.serproTxt1.left,
-        width: F.serproTxt1.w,
-        height: F.serproTxt1.h,
-        fontSize: F.serproTxt1.fontSize,
-        color: "#333",
-        fontFamily: "Arial, Helvetica, sans-serif",
-        lineHeight: 1,
-        letterSpacing: 0,
-        overflow: "hidden",
-      }}>
-        Documento assinado com certificado digital em conformidade
-        com a Medida Provisória nº 2200-2/2001. Sua validade poderá
-        ser confirmada por meio do programa Assinador Serpro.
-      </div>
-      <div style={{
-        position: "absolute",
-        top: F.serproTxt2.top,
-        left: F.serproTxt2.left,
-        width: F.serproTxt2.w,
-        height: F.serproTxt2.h,
-        fontSize: F.serproTxt2.fontSize,
-        color: "#333",
-        fontFamily: "Arial, Helvetica, sans-serif",
-        lineHeight: 1,
-        letterSpacing: 0,
-        overflow: "hidden",
-      }}>
-        As orientações para instalar o Assinador Serpro e realizar a
-        validação do documento digital estão disponíveis em:
-        https://www.serpro.gov.br/assinador-digital.
-      </div>
-
-      {/* SERPRO / SENATRAN */}
-      <div style={fixedTextStyle(F.serproLabel, { fontWeight: "bold", color: "#000" })}>
-        <span>SERPRO</span>
-        <span style={{ color: "#666" }}> / </span>
-        <span>SENATRAN</span>
-      </div>
-
-      {/* ESPELHO (vertical inferior) */}
-      <div
-        style={fixedTextStyle(F.espelhoInf, {
-          fontWeight: "bold",
-          color: "#000",
-          writingMode: "vertical-rl",
-          textOrientation: "upright",
-          textAlign: "center",
-        })}
-      >
-        {espelho}
-      </div>
-
-      {/* LEGENDA (rodapé) */}
-      <div style={{
-        position: "absolute",
-        top: F.legenda.top,
-        left: F.legenda.left,
-        width: F.legenda.w,
-        height: F.legenda.h,
-        fontSize: F.legenda.fontSize,
-        color: "#444",
-        fontFamily: "Arial, Helvetica, sans-serif",
-        lineHeight: 1,
-        letterSpacing: 0,
-        overflow: "hidden",
-      }}>
-        {`2 e 1. Nome e Sobrenome / Name and Surname / Nombre y Apellidos - Primera Habilitação / First Driver License / Primera Licencia de Conducir – 3. Data e Local de Nascimento / Date and Place of Birth DD/MM/YYYY / Fecha y Lugar de Nacimiento - 4a. Data de Emissão / Issuing Date DD/MM/YYYY / Fecha de Emisión - 4b. Data de Validade / Expiration Date DD/MM/YYYY / Válida Hasta – ACC – 4c. Documento Identidade - Órgão emissor / Identity Document - Issuing Authority / Documento de Identificación – Autoridad Expedidora – 4d. CPF – 5. Número de registro da CNH / Driver License Number / Número de Permiso de Conducir – 9. Categoria de Veículos da Carteira de Habilitação / Driver license Class / Categoría de Permiso de Conducir – Nacionalidade / Nationality / Nacionalidad – Filiação / Father / Filiación – 12. Observações / Observations / Observaciones – Local / Place / Lugar`}
-      </div>
-
-      {/* MRZ LINES */}
-      <div style={{
-        position: "absolute",
-        top: F.mrz.top,
-        left: F.mrz.left,
-        width: F.mrz.w,
-        height: F.mrz.h,
-        fontSize: F.mrz.fontSize,
-        fontFamily: "Arial, Helvetica, sans-serif",
-        color: "#222",
-        lineHeight: 1,
-        letterSpacing: 0,
-        overflow: "hidden",
-      }}>
-        <div>{mrz.line1}</div>
-        <div>{mrz.line2}</div>
-        <div>{mrz.line3}</div>
-      </div>
-
-      {/* WATERMARK OVERLAY */}
-      {isWatermark && (
-        <div style={{
-          position: "absolute", top: 0, left: 0, width: TW, height: TH,
-          pointerEvents: "none",
-        }}>
-          {[260, 700, 1140, 1580, 2020].map((topPos) => (
-            <div
-              key={topPos}
-              style={{
-                position: "absolute",
-                top: topPos,
-                left: 120,
-                fontSize: 72,
-                fontWeight: "bold",
-                color: "rgba(255, 0, 0, 0.15)",
-                whiteSpace: "nowrap" as const,
-              }}
-            >
-              BELLARUS NÃO COPIE
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
