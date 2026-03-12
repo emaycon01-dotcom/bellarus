@@ -160,42 +160,181 @@ const CnhForm = () => {
   const CSS_DPI = 96;
   const RENDER_SCALE = EXPORT_DPI / CSS_DPI;
 
-  const captureDocument = async (withWatermark: boolean): Promise<string> => {
-    setIsWatermark(withWatermark);
-    await new Promise((resolve) => setTimeout(resolve, 120));
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  // Shared PDF generation function
+  const generatePdfBytes = async (withWatermark: boolean, finalVerificationId?: string | null): Promise<Uint8Array> => {
+    const templateBytes = await fetch("/templates/cnh-template.pdf").then(r => r.arrayBuffer());
+    const pdfDoc = await PDFDocument.load(templateBytes);
+    const page = pdfDoc.getPages()[0];
+    const { width: pageW, height: pageH } = page.getSize();
 
-    if ("fonts" in document) {
-      await (document as Document & { fonts: FontFaceSet }).fonts.ready;
+    const scaleX = pageW / TW;
+    const scaleY = pageH / TH;
+
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // Helper: draw text directly without white rectangle background
+    const drawText = (text: string, field: { top: number; left: number; w: number; h: number; fontSize: number }, options?: { color?: { r: number; g: number; b: number }; bold?: boolean }) => {
+      const pdfX = field.left * scaleX;
+      const pdfY = pageH - (field.top + field.h) * scaleY;
+      const pdfW = field.w * scaleX;
+      const fontSize = field.fontSize * scaleY * 1.1;
+
+      const color = options?.color ? rgb(options.color.r, options.color.g, options.color.b) : rgb(0, 0, 0);
+      const usedFont = options?.bold !== false ? fontBold : font;
+
+      page.drawText(text || "", {
+        x: pdfX,
+        y: pdfY + 2 * scaleY,
+        size: Math.min(fontSize, 14),
+        font: usedFont,
+        color,
+        maxWidth: pdfW,
+      });
+    };
+
+    // Draw all text fields
+    drawText(nomeCompleto, baseF.nome);
+    drawText(dataPrimeiraHab, baseF.primeiraHab);
+    drawText(dataNascimento, baseF.nascimento);
+    drawText(dataEmissao, baseF.emissao);
+    drawText(dataValidade, baseF.validade);
+    drawText(rg, baseF.docId);
+    drawText(cpf, baseF.cpf);
+    drawText(registro, baseF.registro, { color: { r: 0.8, g: 0, b: 0 } });
+    drawText(categoria, baseF.catHab);
+    drawText(nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : "ESTRANGEIRO(A)", baseF.nacional);
+    drawText(nomePai, baseF.filiacaoPai);
+    drawText(nomeMae, baseF.filiacaoMae);
+    drawText(observacoes.join(", "), baseF.obs);
+    drawText(cidadeEstado, baseF.local);
+    drawText(codigoSeguranca, baseF.codSeg);
+    drawText(renach, baseF.renachField);
+    drawText(estadoExtenso, baseF.estadoExtenso, { bold: true });
+
+    // Embed photo
+    if (fotoPreview) {
+      try {
+        const photoBytes = await fetch(fotoPreview).then(r => r.arrayBuffer());
+        const photoImage = fotoPreview.includes("image/png")
+          ? await pdfDoc.embedPng(photoBytes)
+          : await pdfDoc.embedJpg(photoBytes);
+        const f = baseF.foto;
+        page.drawImage(photoImage, {
+          x: f.left * scaleX,
+          y: pageH - (f.top + f.h) * scaleY,
+          width: f.w * scaleX,
+          height: f.h * scaleY,
+        });
+      } catch (e) { console.warn("Erro ao embutir foto:", e); }
     }
 
-    const el = documentRef.current;
-    if (!el) throw new Error("Document container not found");
-
-    // Force fresh render — no cache
-    const cacheBuster = `cb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const canvas = await html2canvas(el, {
-      scale: RENDER_SCALE,
-      useCORS: true,
-      backgroundColor: null,
-      width: TW,
-      height: TH,
-      windowWidth: TW,
-      windowHeight: TH,
-      logging: false,
-      imageTimeout: 0,
-      onclone: (clonedDoc) => {
-        // Bust image cache in cloned DOM
-        clonedDoc.querySelectorAll("img").forEach((img) => {
-          const src = img.getAttribute("src");
-          if (src && !src.startsWith("data:")) {
-            img.setAttribute("src", `${src}${src.includes("?") ? "&" : "?"}${cacheBuster}`);
-          }
+    // Embed signature (no white rectangle)
+    if (assinaturaPreview) {
+      try {
+        const sigBytes = await fetch(assinaturaPreview).then(r => r.arrayBuffer());
+        const sigImage = assinaturaPreview.includes("image/png")
+          ? await pdfDoc.embedPng(sigBytes)
+          : await pdfDoc.embedJpg(sigBytes);
+        const f = baseF.assinatura;
+        page.drawImage(sigImage, {
+          x: f.left * scaleX,
+          y: pageH - (f.top + f.h) * scaleY,
+          width: f.w * scaleX,
+          height: f.h * scaleY,
         });
-      },
-    });
+      } catch (e) { console.warn("Erro ao embutir assinatura:", e); }
+    }
 
-    return canvas.toDataURL("image/png", 1);
+    // Generate QR code
+    const verUrl = finalVerificationId
+      ? `${window.location.origin}/verificar/${finalVerificationId}`
+      : window.location.origin;
+    try {
+      const qrDiv = document.createElement("div");
+      qrDiv.style.position = "fixed";
+      qrDiv.style.left = "-9999px";
+      document.body.appendChild(qrDiv);
+      const { createRoot } = await import("react-dom/client");
+      const root = createRoot(qrDiv);
+      await new Promise<void>((resolve) => {
+        root.render(<QRCode value={verUrl} size={500} level="H" />);
+        setTimeout(resolve, 300);
+      });
+      const qrSvg = qrDiv.querySelector("svg");
+      if (qrSvg) {
+        const svgData = new XMLSerializer().serializeToString(qrSvg);
+        const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        const img = new Image();
+        img.src = svgUrl;
+        await new Promise<void>((resolve) => { img.onload = () => resolve(); });
+        const c = document.createElement("canvas");
+        c.width = 520; c.height = 520;
+        const ctx = c.getContext("2d")!;
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, 520, 520);
+        ctx.drawImage(img, 10, 10, 500, 500);
+        URL.revokeObjectURL(svgUrl);
+        const qrPng = c.toDataURL("image/png");
+        const qrBytes = await fetch(qrPng).then(r => r.arrayBuffer());
+        const qrImage = await pdfDoc.embedPng(qrBytes);
+        const qf = baseF.qr;
+        page.drawImage(qrImage, {
+          x: qf.left * scaleX,
+          y: pageH - (qf.top + qf.h) * scaleY,
+          width: qf.w * scaleX,
+          height: qf.h * scaleY,
+        });
+      }
+      root.unmount();
+      document.body.removeChild(qrDiv);
+    } catch (e) { console.warn("Erro ao embutir QR Code:", e); }
+
+    // Espelho vertical text (no white rectangles)
+    if (espelho) {
+      const espFontSize = 8;
+      const chars = espelho.split("");
+      const supField = baseF.espelhoSup;
+      const supStartY = pageH - supField.top * scaleY;
+      chars.forEach((ch, i) => {
+        page.drawText(ch, {
+          x: supField.left * scaleX,
+          y: supStartY - i * (espFontSize + 2) * scaleY,
+          size: espFontSize,
+          font: fontBold,
+          color: rgb(0, 0, 0),
+        });
+      });
+      const infField = baseF.espelhoInf;
+      const infStartY = pageH - infField.top * scaleY;
+      chars.forEach((ch, i) => {
+        page.drawText(ch, {
+          x: infField.left * scaleX,
+          y: infStartY - i * (espFontSize + 2) * scaleY,
+          size: espFontSize,
+          font: fontBold,
+          color: rgb(0, 0, 0),
+        });
+      });
+    }
+
+    // Watermark
+    if (withWatermark) {
+      const watermarkFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      [260, 700, 1140, 1580, 2020].forEach((topPos) => {
+        page.drawText("BELLARUS NÃO COPIE", {
+          x: 120 * scaleX,
+          y: pageH - topPos * scaleY,
+          size: 72 * scaleY,
+          font: watermarkFont,
+          color: rgb(1, 0, 0),
+          opacity: 0.15,
+        });
+      });
+    }
+
+    return pdfDoc.save();
   };
 
   const handlePreview = async () => {
