@@ -56,7 +56,7 @@ const CnhForm = () => {
   const { user, isAdmin } = useAuth();
   const fotoRef = useRef<HTMLInputElement>(null);
   const assinaturaRef = useRef<HTMLInputElement>(null);
-  const documentRef = useRef<HTMLDivElement>(null);
+  
 
   const [cpf, setCpf] = useState("");
   const [nomeCompleto, setNomeCompleto] = useState("");
