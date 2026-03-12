@@ -60,7 +60,7 @@ const Landing = () => {
             </h1>
 
             <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
-              Crie RG digital, atestados, receitas com QR Code, certidões e
+              Crie CNH digital, RG digital, atestados, receitas com QR Code, certidões e
               documentos físicos com rapidez e eficiência.
             </p>
           </motion.div>

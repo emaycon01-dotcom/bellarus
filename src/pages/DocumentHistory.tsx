@@ -30,7 +30,7 @@ interface VerificationRecord {
 }
 
 const DOC_ROUTES: Record<string, string> = {
-  
+  "CNH Digital": "/dashboard/documents/cnh",
   "CIN (RG Digital)": "/dashboard/documents/cin",
   "CRLV-e Digital": "/dashboard/documents/crlve",
   "Atestado Médico": "/dashboard/documents/atestado",
