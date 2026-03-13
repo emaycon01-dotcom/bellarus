@@ -1,9 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import * as jose from "https://deno.land/x/jose@v5.2.0/index.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+async function createJWT(apiKey: string, apiSecret: string, workspace: string): Promise<string> {
+  const secret = new TextEncoder().encode(apiSecret);
+  const jwt = await new jose.SignJWT({ iss: apiKey, sub: workspace })
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .setExpirationTime("60s")
+    .sign(secret);
+  return jwt;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -14,37 +24,19 @@ serve(async (req) => {
     const API_KEY = Deno.env.get("PDF_GENERATOR_API_KEY");
     const API_SECRET = Deno.env.get("PDF_GENERATOR_API_SECRET");
     const TEMPLATE_ID = Deno.env.get("PDF_GENERATOR_TEMPLATE_ID");
+    const WORKSPACE = Deno.env.get("PDF_GENERATOR_WORKSPACE_IDENTIFIER");
 
-    if (!API_KEY || !API_SECRET || !TEMPLATE_ID) {
+    if (!API_KEY || !API_SECRET || !TEMPLATE_ID || !WORKSPACE) {
       throw new Error("PDF Generator API credentials not configured");
     }
 
     const body = await req.json();
-
     const {
-      nome_completo,
-      cpf,
-      data_nascimento,
-      rg,
-      data_emissao,
-      data_validade,
-      codigo_seguranca,
-      renach,
-      numero_espelho,
-      data_primeira_hab,
-      cidade_estado,
-      estado_extenso,
-      registro,
-      categoria,
-      nome_pai,
-      nome_mae,
-      nacionalidade,
-      genero,
-      observacoes,
-      foto_base64,
-      assinatura_base64,
-      watermark,
-      verification_url,
+      nome_completo, cpf, data_nascimento, rg, data_emissao, data_validade,
+      codigo_seguranca, renach, numero_espelho, data_primeira_hab,
+      cidade_estado, estado_extenso, registro, categoria,
+      nome_pai, nome_mae, nacionalidade, genero, observacoes,
+      foto_base64, assinatura_base64, watermark, verification_url,
     } = body;
 
     const templateData: Record<string, string> = {
@@ -74,6 +66,7 @@ serve(async (req) => {
     if (assinatura_base64) templateData.assinatura = assinatura_base64;
     if (watermark) templateData.watermark = "BELLARUS - PREVIEW";
 
+    // MRZ
     const regClean = (registro || "").replace(/\D/g, "");
     const nascParts = (data_nascimento || "").split(",")[0]?.split("/") || [];
     const nascYYMMDD = nascParts.length >= 3
@@ -91,26 +84,28 @@ serve(async (req) => {
     templateData.mrz_line3 = `${nameMRZ}${"<".repeat(Math.max(0, 30 - nameMRZ.length))}`;
     templateData.nacionalidade_formatada = nacionalidade === "BRASILEIRA"
       ? "BRASILEIRO(A)"
-      : nacionalidade === "ESTRANGEIRA"
-        ? "ESTRANGEIRO(A)"
-        : "";
+      : nacionalidade === "ESTRANGEIRA" ? "ESTRANGEIRO(A)" : "";
 
-    const pdfGenUrl = "https://us1.pdfgeneratorapi.com/api/v4/documents/generate";
+    // Generate JWT for PDF Generator API auth
+    const token = await createJWT(API_KEY, API_SECRET, WORKSPACE);
+
     const requestPayload = {
       template: {
         id: Number(TEMPLATE_ID),
-        output: "pdf",
+        data: templateData,
       },
-      data: templateData,
+      format: "pdf",
+      output: "base64",
+      name: `CNH_${(nome_completo || "documento").replace(/\s+/g, "_")}`,
     };
 
-    const pdfResponse = await fetch(pdfGenUrl, {
+    console.log("Calling PDF Generator API with template ID:", TEMPLATE_ID);
+
+    const pdfResponse = await fetch("https://us1.pdfgeneratorapi.com/api/v4/documents/generate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
-        "X-Auth-Key": API_KEY,
-        "X-Auth-Secret": API_SECRET,
+        "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify(requestPayload),
     });
@@ -123,14 +118,13 @@ serve(async (req) => {
 
     const pdfResult = await pdfResponse.json();
 
+    // Response contains base64 PDF
     if (pdfResult.response) {
-      const pdfBase64 = pdfResult.response;
-      const binaryString = atob(pdfBase64);
+      const binaryString = atob(pdfResult.response);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i);
       }
-
       return new Response(bytes, {
         headers: {
           ...corsHeaders,
@@ -140,14 +134,11 @@ serve(async (req) => {
       });
     }
 
+    // Or a download URL
     if (pdfResult.response_url || pdfResult.url) {
-      const pdfUrl = pdfResult.response_url || pdfResult.url;
-      const pdfDownload = await fetch(pdfUrl);
-      if (!pdfDownload.ok) {
-        throw new Error("Failed to download generated PDF");
-      }
+      const pdfDownload = await fetch(pdfResult.response_url || pdfResult.url);
+      if (!pdfDownload.ok) throw new Error("Failed to download generated PDF");
       const pdfBytes = new Uint8Array(await pdfDownload.arrayBuffer());
-
       return new Response(pdfBytes, {
         headers: {
           ...corsHeaders,
