@@ -228,19 +228,29 @@ const CnhForm = () => {
   });
 
   const callBackendPdf = async (withWatermark: boolean, finalVerificationId?: string | null): Promise<Blob> => {
-    const { data, error } = await supabase.functions.invoke("generate-cnh-pdf", {
-      body: buildPayload(withWatermark, finalVerificationId),
-    });
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const session = (await supabase.auth.getSession()).data.session;
 
-    if (error) throw error;
+    const response = await fetch(
+      `https://${projectId}.supabase.co/functions/v1/generate-cnh-pdf`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token || anonKey}`,
+          "apikey": anonKey,
+        },
+        body: JSON.stringify(buildPayload(withWatermark, finalVerificationId)),
+      }
+    );
 
-    // supabase.functions.invoke returns data as Blob when Content-Type is application/pdf
-    if (data instanceof Blob) return data;
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(errText || "Erro ao gerar PDF");
+    }
 
-    // Fallback: if it came as ArrayBuffer or other
-    if (data instanceof ArrayBuffer) return new Blob([data], { type: "application/pdf" });
-
-    throw new Error("Resposta inesperada do servidor");
+    return response.blob();
   };
 
   // ── Preview ──
