@@ -35,6 +35,7 @@ serve(async (req) => {
       observacoes,
       foto_base64,
       assinatura_base64,
+      qr_code_base64,
       watermark,
       verification_url,
     } = await req.json();
