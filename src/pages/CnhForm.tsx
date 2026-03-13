@@ -14,9 +14,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import QRCode from "react-qr-code";
-import cnhBgImage from "@/assets/cnh-template-official.png";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 const UF_EXTENSO: Record<string, string> = {
