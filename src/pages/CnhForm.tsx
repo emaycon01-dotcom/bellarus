@@ -14,9 +14,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { saveDocumentHistory } from "@/lib/saveDocumentHistory";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import QRCode from "react-qr-code";
-import cnhBgImage from "@/assets/cnh-template-official.png";
 
 const UF_OPTIONS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 const UF_EXTENSO: Record<string, string> = {
@@ -200,198 +197,50 @@ const CnhForm = () => {
   };
 
   // ══════════════════════════════════════════════════════════════════
-  // PDF GENERATION — 100% from scratch, NO template placeholders
-  // Uses background image + direct drawText at precise coordinates
+  // PDF GENERATION — via backend Edge Function with template
   // ══════════════════════════════════════════════════════════════════
-  const generatePdfBytes = async (withWatermark: boolean, finalVerificationId?: string | null): Promise<Uint8Array> => {
-    const pdfDoc = await PDFDocument.create();
+  const buildPayload = (withWatermark: boolean, finalVerificationId?: string | null) => ({
+    nome_completo: nomeCompleto,
+    cpf,
+    data_nascimento: dataNascimento,
+    rg,
+    data_emissao: dataEmissao,
+    data_validade: dataValidade,
+    codigo_seguranca: codigoSeguranca,
+    renach,
+    numero_espelho: espelho,
+    data_primeira_hab: dataPrimeiraHab,
+    cidade_estado: cidadeEstado,
+    estado_extenso: estadoExtenso,
+    registro,
+    categoria,
+    nome_pai: nomePai,
+    nome_mae: nomeMae,
+    nacionalidade,
+    genero,
+    observacoes: observacoes.join(", "),
+    foto_base64: fotoPreview || "",
+    assinatura_base64: assinaturaPreview || "",
+    watermark: withWatermark,
+    verification_url: finalVerificationId
+      ? `${window.location.origin}/verificar/${finalVerificationId}`
+      : window.location.origin,
+  });
 
-    // Load background image
-    const bgBytes = await fetch(cnhBgImage).then(r => r.arrayBuffer());
-    let bgImg;
-    try { bgImg = await pdfDoc.embedPng(bgBytes); } catch { bgImg = await pdfDoc.embedJpg(bgBytes); }
-
-    // Page proportional to template
-    const pageW = 595.28;
-    const pageH = pageW * (TH / TW);
-    const page = pdfDoc.addPage([pageW, pageH]);
-
-    // Draw background full-page
-    page.drawImage(bgImg, { x: 0, y: 0, width: pageW, height: pageH });
-
-    const scaleX = pageW / TW;
-    const scaleY = pageH / TH;
-
-    // Fonts
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const mrzFont = await pdfDoc.embedFont(StandardFonts.Courier);
-
-    // ── drawField: render text at template coordinates ──
-    const drawField = (
-      text: string,
-      field: { x: number; y: number; w: number; h: number; size: number },
-      opts?: { color?: { r: number; g: number; b: number }; bold?: boolean; font?: typeof font }
-    ) => {
-      if (!text) return;
-      const pdfX = field.x * scaleX;
-      const pdfY = pageH - (field.y + field.h) * scaleY;
-      const fontSize = Math.min(field.size * scaleY * 1.1, 14);
-      const usedFont = opts?.font || (opts?.bold === false ? font : fontBold);
-      const color = opts?.color ? rgb(opts.color.r, opts.color.g, opts.color.b) : rgb(0, 0, 0);
-
-      page.drawText(text, {
-        x: pdfX,
-        y: pdfY + 2 * scaleY,
-        size: fontSize,
-        font: usedFont,
-        color,
-        maxWidth: field.w * scaleX,
-      });
-    };
-
-    // ── drawImg: embed image at template coordinates ──
-    const drawImg = async (dataUrl: string, field: { x: number; y: number; w: number; h: number }) => {
-      try {
-        const bytes = await fetch(dataUrl).then(r => r.arrayBuffer());
-        const img = dataUrl.includes("image/png")
-          ? await pdfDoc.embedPng(bytes)
-          : await pdfDoc.embedJpg(bytes);
-        page.drawImage(img, {
-          x: field.x * scaleX,
-          y: pageH - (field.y + field.h) * scaleY,
-          width: field.w * scaleX,
-          height: field.h * scaleY,
-        });
-      } catch (e) {
-        console.warn("Erro ao embutir imagem:", e);
-      }
-    };
-
-    // ── All text fields ──
-    drawField(nomeCompleto, F.nome);
-    drawField(dataPrimeiraHab, F.primeiraHab);
-    drawField(dataNascimento, F.nascimento, { bold: false });
-    drawField(dataEmissao, F.emissao, { bold: false });
-    drawField(dataValidade, F.validade, { bold: false });
-    drawField(rg, F.docId, { bold: false });
-    drawField(cpf, F.cpf, { bold: false });
-    drawField(registro, F.registro, { color: { r: 0.8, g: 0, b: 0 } });
-    drawField(categoria, F.catHab, { bold: false });
-    drawField(
-      nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : nacionalidade ? "ESTRANGEIRO(A)" : "",
-      F.nacional, { bold: false }
-    );
-    drawField(nomePai, F.filiacaoPai, { bold: false });
-    drawField(nomeMae, F.filiacaoMae, { bold: false });
-    drawField(observacoes.join(", "), F.obs, { bold: false });
-    drawField("Documento assinado com certificado digital", F.assinado, { bold: false });
-    drawField("DEPARTAMENTO ESTADUAL DE TRÂNSITO", F.depto, { bold: false });
-    drawField(cidadeEstado, F.local, { bold: false });
-    drawField(codigoSeguranca, F.codSeg, { bold: false });
-    drawField(renach, F.renachField, { bold: false });
-    drawField(estadoExtenso, F.estadoExtenso, { bold: true });
-
-    // ── Espelho vertical ──
-    if (espelho) {
-      const espFS = 8 * scaleY;
-      const chars = espelho.split("");
-      const drawVert = (startX: number, startY: number) => {
-        chars.forEach((ch, i) => {
-          page.drawText(ch, {
-            x: startX * scaleX,
-            y: pageH - (startY + i * 14) * scaleY,
-            size: espFS,
-            font: fontBold,
-            color: rgb(0, 0, 0),
-          });
-        });
-      };
-      drawVert(F.espelhoSup.x, F.espelhoSup.y);
-      drawVert(F.espelhoInf.x, F.espelhoInf.y);
-    }
-
-    // ── MRZ ──
-    const mrz = getMRZ();
-    const mrzFS = 9;
-    const mrzX = F.mrz.x * scaleX;
-    const mrzBaseY = pageH - F.mrz.y * scaleY;
-    [mrz.line1, mrz.line2, mrz.line3].forEach((line, i) => {
-      page.drawText(line, {
-        x: mrzX,
-        y: mrzBaseY - i * (mrzFS + 4) * scaleY,
-        size: mrzFS,
-        font: mrzFont,
-        color: rgb(0, 0, 0),
-      });
+  const callBackendPdf = async (withWatermark: boolean, finalVerificationId?: string | null): Promise<Blob> => {
+    const { data, error } = await supabase.functions.invoke("generate-cnh-pdf", {
+      body: buildPayload(withWatermark, finalVerificationId),
     });
 
-    // ── Images ──
-    if (fotoPreview) await drawImg(fotoPreview, F.foto);
-    if (assinaturaPreview) await drawImg(assinaturaPreview, F.assinatura);
+    if (error) throw error;
 
-    // ── QR Code ──
-    const verUrl = finalVerificationId
-      ? `${window.location.origin}/verificar/${finalVerificationId}`
-      : window.location.origin;
+    // supabase.functions.invoke returns data as Blob when Content-Type is application/pdf
+    if (data instanceof Blob) return data;
 
-    try {
-      const qrDiv = document.createElement("div");
-      qrDiv.style.position = "fixed";
-      qrDiv.style.left = "-9999px";
-      document.body.appendChild(qrDiv);
+    // Fallback: if it came as ArrayBuffer or other
+    if (data instanceof ArrayBuffer) return new Blob([data], { type: "application/pdf" });
 
-      const { createRoot } = await import("react-dom/client");
-      const root = createRoot(qrDiv);
-
-      await new Promise<void>((resolve) => {
-        root.render(<QRCode value={verUrl} size={500} level="H" />);
-        setTimeout(resolve, 300);
-      });
-
-      const qrSvg = qrDiv.querySelector("svg");
-      if (qrSvg) {
-        const svgData = new XMLSerializer().serializeToString(qrSvg);
-        const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-        const svgUrl = URL.createObjectURL(svgBlob);
-
-        const img = new Image();
-        img.src = svgUrl;
-        await new Promise<void>((resolve) => { img.onload = () => resolve(); });
-
-        const c = document.createElement("canvas");
-        c.width = 520; c.height = 520;
-        const ctx = c.getContext("2d")!;
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, 520, 520);
-        ctx.drawImage(img, 10, 10, 500, 500);
-        URL.revokeObjectURL(svgUrl);
-
-        await drawImg(c.toDataURL("image/png"), F.qr);
-      }
-
-      root.unmount();
-      document.body.removeChild(qrDiv);
-    } catch (e) {
-      console.warn("Erro ao embutir QR Code:", e);
-    }
-
-    // ── Watermark ──
-    if (withWatermark) {
-      const wmFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-      [260, 700, 1140, 1580, 2020].forEach((topPos) => {
-        page.drawText("BELLARUS NÃO COPIE", {
-          x: 120 * scaleX,
-          y: pageH - topPos * scaleY,
-          size: 72 * scaleY,
-          font: wmFont,
-          color: rgb(1, 0, 0),
-          opacity: 0.15,
-        });
-      });
-    }
-
-    return pdfDoc.save();
+    throw new Error("Resposta inesperada do servidor");
   };
 
   // ── Preview ──
@@ -400,8 +249,7 @@ const CnhForm = () => {
     setVerificationId(null);
     setShowPreview(true);
     try {
-      const pdfBytes = await generatePdfBytes(true);
-      const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
+      const blob = await callBackendPdf(true);
       if (previewPdfUrl) URL.revokeObjectURL(previewPdfUrl);
       setPreviewPdfUrl(URL.createObjectURL(blob));
       toast.success("Preview gerado com marca d'água!");
@@ -456,8 +304,7 @@ const CnhForm = () => {
     }
 
     try {
-      const pdfBytes = await generatePdfBytes(false, finalVerificationId);
-      const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
+      const blob = await callBackendPdf(false, finalVerificationId);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
