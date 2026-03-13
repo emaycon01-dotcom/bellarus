@@ -90,7 +90,9 @@ serve(async (req) => {
     const token = await createJWT(API_KEY, API_SECRET, WORKSPACE);
 
     const requestPayload = {
-      template: { id: Number(TEMPLATE_ID), output: "pdf" },
+      template: { id: Number(TEMPLATE_ID) },
+      format: "pdf",
+      output: "base64",
       data: [templateData],
     };
 
