@@ -2,12 +2,12 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -47,7 +47,6 @@ serve(async (req) => {
       verification_url,
     } = body;
 
-    // Build the data payload for PDF Generator API
     const templateData: Record<string, string> = {
       nome_completo: nome_completo || "",
       cpf: cpf || "",
@@ -71,20 +70,10 @@ serve(async (req) => {
       verification_url: verification_url || "",
     };
 
-    // Add images as base64 data URLs
-    if (foto_base64) {
-      templateData.foto_3x4 = foto_base64;
-    }
-    if (assinatura_base64) {
-      templateData.assinatura = assinatura_base64;
-    }
+    if (foto_base64) templateData.foto_3x4 = foto_base64;
+    if (assinatura_base64) templateData.assinatura = assinatura_base64;
+    if (watermark) templateData.watermark = "BELLARUS - PREVIEW";
 
-    // Add watermark flag
-    if (watermark) {
-      templateData.watermark = "BELLARUS - PREVIEW";
-    }
-
-    // Build MRZ lines
     const regClean = (registro || "").replace(/\D/g, "");
     const nascParts = (data_nascimento || "").split(",")[0]?.split("/") || [];
     const nascYYMMDD = nascParts.length >= 3
@@ -100,29 +89,27 @@ serve(async (req) => {
     templateData.mrz_line1 = `I<BRA${regClean.padEnd(15, "<")}`;
     templateData.mrz_line2 = `${nascYYMMDD}${gChar}${valYYMMDD}BRA${"<".repeat(12)}4`;
     templateData.mrz_line3 = `${nameMRZ}${"<".repeat(Math.max(0, 30 - nameMRZ.length))}`;
+    templateData.nacionalidade_formatada = nacionalidade === "BRASILEIRA"
+      ? "BRASILEIRO(A)"
+      : nacionalidade === "ESTRANGEIRA"
+        ? "ESTRANGEIRO(A)"
+        : "";
 
-    // Nacionalidade formatted
-    const nacText = nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : nacionalidade === "ESTRANGEIRA" ? "ESTRANGEIRO(A)" : "";
-    templateData.nacionalidade_formatada = nacText;
-
-    // Call PDF Generator API
-    const pdfGenUrl = `https://us1.pdfgeneratorapi.com/api/v4/documents/generate`;
-
+    const pdfGenUrl = "https://us1.pdfgeneratorapi.com/api/v4/documents/generate";
     const requestPayload = {
       template: {
-        id: parseInt(TEMPLATE_ID),
+        id: Number(TEMPLATE_ID),
         output: "pdf",
       },
       data: templateData,
     };
 
-    console.log("Calling PDF Generator API with template ID:", TEMPLATE_ID);
-
     const pdfResponse = await fetch(pdfGenUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${API_KEY}`,
+        "Accept": "application/json",
+        "X-Auth-Key": API_KEY,
         "X-Auth-Secret": API_SECRET,
       },
       body: JSON.stringify(requestPayload),
@@ -136,9 +123,7 @@ serve(async (req) => {
 
     const pdfResult = await pdfResponse.json();
 
-    // PDF Generator API returns base64 encoded PDF in response
     if (pdfResult.response) {
-      // The response contains base64 PDF data
       const pdfBase64 = pdfResult.response;
       const binaryString = atob(pdfBase64);
       const bytes = new Uint8Array(binaryString.length);
@@ -155,7 +140,6 @@ serve(async (req) => {
       });
     }
 
-    // If the API returns a URL instead of base64
     if (pdfResult.response_url || pdfResult.url) {
       const pdfUrl = pdfResult.response_url || pdfResult.url;
       const pdfDownload = await fetch(pdfUrl);
