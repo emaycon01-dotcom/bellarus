@@ -75,49 +75,56 @@ serve(async (req) => {
     const mrzFont = await pdfDoc.embedFont(StandardFonts.Courier);
 
     if (usedTemplate) {
-      // ══════════════════════════════════════════════════════════
-      // TEMPLATE-BASED: Replace text placeholders in the PDF
-      // The template has placeholders like {{NOME_COMPLETO}}, etc.
-      // We'll overlay text on top of the placeholder positions
-      // ══════════════════════════════════════════════════════════
+      // Layout fixo por coordenadas (sem substituição de placeholders)
+      // 1) Limpa quaisquer placeholders de campos de formulário (AcroForm)
+      // 2) Oculta placeholders textuais com "máscara" nas áreas dos campos
+      // 3) Desenha dados finais com drawText/drawImage
+      try {
+        const form = pdfDoc.getForm();
+        const fields = form.getFields();
+        for (const field of fields) {
+          const f = field as any;
+          if (typeof f.setText === "function") f.setText("");
+          if (typeof f.uncheck === "function") f.uncheck();
+        }
+        form.flatten();
+      } catch (e) {
+        console.warn("Template sem AcroForm para limpar:", e);
+      }
 
-      const form = pdfDoc.getForm();
-      
-      // Placeholder replacement map
-      const replacements: Record<string, string> = {
-        "{{NOME_COMPLETO}}": nome_completo || "",
-        "{{CPF}}": cpf || "",
-        "{{DATA_NASCIMENTO}}": data_nascimento || "",
-        "{{RG}}": rg || "",
-        "{{DATA_EMISSAO}}": data_emissao || "",
-        "{{DATA_VALIDADE}}": data_validade || "",
-        "{{CODIGO_SEGURANCA}}": codigo_seguranca || "",
-        "{{RENACH}}": renach || "",
-        "{{NUMERO_ESPELHO}}": numero_espelho || "",
-        "{{DATA_PRIMEIRA_HAB}}": data_primeira_hab || "",
-        "{{CIDADE_ESTADO}}": cidade_estado || "",
-        "{{ESTADO_EXTENSO}}": estado_extenso || "",
-        "{{REGISTRO}}": registro || "",
-        "{{CATEGORIA}}": categoria || "",
-        "{{NOME_PAI}}": nome_pai || "",
-        "{{NOME_MÃE}}": nome_mae || "",
-      };
-
-      // Since pdf-lib can't search/replace text in existing PDFs directly,
-      // we need to use coordinate-based overlay approach.
-      // The template coordinates are mapped to the PDF page dimensions.
-      
       // Template canvas: 1653x2339 pixels mapped to PDF points
       const TW = 1653;
       const TH = 2339;
       const scaleX = pageW / TW;
       const scaleY = pageH / TH;
 
+      const clearField = (
+        fx: number,
+        fy: number,
+        fw: number,
+        fh: number,
+        bg?: { r: number; g: number; b: number },
+      ) => {
+        const pdfX = fx * scaleX;
+        const pdfY = pageH - (fy + fh) * scaleY;
+        const color = bg ? rgb(bg.r, bg.g, bg.b) : rgb(0.84, 0.91, 0.88);
+        page.drawRectangle({
+          x: pdfX,
+          y: pdfY,
+          width: fw * scaleX,
+          height: fh * scaleY,
+          color,
+        });
+      };
+
       const drawField = (
         text: string,
-        fx: number, fy: number, fw: number, fh: number, 
+        fx: number,
+        fy: number,
+        fw: number,
+        fh: number,
         fontSize: number,
-        options?: { bold?: boolean; color?: { r: number; g: number; b: number }; font?: any }
+        options?: { bold?: boolean; color?: { r: number; g: number; b: number }; font?: any },
       ) => {
         if (!text) return;
         const pdfX = fx * scaleX;
@@ -136,7 +143,28 @@ serve(async (req) => {
         });
       };
 
-      // Coordinate map matching the template layout
+      // Limpa áreas dos placeholders para o PDF final sair limpo
+      [
+        [302, 220, 510, 28],   // nome
+        [830, 220, 195, 28],   // primeira habilitação
+        [302, 278, 575, 24],   // nascimento/local
+        [302, 330, 172, 24],   // emissão
+        [500, 330, 172, 24],   // validade
+        [302, 378, 520, 24],   // rg
+        [302, 428, 210, 24],   // cpf
+        [538, 428, 185, 24],   // registro
+        [758, 428, 85, 24],    // categoria
+        [302, 475, 380, 24],   // nacionalidade
+        [302, 520, 520, 24],   // pai
+        [302, 548, 520, 24],   // mae
+        [142, 910, 395, 115],  // observacoes
+        [112, 1172, 330, 22],  // cidade_estado
+        [455, 1172, 330, 22],  // codigo seguranca
+        [455, 1198, 330, 22],  // renach
+        [112, 1235, 480, 42],  // estado extenso
+      ].forEach(([x, y, w, h]) => clearField(x, y, w, h));
+
+      // Dados principais
       drawField(nome_completo, 302, 220, 510, 28, 17);
       drawField(data_primeira_hab, 830, 220, 195, 28, 15);
       drawField(data_nascimento, 302, 278, 575, 24, 13, { bold: false });
@@ -146,7 +174,7 @@ serve(async (req) => {
       drawField(cpf, 302, 428, 210, 24, 13, { bold: false });
       drawField(registro, 538, 428, 185, 24, 13, { color: { r: 0.8, g: 0, b: 0 } });
       drawField(categoria, 758, 428, 85, 24, 13, { bold: false });
-      
+
       const nacText = nacionalidade === "BRASILEIRA" ? "BRASILEIRO(A)" : nacionalidade === "ESTRANGEIRA" ? "ESTRANGEIRO(A)" : "";
       drawField(nacText, 302, 475, 380, 24, 13, { bold: false });
       drawField(nome_pai, 302, 520, 520, 24, 13, { bold: false });
@@ -247,6 +275,26 @@ serve(async (req) => {
           });
         } catch (e) {
           console.error("Error embedding signature:", e);
+        }
+      }
+
+      // Embed QR Code (quando enviado pelo frontend)
+      if (qr_code_base64) {
+        try {
+          const qrData = qr_code_base64.includes(",") ? qr_code_base64.split(",")[1] : qr_code_base64;
+          const qrBytes = base64Decode(qrData);
+          const isPng = qr_code_base64.includes("image/png");
+          const qrImg = isPng
+            ? await pdfDoc.embedPng(qrBytes)
+            : await pdfDoc.embedJpg(qrBytes);
+          page.drawImage(qrImg, {
+            x: 905 * scaleX,
+            y: pageH - (108 + 500) * scaleY,
+            width: 500 * scaleX,
+            height: 500 * scaleY,
+          });
+        } catch (e) {
+          console.error("Error embedding QR code:", e);
         }
       }
     }
