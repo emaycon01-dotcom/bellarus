@@ -91,7 +91,7 @@ serve(async (req) => {
 
     const requestPayload = {
       template: { id: Number(TEMPLATE_ID), output: "pdf" },
-      data: templateData,
+      data: [templateData],
     };
 
     console.log("Calling PDF Generator API with template ID:", TEMPLATE_ID);
