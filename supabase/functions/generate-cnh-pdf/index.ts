@@ -90,10 +90,13 @@ serve(async (req) => {
     const token = await createJWT(API_KEY, API_SECRET, WORKSPACE);
 
     const requestPayload = {
-      template: { id: Number(TEMPLATE_ID) },
+      template: {
+        id: Number(TEMPLATE_ID),
+        data: templateData,
+      },
       format: "pdf",
       output: "base64",
-      data: [templateData],
+      name: `CNH_${(nome_completo || "documento").replace(/\s+/g, "_")}`,
     };
 
     console.log("Calling PDF Generator API with template ID:", TEMPLATE_ID);
