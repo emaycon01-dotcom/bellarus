@@ -307,8 +307,7 @@ const CnhForm = () => {
     }
 
     try {
-      const pdfBytes = await generatePdfBytes(false, finalVerificationId);
-      const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
+      const blob = await callBackendPdf(false, finalVerificationId);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
